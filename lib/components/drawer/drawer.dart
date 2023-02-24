@@ -34,7 +34,7 @@ class _DrawerState extends State<DrawerComponent> {
   ];
 
   @override
-  Widget build(BuildContext context) {ok ok 
+  Widget build(BuildContext context) {
     return Obx(
       // stack used to align the drawer and the dark mode button
       () => Stack(
