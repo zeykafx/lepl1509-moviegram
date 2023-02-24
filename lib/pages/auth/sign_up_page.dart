@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 
 import '../home/home_page.dart';
@@ -27,26 +28,30 @@ class _SignUpPageState extends State<SignUpPage> {
           return SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraint.maxHeight),
-              child: const IntrinsicHeight(
+              child: IntrinsicHeight(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'Sign up to MovieGram',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text("Create your account to get started!",
-                          style: TextStyle(fontSize: 20)),
-                      Padding(
+                      const Column(
+                        children: [
+                          Text(
+                            'Sign up to MovieGram',
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text("Create your account to get started!",
+                              style: TextStyle(fontSize: 20)),
+                        ],
+                      ).animate().fadeIn(duration: 500.ms).moveY(begin: -5),
+                      const Padding(
                         padding: EdgeInsets.all(20.0),
                         child: EmailSignUp(),
-                      ),
+                      ).animate().fadeIn(delay: 200.ms, duration: 500.ms).moveY(begin: 2)
                     ],
                   ),
                 ),

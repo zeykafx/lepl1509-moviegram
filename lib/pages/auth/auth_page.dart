@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/pages/auth/sign_up_page.dart';
 
@@ -35,19 +36,22 @@ class _AuthPageState extends State<AuthPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Spacer(),
-                    const Text(
-                      'Welcome to MovieGram!',
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w600,
+                    const Column(children: [
+                      Text(
+                        'Welcome to MovieGram!',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const Text("Sign in to continue", style: TextStyle(fontSize: 20)),
+                      Text("Sign in to continue", style: TextStyle(fontSize: 20)),
+                    ]).animate().fadeIn(duration: 1000.ms).moveY(begin: -10),
+
                     // sign in with email and password
                     const Padding(
                       padding: EdgeInsets.all(20.0),
                       child: EmailSignIn(),
-                    ),
+                    ).animate().fadeIn(delay: 750.ms, duration: 1000.ms).moveY(begin: 5),
 
                     // stick the sign up button at the bottom of the page
                     const Spacer(),
