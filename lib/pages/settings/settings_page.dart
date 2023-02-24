@@ -14,7 +14,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       drawer: const DrawerComponent(),
       appBar: AppBar(
-        title: const Text('MovieGram'),
+        title: const Text('Settings'),
       ),
       body: const Center(
         child: Text("Settings"),

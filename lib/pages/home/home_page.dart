@@ -17,7 +17,7 @@ class _HomePageState extends State<HomePage> {
         title: const Text('MovieGram'),
       ),
       body: const Center(
-        child: Text('Hello World'),
+        child: Text('Home Page'),
       ),
     );
   }

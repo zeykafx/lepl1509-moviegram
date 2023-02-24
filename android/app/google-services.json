@@ -14,7 +14,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "327250871577-ogedqnqbhrt7ps4o8vt8hufml91jlkp8.apps.googleusercontent.com",
+          "client_id": "327250871577-fi42vj83to8dlfhkao4m1jf1qpi4l3ik.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -27,8 +27,15 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "327250871577-ogedqnqbhrt7ps4o8vt8hufml91jlkp8.apps.googleusercontent.com",
+              "client_id": "327250871577-fi42vj83to8dlfhkao4m1jf1qpi4l3ik.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "327250871577-02i33tvftmvs8fud176fq16a1va13os9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.groupe17lepl1509.projetLepl1509Groupe17.RunnerTests"
+              }
             }
           ]
         }

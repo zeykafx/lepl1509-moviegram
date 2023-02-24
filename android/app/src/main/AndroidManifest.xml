@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.groupe_17_lepl1509.projet_lepl1509_groupe_17">
-   <application
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application
         android:label="projet_lepl1509_groupe_17"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

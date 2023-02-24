@@ -1,9 +1,11 @@
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import 'pages/home/home_page.dart';
+import 'package:projet_lepl1509_groupe_17/pages/auth/auth_page.dart';
+import 'package:projet_lepl1509_groupe_17/pages/home/home_page.dart';
+import 'package:splashscreen/splashscreen.dart';
 
 ColorScheme? lightColorScheme;
 ColorScheme? darkColorScheme;
@@ -45,8 +47,40 @@ class App extends StatelessWidget {
         theme: lightTheme(lightColorScheme),
         darkTheme: darkTheme(darkColorScheme),
         themeMode: ThemeMode.system,
-        home: const HomePage(),
+        home: const IntroScreen(),
       );
     });
+  }
+}
+
+class IntroScreen extends StatefulWidget {
+  const IntroScreen({Key? key}) : super(key: key);
+
+  @override
+  State<IntroScreen> createState() => _IntroScreenState();
+}
+
+class _IntroScreenState extends State<IntroScreen> {
+  User? result = FirebaseAuth.instance.currentUser;
+
+  @override
+  Widget build(BuildContext context) {
+    return SplashScreen(
+      useLoader: true,
+      loadingText:
+          Text(result == null ? 'Loading...' : 'Welcome back ${result!.displayName}!'),
+      navigateAfterSeconds: result == null ? const AuthPage() : const HomePage(),
+      seconds: 1,
+      title: const Text(
+        'MovieGram',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 20.0,
+        ),
+      ),
+      loadingTextPadding: EdgeInsets.zero,
+      backgroundColor: Theme.of(context).colorScheme.background,
+      styleTextUnderTheLoader: const TextStyle(),
+    );
   }
 }

@@ -14,7 +14,7 @@ class _FriendsPageState extends State<FriendsPage> {
     return Scaffold(
       drawer: const DrawerComponent(),
       appBar: AppBar(
-        title: const Text('MovieGram'),
+        title: const Text('Friends'),
       ),
       body: const Center(
         child: Text("Friends"),

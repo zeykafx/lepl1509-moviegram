@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/main.dart';
+import 'package:projet_lepl1509_groupe_17/pages/auth/auth_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/friends/friends_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/home_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/settings/settings_page.dart';
@@ -33,6 +35,19 @@ class _DrawerState extends State<DrawerComponent> {
     ),
   ];
 
+  User? currentUser = FirebaseAuth.instance.currentUser;
+
+  String timeOfDayToGreeting() {
+    final int hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Good morning';
+    } else if (hour < 18) {
+      return 'Good afternoon';
+    } else {
+      return 'Good evening';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(
@@ -50,18 +65,22 @@ class _DrawerState extends State<DrawerComponent> {
             },
             children: <Widget>[
               // user header with profile picture
-              const DrawerHeader(
+              DrawerHeader(
                 child: Column(
                   children: [
                     Padding(
-                      padding: EdgeInsets.fromLTRB(0, 0, 0, 5),
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
                       child: CircleAvatar(
-                        radius: 40,
+                        radius: 35,
+                        backgroundImage: Image.network(currentUser?.photoURL ??
+                                'http://www.gravatar.com/avatar/?d=mp')
+                            .image,
                       ),
                     ),
+                    const Padding(padding: EdgeInsets.all(5.0)),
                     Text(
-                      'Hello, John Doe!',
-                      style: TextStyle(
+                      '${timeOfDayToGreeting()}, ${currentUser?.displayName?.split(" ").first}!',
+                      style: const TextStyle(
                         fontSize: 20,
                       ),
                     ),
@@ -70,7 +89,7 @@ class _DrawerState extends State<DrawerComponent> {
               ),
 
               Padding(
-                padding: const EdgeInsets.fromLTRB(28, 16, 16, 10),
+                padding: const EdgeInsets.fromLTRB(28, 9, 16, 10),
                 child: Text(
                   'Pages',
                   style: Theme.of(context).textTheme.titleSmall,
@@ -91,20 +110,61 @@ class _DrawerState extends State<DrawerComponent> {
             alignment: Alignment.bottomLeft,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                  onTap: () => Get.changeTheme(Get.isDarkMode
-                      ? lightTheme(lightColorScheme)
-                      : darkTheme(darkColorScheme)),
-                  leading: Get.isDarkMode
-                      ? const Icon(
-                          Icons.light_mode,
-                          size: 20,
-                        )
-                      : const Icon(Icons.dark_mode, size: 20),
-                  dense: true,
-                  title: Get.isDarkMode
-                      ? const Text('Enable Light Mode')
-                      : const Text('Enable Dark Mode')),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 200),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      onTap: () {
+                        // log out the user
+                        showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                                  title: const Text('Log out'),
+                                  content:
+                                      const Text('Are you sure you want to log out?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Get.back(),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        FirebaseAuth.instance.signOut();
+                                        Get.off(const AuthPage());
+                                      },
+                                      child: const Text('Log out'),
+                                    ),
+                                  ],
+                                ));
+                      },
+                      leading: const Icon(
+                        Icons.logout,
+                        size: 20,
+                      ),
+                      dense: true,
+                      title: const Text('Log out'),
+                    ),
+                    ListTile(
+                        onTap: () => Get.changeTheme(Get.isDarkMode
+                            ? lightTheme(lightColorScheme)
+                            : darkTheme(darkColorScheme)),
+                        leading: Get.isDarkMode
+                            ? const Icon(
+                                Icons.light_mode,
+                                size: 20,
+                              )
+                            : const Icon(Icons.dark_mode, size: 20),
+                        dense: true,
+                        title: Get.isDarkMode
+                            ? const Text('Enable Light Mode')
+                            : const Text('Enable Dark Mode')),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
