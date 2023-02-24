@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "327250871577",
+    "project_id": "lepl1509-moviegram",
+    "storage_bucket": "lepl1509-moviegram.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:327250871577:android:fdae04f072ef353d973188",
+        "android_client_info": {
+          "package_name": "com.groupe_17_lepl1509.projet_lepl1509_groupe_17"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "327250871577-ogedqnqbhrt7ps4o8vt8hufml91jlkp8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAVDPSqLkLzIfu773HztMCe8aarDxwoHo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "327250871577-ogedqnqbhrt7ps4o8vt8hufml91jlkp8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
