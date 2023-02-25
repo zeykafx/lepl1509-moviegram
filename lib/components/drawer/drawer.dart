@@ -134,7 +134,7 @@ class _DrawerState extends State<DrawerComponent> {
                                     TextButton(
                                       onPressed: () {
                                         FirebaseAuth.instance.signOut();
-                                        Get.off(const AuthPage());
+                                        Get.offAll(() => const AuthPage());
                                       },
                                       child: const Text('Log out'),
                                     ),
@@ -149,9 +149,11 @@ class _DrawerState extends State<DrawerComponent> {
                       title: const Text('Log out'),
                     ),
                     ListTile(
-                        onTap: () => Get.changeTheme(Get.isDarkMode
-                            ? lightTheme(lightColorScheme)
-                            : darkTheme(darkColorScheme)),
+                        onTap: () {
+                          Get.changeTheme(Get.isDarkMode
+                              ? lightTheme(lightColorScheme)
+                              : darkTheme(darkColorScheme));
+                        },
                         leading: Get.isDarkMode
                             ? const Icon(
                                 Icons.light_mode,

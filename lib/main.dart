@@ -15,7 +15,7 @@ ThemeData lightTheme(ColorScheme? lightColorScheme) {
   return ThemeData(
     useMaterial3: true,
     colorScheme: lightColorScheme,
-    colorSchemeSeed: lightColorScheme == null ? Colors.orange : null,
+    colorSchemeSeed: lightColorScheme == null ? Colors.lightBlue : null,
     brightness: Brightness.light,
   );
 }
@@ -24,7 +24,7 @@ ThemeData darkTheme(ColorScheme? darkColorScheme) {
   return ThemeData(
     useMaterial3: true,
     colorScheme: darkColorScheme,
-    colorSchemeSeed: darkColorScheme == null ? Colors.orange : null,
+    colorSchemeSeed: darkColorScheme == null ? Colors.lightBlue : null,
     brightness: Brightness.dark,
   );
 }

@@ -77,9 +77,12 @@ class _EmailSignInState extends State<EmailSignIn> {
       return [
         SizedBox(
           width: double.infinity,
-          child: ElevatedButton(
+          child: FilledButton.tonal(
             onPressed: validateAndSubmit,
-            child: const Text('Login'),
+            child: const Text(
+              'Login',
+              style: TextStyle(fontSize: 16),
+            ),
           ),
         ),
         const Padding(padding: EdgeInsets.all(2.0)),
@@ -87,7 +90,10 @@ class _EmailSignInState extends State<EmailSignIn> {
           width: double.infinity,
           child: TextButton(
             onPressed: forgotPasswordDialog,
-            child: const Text('Forgot Password?'),
+            child: const Text(
+              'Forgot Password?',
+              style: TextStyle(fontSize: 15),
+            ),
           ),
         ),
       ];
@@ -114,7 +120,7 @@ class _EmailSignInState extends State<EmailSignIn> {
         setState(() {
           _isLoading = false;
         });
-        Get.off(const HomePage());
+        Get.offAll(() => const HomePage());
       } catch (e) {
         if (e is FirebaseAuthException) {
           if (e.code == 'user-not-found') {
@@ -144,73 +150,63 @@ class _EmailSignInState extends State<EmailSignIn> {
         builder: (context) {
           String resetEmail = "";
           return StatefulBuilder(builder: (context, setState) {
-            return Dialog(
-              child: Form(
+            return AlertDialog(
+              title: const Text('Reset Password'),
+              content: Form(
                 key: _dialogKey,
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 550),
-                  padding: const EdgeInsets.all(32.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Enter your email to reset your password',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const Padding(padding: EdgeInsets.all(8.0)),
-                      TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(), labelText: 'Email'),
-                        validator: (value) =>
-                            value!.isEmpty ? 'Email can\'t be empty' : null,
-                        onSaved: (value) {
-                          setState(() {
-                            resetEmail = value!.trim();
-                          });
-                        },
-                      ),
-                      const Padding(padding: EdgeInsets.all(8.0)),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            final form = _dialogKey.currentState;
-                            if (form!.validate()) {
-                              form.save();
-                              print(resetEmail);
-
-                              _auth.sendPasswordResetEmail(email: resetEmail).then((val) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                  content: Text('Password reset email sent'),
-                                ));
-                                Navigator.of(context).pop();
-                              }).catchError((e) {
-                                if (e is FirebaseAuthException) {
-                                  if (e.code == 'user-not-found') {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                            content:
-                                                Text('No user found for that email.')));
-                                  } else if (e.code == 'invalid-email') {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                        content: Text(
-                                            'Your email address appears to be malformed.')));
-                                  }
-                                }
-                              });
-                            }
-                          },
-                          child: const Text('Reset Password'),
-                        ),
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Enter your email to reset your password',
+                    ),
+                    const Padding(padding: EdgeInsets.all(8.0)),
+                    TextFormField(
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(), labelText: 'Email'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Email can\'t be empty' : null,
+                      onSaved: (value) {
+                        setState(() {
+                          resetEmail = value!.trim();
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ),
+              actions: [
+                TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+                TextButton(
+                  onPressed: () {
+                    final form = _dialogKey.currentState;
+                    if (form!.validate()) {
+                      form.save();
+                      print(resetEmail);
+
+                      _auth.sendPasswordResetEmail(email: resetEmail).then((val) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Password reset email sent'),
+                        ));
+                        Navigator.of(context).pop();
+                      }).catchError((e) {
+                        if (e is FirebaseAuthException) {
+                          if (e.code == 'user-not-found') {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                content: Text('No user found for that email.')));
+                          } else if (e.code == 'invalid-email') {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                content:
+                                    Text('Your email address appears to be malformed.')));
+                          }
+                        }
+                      });
+                    }
+                  },
+                  child: const Text('Reset Password'),
+                ),
+              ],
             );
           });
         });

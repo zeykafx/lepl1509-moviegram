@@ -29,31 +29,62 @@ class _SignUpPageState extends State<SignUpPage> {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraint.maxHeight),
               child: IntrinsicHeight(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Column(
-                        children: [
-                          Text(
-                            'Sign up to MovieGram',
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w600,
+                child: Stack(
+                  children: [
+                    // background shape
+                    Positioned(
+                      bottom: -20,
+                      left: 0,
+                      right: 0,
+                      child: Transform.flip(
+                        flipX: true,
+                        flipY: true,
+                        child: ClipPath(
+                          clipper: FancyClipper(),
+                          child: Container(
+                            height: 300,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context).colorScheme.tertiaryContainer,
+                                  Theme.of(context).colorScheme.primaryContainer,
+                                ],
+                                begin: const Alignment(-0.7, 12),
+                                end: const Alignment(1, -2),
+                              ),
                             ),
                           ),
-                          Text("Create your account to get started!",
-                              style: TextStyle(fontSize: 20)),
+                        ),
+                      ),
+                    ).animate().fadeIn(duration: 500.ms, delay: 300.ms).moveY(begin: 10),
+
+                    // content
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Column(
+                            children: [
+                              Text(
+                                'Sign up to MovieGram',
+                                style: TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text("Create your account to get started!", style: TextStyle(fontSize: 20)),
+                            ],
+                          ).animate().fadeIn(duration: 500.ms).moveY(begin: -5),
+                          const Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: EmailSignUp(),
+                          ).animate().fadeIn(delay: 200.ms, duration: 500.ms).moveY(begin: 2)
                         ],
-                      ).animate().fadeIn(duration: 500.ms).moveY(begin: -5),
-                      const Padding(
-                        padding: EdgeInsets.all(20.0),
-                        child: EmailSignUp(),
-                      ).animate().fadeIn(delay: 200.ms, duration: 500.ms).moveY(begin: 2)
-                    ],
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -96,10 +127,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
               // name
               TextFormField(
                 keyboardType: TextInputType.name,
-                decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.person),
-                    border: OutlineInputBorder(),
-                    labelText: 'Name'),
+                decoration: const InputDecoration(prefixIcon: Icon(Icons.person), border: OutlineInputBorder(), labelText: 'Name'),
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Please enter your name';
@@ -145,10 +173,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
               // email
               TextFormField(
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.email),
-                    border: OutlineInputBorder(),
-                    labelText: 'Email'),
+                decoration: const InputDecoration(prefixIcon: Icon(Icons.email), border: OutlineInputBorder(), labelText: 'Email'),
                 validator: (value) => value!.isEmpty ? 'Email can\'t be empty' : null,
                 onSaved: (value) => _email = value!.trim(),
               ),
@@ -162,9 +187,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
                     border: const OutlineInputBorder(),
                     labelText: 'Password',
                     suffixIcon: IconButton(
-                      icon: passwordVisible
-                          ? const Icon(Icons.visibility_off_rounded)
-                          : const Icon(Icons.visibility_rounded),
+                      icon: passwordVisible ? const Icon(Icons.visibility_off_rounded) : const Icon(Icons.visibility_rounded),
                       onPressed: () {
                         setState(() {
                           passwordVisible = !passwordVisible;
@@ -190,8 +213,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
                 onSaved: (value) => _password = value!.trim(),
               ),
 
-              const Text(
-                  "Password must be at least 8 characters long & contain a mix of upper & lower case letters, numbers and symbols",
+              const Text("Password must be at least 8 characters long & contain a mix of upper & lower case letters, numbers and symbols",
                   style: TextStyle(fontSize: 13, color: Colors.grey)),
 
               const Padding(padding: EdgeInsets.all(15.0)),
@@ -214,7 +236,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
       return [
         SizedBox(
           width: double.infinity,
-          child: ElevatedButton(
+          child: FilledButton.tonal(
             onPressed: validateAndSubmit,
             child: const Text('Create an account'),
           ),
@@ -232,37 +254,30 @@ class _EmailSignUpState extends State<EmailSignUp> {
       });
       String? userId = '';
       try {
-        UserCredential user = await _auth.createUserWithEmailAndPassword(
-            email: _email, password: _password);
+        UserCredential user = await _auth.createUserWithEmailAndPassword(email: _email, password: _password);
         userId = user.user?.uid;
 
         // update the user's display name and photo URL
         await user.user!.updateDisplayName(_name);
 
         String emailHash = md5.convert(utf8.encode(_email)).toString();
-        await user.user!
-            .updatePhotoURL("http://www.gravatar.com/avatar/$emailHash?d=identicon");
+        await user.user!.updatePhotoURL("http://www.gravatar.com/avatar/$emailHash?d=identicon");
 
         setState(() {
           _isLoading = false;
         });
-        Get.off(const HomePage());
+        Get.offAll(() => const HomePage());
       } catch (e) {
         print(e.toString());
         if (e is FirebaseAuthException) {
           if (e.code == 'invalid-email') {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('Your email address appears to be malformed.')));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Your email address appears to be malformed.')));
           } else if (e.code == "email-already-in-use") {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content:
-                    Text('The email address is already in use by another account.')));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('The email address is already in use by another account.')));
           } else if (e.code == "weak-password") {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('The password must be 6 characters long or more.')));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('The password must be 6 characters long or more.')));
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Error: Invalid email or password')));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error: Invalid email or password')));
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -276,4 +291,19 @@ class _EmailSignUpState extends State<EmailSignUp> {
       }
     }
   }
+}
+
+class FancyClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+    path.lineTo(0, 120);
+    path.quadraticBezierTo(size.width / 5, 110, size.width, 10);
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => true;
 }
