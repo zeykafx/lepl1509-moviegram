@@ -1,5 +1,3 @@
-
-
 import 'about.dart';
 
 class AboutPreferences {

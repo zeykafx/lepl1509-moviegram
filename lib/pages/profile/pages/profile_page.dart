@@ -3,7 +3,6 @@ import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/utils/about_preferences.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
-
 import '../utils/about.dart';
 import 'edit_profile_page.dart';
 import '../widgets/numbers_widget.dart';
