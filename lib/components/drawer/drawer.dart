@@ -5,7 +5,10 @@ import 'package:projet_lepl1509_groupe_17/main.dart';
 import 'package:projet_lepl1509_groupe_17/pages/auth/auth_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/friends/friends_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/home_page.dart';
+import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
 import 'package:projet_lepl1509_groupe_17/pages/settings/settings_page.dart';
+import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart';
+
 
 class DrawerComponent extends StatefulWidget {
   const DrawerComponent({super.key});
@@ -70,13 +73,17 @@ class _DrawerState extends State<DrawerComponent> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
-                      child: CircleAvatar(
-                        radius: 35,
-                        backgroundImage: Image.network(currentUser?.photoURL ??
-                                'http://www.gravatar.com/avatar/?d=mp')
-                            .image,
+                      child: ProfileWidget(
+                            imagePath: currentUser?.photoURL ??
+                                'http://www.gravatar.com/avatar/?d=mp',
+                            inDrawer: true,
+                            onClicked: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => ProfilePage()),
+                              );
+                            },
+                        ),
                       ),
-                    ),
                     const Padding(padding: EdgeInsets.all(5.0)),
                     Text(
                       '${timeOfDayToGreeting()}, ${currentUser?.displayName?.split(" ").first}!',
