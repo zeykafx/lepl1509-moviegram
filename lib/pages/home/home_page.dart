@@ -13,29 +13,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Review> reviews = [];
-  bool isLoading = false;
-
   @override
   void initState() {
     super.initState();
-    fetchReviews();
-  }
-
-  void fetchReviews() async {
-    setState(() {
-      isLoading = true;
-    });
-    await FirebaseFirestore.instance.collection("reviews").get().then((value) {
-      value.docs.forEach((element) {
-        setState(() {
-          reviews.add(Review.fromMap(element.data()));
-        });
-      });
-      setState(() {
-        isLoading = false;
-      });
-    });
   }
 
   @override
@@ -46,25 +26,91 @@ class _HomePageState extends State<HomePage> {
         title: const Text('MovieGram'),
       ),
       body: Center(
-        child: Column(
-          children: [
-            ElevatedButton(
-                onPressed: () {
-                  Get.to(() => const CreateReviewPage());
-                },
-                child: const Text('Create review')),
-            isLoading
-                ? const CircularProgressIndicator()
-                : Expanded(
-                    child: ListView.builder(
-                        itemCount: reviews.length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(reviews[index].title),
-                            subtitle: Text(reviews[index].comment),
-                          );
-                        }))
-          ],
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 700),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              ElevatedButton(
+                  onPressed: () {
+                    Get.to(() => const CreateReviewPage());
+                  },
+                  child: const Text('Create review')),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Text("Most recent reviews", style: TextStyle(fontSize: 20)),
+                    ),
+                    StreamBuilder(
+                        stream:
+                            FirebaseFirestore.instance.collection('reviews').snapshots(),
+                        builder: (context, AsyncSnapshot snapshot) {
+                          if (snapshot.hasData) {
+                            return ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: snapshot.data.docs.length,
+                                itemBuilder: (context, index) {
+                                  // get the review from the snapshot
+                                  Review review =
+                                      Review.fromMap(snapshot.data.docs[index].data());
+
+                                  // return a tile for each review
+                                  return ListTile(
+                                    leading: review.posterUrl != ""
+                                        ? Image.network(
+                                            review.posterUrl,
+                                            fit: BoxFit.contain,
+                                          )
+                                        : const Icon(Icons.movie,
+                                            size: 35), // TODO: add placeholder image
+                                    title: RichText(
+                                      text: TextSpan(
+                                        text: review.title,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge
+                                                ?.color),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: ' - ${review.username}',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyLarge
+                                                      ?.color)),
+                                        ],
+                                      ),
+                                    ),
+                                    isThreeLine: true,
+                                    subtitle: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(review.comment ?? "No comment..."),
+                                        const Spacer(),
+                                        const Icon(Icons.star,
+                                            color: Colors.orangeAccent, size: 15),
+                                        Text(review.rating.toString() ?? "No rating"),
+                                      ],
+                                    ),
+                                  );
+                                });
+                          } else {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                        }),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

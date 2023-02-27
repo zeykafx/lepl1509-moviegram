@@ -1,14 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:projet_lepl1509_groupe_17/main.dart';
 import 'package:projet_lepl1509_groupe_17/pages/auth/auth_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/friends/friends_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/home_page.dart';
+import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
 import 'package:projet_lepl1509_groupe_17/pages/settings/settings_page.dart';
-import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart';
-
 
 class DrawerComponent extends StatefulWidget {
   const DrawerComponent({super.key});
@@ -69,29 +67,33 @@ class _DrawerState extends State<DrawerComponent> {
             children: <Widget>[
               // user header with profile picture
               DrawerHeader(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
-                      child: ProfileWidget(
-                            imagePath: currentUser?.photoURL ??
-                                'http://www.gravatar.com/avatar/?d=mp',
-                            inDrawer: true,
-                            onClicked: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => ProfilePage()),
-                              );
-                            },
+                child: InkWell(
+                  onTap: () =>
+                      Get.to(() => const ProfilePage(), transition: Transition.fadeIn),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
+                        child: ProfileWidget(
+                          imagePath: currentUser?.photoURL ??
+                              'http://www.gravatar.com/avatar/?d=mp',
+                          inDrawer: true,
+                          onClicked: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => ProfilePage()),
+                            );
+                          },
                         ),
                       ),
-                    const Padding(padding: EdgeInsets.all(5.0)),
-                    Text(
-                      '${timeOfDayToGreeting()}, ${currentUser?.displayName?.split(" ").first}!',
-                      style: const TextStyle(
-                        fontSize: 20,
+                      const Padding(padding: EdgeInsets.all(5.0)),
+                      Text(
+                        '${timeOfDayToGreeting()}, ${currentUser?.displayName?.split(" ").first}!',
+                        style: const TextStyle(
+                          fontSize: 20,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
@@ -157,9 +159,11 @@ class _DrawerState extends State<DrawerComponent> {
                     ),
                     ListTile(
                         onTap: () {
-                          Get.changeTheme(Get.isDarkMode
-                              ? lightTheme(lightColorScheme)
-                              : darkTheme(darkColorScheme));
+                          Get.changeThemeMode(
+                              Get.isDarkMode ? ThemeMode.light : ThemeMode.dark);
+                          // Get.changeTheme(Get.isDarkMode
+                          //     ? lightTheme(lightColorScheme)
+                          //     : darkTheme(darkColorScheme));
                         },
                         leading: Get.isDarkMode
                             ? const Icon(

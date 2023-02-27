@@ -1,4 +1,5 @@
 class Review {
+  final String username;
   final String title;
   final String comment;
   final double rating;
@@ -9,7 +10,7 @@ class Review {
   final String posterUrl;
 
   Review(this.title, this.comment, this.rating, this.actors, this.userID,
-      this.dateTimestamp, this.lengthMin, this.posterUrl);
+      this.dateTimestamp, this.lengthMin, this.posterUrl, this.username);
 
   static Review fromMap(Map<String, dynamic> map) {
     return Review(
@@ -21,6 +22,7 @@ class Review {
       map['dateTimestamp'],
       map['lengthMin'],
       map['posterUrl'],
+      map['username'],
     );
   }
 }

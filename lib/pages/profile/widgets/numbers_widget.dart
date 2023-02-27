@@ -15,39 +15,36 @@ class _NumbersWidgetState extends State<NumbersWidget> {
   Widget build(BuildContext context) => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          buildButton(context, widget.userProfile?.ranking.toString() ?? "0", 'Ranking'),
+          buildText(context, widget.userProfile?.ranking.toString() ?? "0", 'Ranking'),
           buildDivider(),
-          buildButton(
+          buildText(
               context, widget.userProfile?.following.toString() ?? "0", 'Following'),
           buildDivider(),
-          buildButton(
+          buildText(
               context, widget.userProfile?.followers.toString() ?? "0", 'Followers'),
         ],
       );
 
-  Widget buildDivider() => Container(
+  Widget buildDivider() => const SizedBox(
         height: 24,
-        child: const VerticalDivider(),
+        child: VerticalDivider(),
       );
 
-  Widget buildButton(BuildContext context, String value, String text) => MaterialButton(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        onPressed: () {},
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              value,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-            ),
-            SizedBox(height: 2),
-            Text(
-              text,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            ),
-          ],
+  Widget buildText(BuildContext context, String value, String text) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
-      );
+        const SizedBox(height: 2),
+        Text(
+          text,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        ),
+      ],
+    );
+  }
 }
