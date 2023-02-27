@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/utils/about_preferences.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
+
 import '../utils/about.dart';
-import 'edit_profile_page.dart';
 import '../widgets/numbers_widget.dart';
+import 'edit_profile_page.dart';
 
 User? currentUser = FirebaseAuth.instance.currentUser;
-
-
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -19,17 +19,35 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  var db = FirebaseFirestore.instance;
+
+  UserProfile? userProfile;
+
+  @override
+  void initState() {
+    super.initState();
+    readUserData();
+  }
+
+  // gets the user data from firestore
+  Future<void> readUserData() async {
+    await db.collection('users').doc(currentUser?.uid).get().then((value) {
+      setState(() {
+        userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var aboutInfo = AboutPreferences.myAboutInfo;
 
     return Scaffold(
-      drawer: const DrawerComponent(),
       appBar: AppBar(
         title: const Text('Profile'),
       ),
       body: ListView(
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         children: [
           ProfileWidget(
             imagePath: currentUser?.photoURL,
@@ -43,16 +61,18 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 10),
           buildName(currentUser),
           const SizedBox(height: 15),
-          NumbersWidget(),
+          NumbersWidget(
+            userProfile: userProfile,
+          ),
           const SizedBox(height: 15),
           buildAbout(aboutInfo),
           const SizedBox(height: 15),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: const Text(
-                  'Watched : ',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
+              'Watched : ',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -60,35 +80,35 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget buildName(User? user) => Column(
-    children: [
-      Text(
-        '${user?.displayName}',
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-      ),
-      const SizedBox(height: 4),
-      Text(
-        '${user?.email}',
-        style: TextStyle(color: Colors.grey),
-      )
-    ],
-  );
+        children: [
+          Text(
+            '${user?.displayName}',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${user?.email}',
+            style: const TextStyle(color: Colors.grey),
+          )
+        ],
+      );
 
   Widget buildAbout(AboutInfo aboutInfo) => Container(
-    padding: EdgeInsets.symmetric(horizontal: 48),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Bio : ',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        padding: const EdgeInsets.symmetric(horizontal: 48),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Bio : ',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '    ${userProfile?.bio ?? "No bio"}',
+              style: const TextStyle(fontSize: 16, height: 1.4),
+            ),
+            const Divider()
+          ],
         ),
-        const SizedBox(height: 6),
-        Text(
-          '    ${aboutInfo.about}',
-          style: TextStyle(fontSize: 16, height: 1.4),
-        ),
-        Divider()
-      ],
-    ),
-  );
+      );
 }

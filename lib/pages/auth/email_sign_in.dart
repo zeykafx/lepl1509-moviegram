@@ -123,13 +123,19 @@ class _EmailSignInState extends State<EmailSignIn> {
         Get.offAll(() => const HomePage());
       } catch (e) {
         if (e is FirebaseAuthException) {
-          if (e.code == 'user-not-found') {
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('No user found for that email.')));
-          } else if (e.code == 'invalid-email') {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('Your email address appears to be malformed.')));
-          }
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Error: Invalid email or password'),
+          ));
+          // if (e.code == 'user-not-found') {
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //       const SnackBar(content: Text('No user found for that email.')));
+          // } else if (e.code == 'invalid-email') {
+          //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          //       content: Text('Your email address appears to be malformed.')));
+          // } else if (e.code == 'wrong-password') {
+          //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          //       content: Text('Your password is wrong.')));
+          // }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Error: Invalid email or password'),

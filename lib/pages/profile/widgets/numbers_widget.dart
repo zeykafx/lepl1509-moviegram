@@ -1,25 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 
-class NumbersWidget extends StatelessWidget {
+class NumbersWidget extends StatefulWidget {
+  final UserProfile? userProfile;
+
+  const NumbersWidget({super.key, this.userProfile});
+
+  @override
+  State<NumbersWidget> createState() => _NumbersWidgetState();
+}
+
+class _NumbersWidgetState extends State<NumbersWidget> {
   @override
   Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: <Widget>[
-      buildButton(context, '4.8', 'Ranking'),
-      buildDivider(),
-      buildButton(context, '35', 'Following'),
-      buildDivider(),
-      buildButton(context, '50', 'Followers'),
-    ],
-  );
-  Widget buildDivider() => Container(
-    height: 24,
-    child: VerticalDivider(),
-  );
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          buildButton(context, widget.userProfile?.ranking.toString() ?? "0", 'Ranking'),
+          buildDivider(),
+          buildButton(
+              context, widget.userProfile?.following.toString() ?? "0", 'Following'),
+          buildDivider(),
+          buildButton(
+              context, widget.userProfile?.followers.toString() ?? "0", 'Followers'),
+        ],
+      );
 
-  Widget buildButton(BuildContext context, String value, String text) =>
-      MaterialButton(
-        padding: EdgeInsets.symmetric(vertical: 4),
+  Widget buildDivider() => Container(
+        height: 24,
+        child: const VerticalDivider(),
+      );
+
+  Widget buildButton(BuildContext context, String value, String text) => MaterialButton(
+        padding: const EdgeInsets.symmetric(vertical: 4),
         onPressed: () {},
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         child: Column(
