@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
+import 'package:projet_lepl1509_groupe_17/components/review/movie_page.dart';
 import 'package:projet_lepl1509_groupe_17/models/review.dart';
-import 'package:projet_lepl1509_groupe_17/pages/home/create_review_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               ElevatedButton(
                   onPressed: () {
-                    Get.to(() => const CreateReviewPage());
+                    Get.to(() => const MoviePage());
                   },
                   child: const Text('Create review')),
               Expanded(
@@ -93,7 +93,9 @@ class _HomePageState extends State<HomePage> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Text(review.comment ?? "No comment..."),
+                                        Flexible(
+                                            child:
+                                                Text(review.comment ?? "No comment...")),
                                         const Spacer(),
                                         const Icon(Icons.star,
                                             color: Colors.orangeAccent, size: 15),
