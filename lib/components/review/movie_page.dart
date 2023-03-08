@@ -1,6 +1,7 @@
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:get/get.dart';
 
 class MoviePage extends StatefulWidget {
   const MoviePage({super.key});
@@ -57,20 +58,35 @@ class BsbForm extends StatefulWidget {
 }
 
 class _BsbFormState extends State<BsbForm> {
-  final commentKey = GlobalKey<FormState>();
+  // final commentKey = GlobalKey<FormState>();
+
+  final ReviewPagesController reviewPagesController = Get.put(ReviewPagesController());
 
   String comment = "";
-  double rating = 0;
-  double storyRating = 0;
-  double lengthRating = 0;
-  double actingRating = 0;
+  // double rating = 0;
+  // double storyRating = 0;
+  // double lengthRating = 0;
+  // double actingRating = 0;
+
+  TextEditingController commentController = TextEditingController();
+  bool _validate = false;
+
+  @override
+  void dispose() {
+    commentController.dispose();
+    reviewPagesController.actingRating.value = 0;
+    reviewPagesController.lengthRating.value = 0;
+    reviewPagesController.storyRating.value = 0;
+    reviewPagesController.rating.value = 0;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
-        mainAxisSize: MainAxisSize.max,
+        // mainAxisSize: MainAxisSize.max,
         children: [
           Align(
             alignment: Alignment.topRight,
@@ -80,48 +96,43 @@ class _BsbFormState extends State<BsbForm> {
             ),
           ),
           Expanded(
-            child: Form(
-              key: commentKey,
-              child: Scaffold(
-                backgroundColor: Colors.transparent,
-                body: Swiper(
-                  itemCount: 4,
-                  pagination: SwiperPagination(
-                    builder: DotSwiperPaginationBuilder(
-                        space: 4,
-                        size: 5,
-                        activeSize: 6,
-                        activeColor:
-                            Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceVariant
-                            .withOpacity(0.5)),
-                  ),
-                  control: SwiperControl(
-                      size: 15,
-                      padding: const EdgeInsets.all(5),
-                      iconNext: Icons.arrow_forward_ios,
-                      iconPrevious: Icons.arrow_back_ios,
-                      disableColor:
-                          Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)),
-                  loop: false,
-                  itemBuilder: (BuildContext context, int index) {
-                    switch (index) {
-                      case 0:
-                        return buildOverallRating();
-                      case 1:
-                        return buildCommentRating();
-                      case 2:
-                        return buildLengthAndActorRating();
-                      case 3:
-                        return buildSubmitPage();
-                      default:
-                        return buildOverallRating();
-                    }
-                  },
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              backgroundColor: Colors.transparent,
+              body: Swiper(
+                itemCount: 4,
+                pagination: SwiperPagination(
+                  builder: DotSwiperPaginationBuilder(
+                      space: 4,
+                      size: 5,
+                      activeSize: 6,
+                      activeColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                      color:
+                          Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5)),
                 ),
+                control: SwiperControl(
+                    size: 15,
+                    padding: const EdgeInsets.all(5),
+                    iconNext: Icons.arrow_forward_ios,
+                    iconPrevious: Icons.arrow_back_ios,
+                    disableColor:
+                        Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)),
+                loop: false,
+                itemBuilder: (BuildContext context, int index) {
+                  switch (index) {
+                    case 0:
+                      return buildOverallRating();
+                    case 1:
+                      return buildCommentRating();
+                    case 2:
+                      return buildLengthAndActorRating();
+                    case 3:
+                      return buildSubmitPage();
+                    default:
+                      return buildOverallRating();
+                  }
+                },
               ),
             ),
           ),
@@ -141,8 +152,8 @@ class _BsbFormState extends State<BsbForm> {
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("How would you rate this movie?"),
             const SizedBox(height: 10),
-            RatingBar(
-                initialRating: 0,
+            Obx(() => RatingBar(
+                initialRating: reviewPagesController.rating.value,
                 direction: Axis.horizontal,
                 allowHalfRating: true,
                 itemCount: 5,
@@ -158,31 +169,33 @@ class _BsbFormState extends State<BsbForm> {
                     )),
                 onRatingUpdate: (value) {
                   setState(() {
-                    rating = value;
+                    reviewPagesController.rating.value = value;
                   });
-                }),
+                })),
             const SizedBox(height: 20),
             const Text("How engaging was the story?"),
-            RatingBar(
-                initialRating: 0,
-                direction: Axis.horizontal,
-                allowHalfRating: true,
-                itemCount: 5,
-                ratingWidget: RatingWidget(
-                    full: const Icon(Icons.star, color: Colors.orangeAccent),
-                    half: const Icon(
-                      Icons.star_half,
-                      color: Colors.orangeAccent,
-                    ),
-                    empty: const Icon(
-                      Icons.star_outline,
-                      color: Colors.orangeAccent,
-                    )),
-                onRatingUpdate: (value) {
-                  setState(() {
-                    actingRating = value;
-                  });
-                }),
+            Obx(
+              () => RatingBar(
+                  initialRating: reviewPagesController.storyRating.value,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  ratingWidget: RatingWidget(
+                      full: const Icon(Icons.star, color: Colors.orangeAccent),
+                      half: const Icon(
+                        Icons.star_half,
+                        color: Colors.orangeAccent,
+                      ),
+                      empty: const Icon(
+                        Icons.star_outline,
+                        color: Colors.orangeAccent,
+                      )),
+                  onRatingUpdate: (value) {
+                    setState(() {
+                      reviewPagesController.storyRating.value = value;
+                    });
+                  }),
+            ),
           ],
         ),
       ),
@@ -200,21 +213,24 @@ class _BsbFormState extends State<BsbForm> {
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("Write a review for this movie"),
             const SizedBox(height: 15),
-            TextFormField(
+            TextField(
+              controller: commentController,
               keyboardType: TextInputType.multiline,
               maxLines: null,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
                 labelText: 'Comment',
                 hintText: 'Enter your comment',
+                errorText: _validate ? 'Comment Can\'t Be Empty' : null,
               ),
               minLines: 3,
-              validator: (value) {
-                print(value);
-                print(value!.isEmpty);
-                return value!.isEmpty ? 'Comment can\'t be empty' : null;
+              onChanged: (value) {
+                setState(() {
+                  comment = value;
+                });
               },
-              onSaved: (value) => comment = value!.trim(),
+              autofocus: false,
+              onTapOutside: (ev) => FocusScope.of(context).unfocus(),
             ),
           ],
         ),
@@ -234,30 +250,32 @@ class _BsbFormState extends State<BsbForm> {
             const Text("How satisfied were you with the film’s duration and cast?"),
             const SizedBox(height: 10),
             const Text("Cast and characters"),
-            RatingBar(
-                initialRating: 0,
-                direction: Axis.horizontal,
-                allowHalfRating: true,
-                itemCount: 5,
-                ratingWidget: RatingWidget(
-                    full: const Icon(Icons.star, color: Colors.orangeAccent),
-                    half: const Icon(
-                      Icons.star_half,
-                      color: Colors.orangeAccent,
-                    ),
-                    empty: const Icon(
-                      Icons.star_outline,
-                      color: Colors.orangeAccent,
-                    )),
-                onRatingUpdate: (value) {
-                  setState(() {
-                    actingRating = value;
-                  });
-                }),
+            Obx(
+              () => RatingBar(
+                  initialRating: reviewPagesController.actingRating.value,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  ratingWidget: RatingWidget(
+                      full: const Icon(Icons.star, color: Colors.orangeAccent),
+                      half: const Icon(
+                        Icons.star_half,
+                        color: Colors.orangeAccent,
+                      ),
+                      empty: const Icon(
+                        Icons.star_outline,
+                        color: Colors.orangeAccent,
+                      )),
+                  onRatingUpdate: (value) {
+                    setState(() {
+                      reviewPagesController.actingRating.value = value;
+                    });
+                  }),
+            ),
             const SizedBox(height: 10),
             const Text("Duration and pace"),
             RatingBar(
-                initialRating: 0,
+                initialRating: reviewPagesController.lengthRating.value,
                 direction: Axis.horizontal,
                 allowHalfRating: true,
                 itemCount: 5,
@@ -273,7 +291,7 @@ class _BsbFormState extends State<BsbForm> {
                     )),
                 onRatingUpdate: (value) {
                   setState(() {
-                    lengthRating = value;
+                    reviewPagesController.lengthRating.value = value;
                   });
                 }),
           ],
@@ -306,13 +324,24 @@ class _BsbFormState extends State<BsbForm> {
               width: double.infinity,
               child: FilledButton.tonal(
                 onPressed: () {
-                  final form = commentKey.currentState;
-                  if (form!.validate() && comment != "") {
-                    form.save();
+                  setState(() {
+                    commentController.text.isEmpty ? _validate = true : _validate = false;
+                  });
+                  // FormState? form = commentKey.currentState;
+                  if (comment != "") {
+                    // form.save();
                     print("Comment: $comment");
-                    print("Rating: $rating");
-                    print("Acting Rating: $actingRating");
-                    print("Length Rating: $lengthRating");
+                    print("Rating: ${reviewPagesController.rating}");
+                    print("Acting Rating: ${reviewPagesController.actingRating}");
+                    print("Length Rating: ${reviewPagesController.lengthRating}");
+
+                    Get.back();
+
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      margin: EdgeInsets.all(10),
+                      content: Text("Submitted successfully"),
+                    ));
                   } else {
                     // show an error message
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -330,4 +359,11 @@ class _BsbFormState extends State<BsbForm> {
       ),
     );
   }
+}
+
+class ReviewPagesController extends GetxController {
+  RxDouble rating = 0.0.obs;
+  RxDouble storyRating = 0.0.obs;
+  RxDouble lengthRating = 0.0.obs;
+  RxDouble actingRating = 0.0.obs;
 }
