@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
 import 'package:projet_lepl1509_groupe_17/components/review/movie_page.dart';
 import 'package:projet_lepl1509_groupe_17/models/review.dart';
+import 'package:projet_lepl1509_groupe_17/pages/search/search_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -24,6 +25,13 @@ class _HomePageState extends State<HomePage> {
       drawer: const DrawerComponent(),
       appBar: AppBar(
         title: const Text('MovieGram'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Get.to(() => const SearchPage());
+              },
+              icon: const Icon(Icons.search))
+        ],
       ),
       body: Center(
         child: Container(
@@ -44,9 +52,10 @@ class _HomePageState extends State<HomePage> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        child:
-                            Text("Most recent reviews", style: TextStyle(fontSize: 20)),
+                        padding:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                        child: Text("Most recent reviews",
+                            style: TextStyle(fontSize: 20)),
                       ),
                       StreamBuilder(
                           stream: FirebaseFirestore.instance
@@ -59,8 +68,8 @@ class _HomePageState extends State<HomePage> {
                                   itemCount: snapshot.data.docs.length,
                                   itemBuilder: (context, index) {
                                     // get the review from the snapshot
-                                    Review review =
-                                        Review.fromMap(snapshot.data.docs[index].data());
+                                    Review review = Review.fromMap(
+                                        snapshot.data.docs[index].data());
 
                                     // return a tile for each review
                                     return ListTile(
@@ -70,7 +79,8 @@ class _HomePageState extends State<HomePage> {
                                               fit: BoxFit.contain,
                                             )
                                           : const Icon(Icons.movie,
-                                              size: 35), // TODO: add placeholder image
+                                              size:
+                                                  35), // TODO: add placeholder image
                                       title: RichText(
                                         text: TextSpan(
                                           text: review.title,
@@ -84,7 +94,8 @@ class _HomePageState extends State<HomePage> {
                                             TextSpan(
                                                 text: ' - ${review.username}',
                                                 style: TextStyle(
-                                                    fontWeight: FontWeight.normal,
+                                                    fontWeight:
+                                                        FontWeight.normal,
                                                     color: Theme.of(context)
                                                         .textTheme
                                                         .bodyLarge
@@ -94,8 +105,10 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       isThreeLine: true,
                                       subtitle: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Expanded(
@@ -104,14 +117,17 @@ class _HomePageState extends State<HomePage> {
                                             softWrap: true,
                                           )),
                                           const Icon(Icons.star,
-                                              color: Colors.orangeAccent, size: 15),
-                                          Text(review.rating.toString() ?? "No rating"),
+                                              color: Colors.orangeAccent,
+                                              size: 15),
+                                          Text(review.rating.toString() ??
+                                              "No rating"),
                                         ],
                                       ),
                                     );
                                   });
                             } else {
-                              return const Center(child: CircularProgressIndicator());
+                              return const Center(
+                                  child: CircularProgressIndicator());
                             }
                           }),
                     ],
