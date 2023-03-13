@@ -8,6 +8,8 @@ import 'package:projet_lepl1509_groupe_17/pages/auth/auth_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/home_page.dart';
 import 'package:splashscreen/splashscreen.dart';
 
+const String themoviedbApi = "***REMOVED***";
+
 ColorScheme? lightColorScheme;
 ColorScheme? darkColorScheme;
 
