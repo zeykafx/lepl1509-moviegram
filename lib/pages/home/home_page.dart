@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
+import 'package:projet_lepl1509_groupe_17/components/slidable_movie_list/slidable_movie_list.dart';
 import 'package:projet_lepl1509_groupe_17/models/movies.dart';
 import 'package:projet_lepl1509_groupe_17/models/review.dart';
 import 'package:projet_lepl1509_groupe_17/models/search_movie.dart';
@@ -45,6 +46,11 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.max,
               children: [
+                const SlidableMovieList(
+                  size: 250,
+                  type: SlidableMovieListType.now_playing,
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                   child: Text("Most recent reviews", style: TextStyle(fontSize: 20)),

@@ -58,16 +58,14 @@ class _BsbFormState extends State<BsbForm> {
                       size: 5,
                       activeSize: 6,
                       activeColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                      color:
-                          Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5)),
+                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5)),
                 ),
                 control: SwiperControl(
                     size: 15,
                     padding: const EdgeInsets.all(5),
                     iconNext: Icons.arrow_forward_ios,
                     iconPrevious: Icons.arrow_back_ios,
-                    disableColor:
-                        Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                    disableColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)),
                 loop: false,
                 itemBuilder: (BuildContext context, int index) {
@@ -99,8 +97,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Rate this movie",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Rate this movie", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("How would you rate this movie?"),
             const SizedBox(height: 10),
             Obx(() => RatingBar(
@@ -160,8 +157,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Share your opinion",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Share your opinion", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("Write a review for this movie"),
             const SizedBox(height: 15),
             TextField(
@@ -196,8 +192,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Share your feedback (optional)",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Share your feedback (optional)", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("How satisfied were you with the film’s duration and cast?"),
             const SizedBox(height: 10),
             const Text("Cast and characters"),
@@ -258,8 +253,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Ready to publish your review?",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Ready to publish your review?", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("You can edit or delete it later if you change your mind."),
             const SizedBox(height: 50),
             SizedBox(
@@ -280,8 +274,7 @@ class _BsbFormState extends State<BsbForm> {
                   });
                   if (comment != "") {
                     await FirebaseFirestore.instance.collection('reviews').add({
-                      'username':
-                          FirebaseAuth.instance.currentUser?.displayName ?? "Anonymous",
+                      'username': FirebaseAuth.instance.currentUser?.displayName ?? "Anonymous",
                       'comment': comment,
                       'rating': reviewPagesController.rating.value,
                       'actingRating': reviewPagesController.actingRating.value,
@@ -296,7 +289,7 @@ class _BsbFormState extends State<BsbForm> {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       behavior: SnackBarBehavior.floating,
                       margin: EdgeInsets.all(10),
-                      content: Text("Submitted successfully"),
+                      content: Text("Submitted successfully!"),
                     ));
                   } else {
                     // show an error message
