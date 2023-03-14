@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -89,8 +88,7 @@ class _DrawerState extends State<DrawerComponent> {
               // user header with profile picture
               DrawerHeader(
                 child: InkWell(
-                  onTap: () =>
-                      Get.to(() => const ProfilePage(), transition: Transition.fadeIn),
+                  onTap: () => Get.to(() => const ProfilePage(), transition: Transition.fadeIn),
                   child: Column(
                     children: [
                       Padding(
@@ -155,13 +153,25 @@ class _DrawerState extends State<DrawerComponent> {
                   children: [
                     ListTile(
                       onTap: () {
+                        Get.changeThemeMode(Get.isDarkMode ? ThemeMode.light : ThemeMode.dark);
+                      },
+                      leading: Get.isDarkMode
+                          ? const Icon(
+                              Icons.light_mode,
+                              size: 20,
+                            )
+                          : const Icon(Icons.dark_mode, size: 20),
+                      dense: true,
+                      title: Get.isDarkMode ? const Text('Enable Light Mode') : const Text('Enable Dark Mode'),
+                    ),
+                    ListTile(
+                      onTap: () {
                         // log out the user
                         showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
                                   title: const Text('Log out'),
-                                  content:
-                                      const Text('Are you sure you want to log out?'),
+                                  content: const Text('Are you sure you want to log out?'),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Get.back(),
@@ -184,24 +194,6 @@ class _DrawerState extends State<DrawerComponent> {
                       dense: true,
                       title: const Text('Log out'),
                     ),
-                    ListTile(
-                        onTap: () {
-                          Get.changeThemeMode(
-                              Get.isDarkMode ? ThemeMode.light : ThemeMode.dark);
-                          // Get.changeTheme(Get.isDarkMode
-                          //     ? lightTheme(lightColorScheme)
-                          //     : darkTheme(darkColorScheme));
-                        },
-                        leading: Get.isDarkMode
-                            ? const Icon(
-                                Icons.light_mode,
-                                size: 20,
-                              )
-                            : const Icon(Icons.dark_mode, size: 20),
-                        dense: true,
-                        title: Get.isDarkMode
-                            ? const Text('Enable Light Mode')
-                            : const Text('Enable Dark Mode')),
                   ],
                 ),
               ),

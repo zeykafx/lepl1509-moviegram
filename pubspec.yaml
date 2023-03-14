@@ -54,6 +54,8 @@ dependencies:
   path: ^1.8.3
   image_picker: ^0.8.6+4
   card_swiper: ^2.0.4
+  draggable_bottom_sheet: ^1.0.2
+  interactive_bottom_sheet: ^0.1.2
 
 dev_dependencies:
   flutter_test:

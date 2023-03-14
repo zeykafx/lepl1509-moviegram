@@ -1,72 +1,23 @@
 import 'package:card_swiper/card_swiper.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
-
-class MoviePage extends StatefulWidget {
-  const MoviePage({super.key});
-
-  @override
-  _MoviePageState createState() => _MoviePageState();
-}
-
-class _MoviePageState extends State<MoviePage> {
-  bool isFocused = false;
-
-  @override
-  Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    return Scaffold(
-        appBar: AppBar(title: const Text('Movie')),
-        body: Column(
-          children: [
-            ElevatedButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    isDismissible: false,
-                    builder: (context) {
-                      return GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom),
-                          child: SizedBox(
-                              width: size.width,
-                              height: size.height < 800
-                                  ? size.height * 0.60
-                                  : size.height * 0.40,
-                              child: BsbForm()),
-                        ),
-                      );
-                    },
-                  );
-                },
-                child: const Text("Show modal sheet"))
-          ],
-        ));
-  }
-}
+import 'package:projet_lepl1509_groupe_17/models/movies.dart';
 
 class BsbForm extends StatefulWidget {
-  BsbForm({Key? key}) : super(key: key);
+  final Movie movie;
+  BsbForm({Key? key, required this.movie}) : super(key: key);
 
   @override
   State<BsbForm> createState() => _BsbFormState();
 }
 
 class _BsbFormState extends State<BsbForm> {
-  // final commentKey = GlobalKey<FormState>();
-
   final ReviewPagesController reviewPagesController = Get.put(ReviewPagesController());
 
   String comment = "";
-  // double rating = 0;
-  // double storyRating = 0;
-  // double lengthRating = 0;
-  // double actingRating = 0;
 
   TextEditingController commentController = TextEditingController();
   bool _validate = false;
@@ -74,6 +25,7 @@ class _BsbFormState extends State<BsbForm> {
   @override
   void dispose() {
     commentController.dispose();
+    // reset the controller's values
     reviewPagesController.actingRating.value = 0;
     reviewPagesController.lengthRating.value = 0;
     reviewPagesController.storyRating.value = 0;
@@ -86,7 +38,6 @@ class _BsbFormState extends State<BsbForm> {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
-        // mainAxisSize: MainAxisSize.max,
         children: [
           Align(
             alignment: Alignment.topRight,
@@ -107,16 +58,14 @@ class _BsbFormState extends State<BsbForm> {
                       size: 5,
                       activeSize: 6,
                       activeColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                      color:
-                          Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5)),
+                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5)),
                 ),
                 control: SwiperControl(
                     size: 15,
                     padding: const EdgeInsets.all(5),
                     iconNext: Icons.arrow_forward_ios,
                     iconPrevious: Icons.arrow_back_ios,
-                    disableColor:
-                        Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                    disableColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)),
                 loop: false,
                 itemBuilder: (BuildContext context, int index) {
@@ -148,8 +97,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Rate this movie",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Rate this movie", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("How would you rate this movie?"),
             const SizedBox(height: 10),
             Obx(() => RatingBar(
@@ -209,8 +157,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Share your opinion",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Share your opinion", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("Write a review for this movie"),
             const SizedBox(height: 15),
             TextField(
@@ -245,8 +192,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Share your feedback (optional)",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Share your feedback (optional)", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("How satisfied were you with the film’s duration and cast?"),
             const SizedBox(height: 10),
             const Text("Cast and characters"),
@@ -307,8 +253,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Ready to publish your review?",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Ready to publish your review?", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("You can edit or delete it later if you change your mind."),
             const SizedBox(height: 50),
             SizedBox(
@@ -323,24 +268,28 @@ class _BsbFormState extends State<BsbForm> {
             SizedBox(
               width: double.infinity,
               child: FilledButton.tonal(
-                onPressed: () {
+                onPressed: () async {
                   setState(() {
                     commentController.text.isEmpty ? _validate = true : _validate = false;
                   });
-                  // FormState? form = commentKey.currentState;
                   if (comment != "") {
-                    // form.save();
-                    print("Comment: $comment");
-                    print("Rating: ${reviewPagesController.rating}");
-                    print("Acting Rating: ${reviewPagesController.actingRating}");
-                    print("Length Rating: ${reviewPagesController.lengthRating}");
+                    await FirebaseFirestore.instance.collection('reviews').add({
+                      'username': FirebaseAuth.instance.currentUser?.displayName ?? "Anonymous",
+                      'comment': comment,
+                      'rating': reviewPagesController.rating.value,
+                      'actingRating': reviewPagesController.actingRating.value,
+                      'lengthRating': reviewPagesController.lengthRating.value,
+                      'storyRating': reviewPagesController.storyRating.value,
+                      "userID": FirebaseAuth.instance.currentUser!.uid,
+                      "movieID": widget.movie.id,
+                    });
 
                     Get.back();
 
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       behavior: SnackBarBehavior.floating,
                       margin: EdgeInsets.all(10),
-                      content: Text("Submitted successfully"),
+                      content: Text("Submitted successfully!"),
                     ));
                   } else {
                     // show an error message
@@ -361,6 +310,7 @@ class _BsbFormState extends State<BsbForm> {
   }
 }
 
+// Controller used to store the rating values in a more persistent way
 class ReviewPagesController extends GetxController {
   RxDouble rating = 0.0.obs;
   RxDouble storyRating = 0.0.obs;
