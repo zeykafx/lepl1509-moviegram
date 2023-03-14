@@ -3,11 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/pages/auth/auth_page.dart';
-import 'package:projet_lepl1509_groupe_17/pages/friends/friends_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/home_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
-import 'package:projet_lepl1509_groupe_17/pages/settings/settings_page.dart';
 
 import '../../models/user_profile.dart';
 
@@ -95,19 +93,21 @@ class _DrawerState extends State<DrawerComponent> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
                         child: ProfileWidget(
-                          imagePath: currentUser?.photoURL ??
-                              'http://www.gravatar.com/avatar/?d=mp',
+                          imagePath: currentUser?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
                           inDrawer: true,
-                          onClicked: () {Navigator.of(context).push(MaterialPageRoute(
-                            builder:
-                                (context) => ProfilePage(),
-                          ),
-                          ).then((_) {
-                            //setState(() {
-                            //  readUserData();
-                            //});
-                            Get.back();
-                          });
+                          onClicked: () {
+                            Navigator.of(context)
+                                .push(
+                              MaterialPageRoute(
+                                builder: (context) => ProfilePage(),
+                              ),
+                            )
+                                .then((_) {
+                              //setState(() {
+                              //  readUserData();
+                              //});
+                              // Get.back();
+                            });
                           },
                         ),
                       ),

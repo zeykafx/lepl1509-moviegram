@@ -55,7 +55,7 @@ class _MoviePageState extends State<MoviePage> {
         ),
         draggableAreaOptions: DraggableAreaOptions(
           topBorderRadius: 10,
-          height: 25,
+          height: 30,
           indicatorColor: Colors.grey,
           indicatorWidth: 20,
           backgroundColor: Theme.of(context).colorScheme.surface,
@@ -211,7 +211,7 @@ class _MoviePageState extends State<MoviePage> {
                             padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                             child: SizedBox(
                                 width: size.width,
-                                height: size.height < 800 ? size.height * 0.60 : size.height * 0.40,
+                                height: size.height < 800 ? size.height * 0.50 : size.height * 0.40,
                                 child: BsbForm(
                                   movie: movie!,
                                 )),

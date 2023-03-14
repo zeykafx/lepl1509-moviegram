@@ -59,76 +59,99 @@ class _HomePageState extends State<HomePage> {
                     stream: FirebaseFirestore.instance.collection('reviews').snapshots(),
                     builder: (context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
-                        return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: snapshot.data.docs.length,
-                            itemBuilder: (context, index) {
-                              // get the review from the snapshot
-                              Review review = Review.fromJson(snapshot.data.docs[index].data());
+                        return Expanded(
+                          child: ListView.builder(
+                              // shrinkWrap: true,
+                              itemCount: snapshot.data.docs.length,
+                              itemBuilder: (context, index) {
+                                // get the review from the snapshot
+                                Review review = Review.fromJson(snapshot.data.docs[index].data());
 
-                              // return a tile for each review
-                              return FutureBuilder(
-                                  future: Movie.getMovieDetails(review.movieID),
-                                  builder: (context, snapshot) {
-                                    return snapshot.hasData
-                                        ? ListTile(
-                                            onTap: () {
-                                              Get.to(() => MoviePage(
-                                                  movie: SearchMovie(
-                                                      id: review.movieID,
-                                                      title: snapshot.data!.title,
-                                                      posterPath: snapshot.data!.posterPath,
-                                                      releaseDate: snapshot.data!.releaseDate,
-                                                      voteAverage: snapshot.data!.voteAverage,
-                                                      overview: snapshot.data!.overview,
-                                                      backdropPath: snapshot.data!.backdropPath)));
-                                            },
-                                            leading: snapshot.data!.posterPath != null
-                                                ? Image.network(
-                                                    "https://image.tmdb.org/t/p/w500${snapshot.data!.posterPath}",
-                                                    fit: BoxFit.contain,
-                                                  )
-                                                : const Icon(Icons.movie, size: 35),
-                                            title: RichText(
-                                              text: TextSpan(
-                                                text: snapshot.data!.title,
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).textTheme.bodyLarge?.color),
-                                                children: <TextSpan>[
-                                                  TextSpan(
-                                                    text: ' - ${review.username}',
-                                                    style: TextStyle(
-                                                      fontWeight: FontWeight.normal,
-                                                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                                // return a tile for each review
+                                return FutureBuilder(
+                                    future: Movie.getMovieDetails(review.movieID),
+                                    builder: (context, snapshot) {
+                                      return snapshot.hasData
+                                          ? ListTile(
+                                              onTap: () {
+                                                Get.to(() => MoviePage(
+                                                    movie: SearchMovie(
+                                                        id: review.movieID,
+                                                        title: snapshot.data!.title,
+                                                        posterPath: snapshot.data!.posterPath,
+                                                        releaseDate: snapshot.data!.releaseDate,
+                                                        voteAverage: snapshot.data!.voteAverage,
+                                                        overview: snapshot.data!.overview,
+                                                        backdropPath: snapshot.data!.backdropPath)));
+                                                // showDialog(
+                                                //     context: context,
+                                                //     builder: (context) {
+                                                //       return Dialog(
+                                                //         child: Container(
+                                                //           constraints: const BoxConstraints(maxWidth: 700),
+                                                //           child: Column(
+                                                //             mainAxisSize: MainAxisSize.min,
+                                                //             children: [
+                                                //               Image.network(
+                                                //                 "https://image.tmdb.org/t/p/w500${snapshot.data!.posterPath}",
+                                                //                 fit: BoxFit.contain,
+                                                //               ),
+                                                //               Text(snapshot.data!.title),
+                                                //               Text(review.username),
+                                                //               Text(review.comment),
+                                                //             ],
+                                                //           ),
+                                                //         ),
+                                                //       );
+                                                //     });
+                                              },
+                                              leading: snapshot.data!.posterPath != null
+                                                  ? Image.network(
+                                                      "https://image.tmdb.org/t/p/w500${snapshot.data!.posterPath}",
+                                                      fit: BoxFit.contain,
+                                                    )
+                                                  : const Icon(Icons.movie, size: 35),
+                                              title: RichText(
+                                                text: TextSpan(
+                                                  text: snapshot.data!.title,
+                                                  style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Theme.of(context).textTheme.bodyLarge?.color),
+                                                  children: <TextSpan>[
+                                                    TextSpan(
+                                                      text: ' - ${review.username}',
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.normal,
+                                                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                                                      ),
                                                     ),
+                                                  ],
+                                                ),
+                                              ),
+                                              isThreeLine: true,
+                                              subtitle: Row(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  Expanded(
+                                                      child: Text(
+                                                    review.comment ?? "No comment...",
+                                                    softWrap: true,
+                                                  )),
+                                                  const Icon(
+                                                    Icons.star,
+                                                    color: Colors.orangeAccent,
+                                                    size: 15,
                                                   ),
+                                                  Text(review.rating.toString() ?? "No rating"),
                                                 ],
                                               ),
-                                            ),
-                                            isThreeLine: true,
-                                            subtitle: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Expanded(
-                                                    child: Text(
-                                                  review.comment ?? "No comment...",
-                                                  softWrap: true,
-                                                )),
-                                                const Icon(
-                                                  Icons.star,
-                                                  color: Colors.orangeAccent,
-                                                  size: 15,
-                                                ),
-                                                Text(review.rating.toString() ?? "No rating"),
-                                              ],
-                                            ),
-                                          )
-                                        : const Text("Loading...");
-                                  });
-                            });
+                                            )
+                                          : const Text("Loading...");
+                                    });
+                              }),
+                        );
                       } else {
                         return const Center(child: CircularProgressIndicator());
                       }
