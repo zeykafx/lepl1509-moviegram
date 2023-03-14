@@ -40,12 +40,11 @@ class ProfileWidget extends StatelessWidget {
   }
 
   Widget buildImage(double size) {
-    final image = NetworkImage(imagePath!);
 
     return ClipOval(
         child: Material(
             color: Colors.transparent,
-            child: Image.network(
+            child: imagePath == null ? CircularProgressIndicator() : Image.network(
               imagePath!,
               fit: BoxFit.cover,
               width: size,

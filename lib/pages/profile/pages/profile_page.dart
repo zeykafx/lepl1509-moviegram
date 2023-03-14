@@ -40,7 +40,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    var aboutInfo = AboutPreferences.myAboutInfo;
 
     return Scaffold(
       appBar: AppBar(
@@ -50,10 +49,17 @@ class _ProfilePageState extends State<ProfilePage> {
         physics: const BouncingScrollPhysics(),
         children: [
           ProfileWidget(
-            imagePath: currentUser?.photoURL,
+            imagePath: userProfile?.photoURL,
             inDrawer: false,
-            onClicked: () {
-              Get.to(() => EditProfilePage(), transition: Transition.circularReveal);
+            onClicked: () {Navigator.of(context).push(MaterialPageRoute(
+              builder:
+                  (context) => EditProfilePage(),
+            ),
+            ).then((_) {
+              setState(() {
+                readUserData();
+              });
+            });
             },
           ),
           const SizedBox(height: 10),
@@ -62,12 +68,12 @@ class _ProfilePageState extends State<ProfilePage> {
           Column(
             children: [
               Text(
-                '${currentUser?.displayName}',
+                userProfile?.name ?? "No name",
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
               ),
               const SizedBox(height: 4),
               Text(
-                '${currentUser?.email}',
+                userProfile?.email ?? "No email",
                 style: const TextStyle(color: Colors.grey),
               ),
             ],

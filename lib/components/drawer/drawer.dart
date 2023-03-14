@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,6 +9,8 @@ import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart'
 import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
 import 'package:projet_lepl1509_groupe_17/pages/settings/settings_page.dart';
 
+import '../../models/user_profile.dart';
+
 class DrawerComponent extends StatefulWidget {
   const DrawerComponent({super.key});
 
@@ -17,6 +20,24 @@ class DrawerComponent extends StatefulWidget {
 
 class _DrawerState extends State<DrawerComponent> {
   final DrawerPageController drawerPageController = Get.put(DrawerPageController());
+
+  var db = FirebaseFirestore.instance;
+
+  UserProfile? userProfile;
+
+  @override
+  void initState() {
+    super.initState();
+    readUserData();
+  }
+
+  Future<void> readUserData() async {
+    await db.collection('users').doc(currentUser?.uid).get().then((value) {
+      setState(() {
+        userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
+      });
+    });
+  }
 
   final List<Destination> destinations = [
     const Destination(
@@ -75,13 +96,19 @@ class _DrawerState extends State<DrawerComponent> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
                         child: ProfileWidget(
-                          imagePath: currentUser?.photoURL ??
+                          imagePath: userProfile?.photoURL ??
                               'http://www.gravatar.com/avatar/?d=mp',
                           inDrawer: true,
-                          onClicked: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => ProfilePage()),
-                            );
+                          onClicked: () {Navigator.of(context).push(MaterialPageRoute(
+                            builder:
+                                (context) => ProfilePage(),
+                          ),
+                          ).then((_) {
+                            //setState(() {
+                            //  readUserData();
+                            //});
+                            Get.back();
+                          });
                           },
                         ),
                       ),

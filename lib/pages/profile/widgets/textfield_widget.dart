@@ -50,6 +50,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
               border: OutlineInputBorder(),
             ),
             maxLines: widget.maxLines,
+            onChanged: widget.onChanged,
           ),
         ],
       );

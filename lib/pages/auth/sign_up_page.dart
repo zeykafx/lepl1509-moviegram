@@ -286,6 +286,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
           "email": _email,
           "uid": userId,
           "photoURL": user.user!.photoURL,
+          "name": _name,
           "createdAt": DateTime.now().millisecondsSinceEpoch,
           "updatedAt": DateTime.now().millisecondsSinceEpoch,
           "bio": "Hello I'm new here!",

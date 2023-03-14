@@ -1,12 +1,12 @@
 class UserProfile {
   final String? uid;
-  final String? name;
-  final String? email;
-  final String? photoURL;
-  final int followers;
-  final int following;
-  final int ranking;
-  final String bio;
+  String? name;
+  String? email;
+  String? photoURL;
+  int followers;
+  int following;
+  int ranking;
+  String? bio;
 
   UserProfile(this.followers, this.following, this.ranking, this.bio,
       {this.uid, this.name, this.email, this.photoURL});
@@ -17,5 +17,22 @@ class UserProfile {
         name: map['name'],
         email: map['email'],
         photoURL: map['photoURL']);
+  }
+
+  void updatePhotoURL(String photoURL) {
+    this.photoURL = photoURL;
+
+  }
+
+  void updateName(String name) {
+    this.name = name;
+  }
+
+  void updateBio(String bio) {
+    this.bio = bio;
+  }
+
+  void updateEmail(String email) {
+    this.email = email;
   }
 }
