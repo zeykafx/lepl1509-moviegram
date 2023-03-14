@@ -44,16 +44,16 @@ class _DrawerState extends State<DrawerComponent> {
       Icon(Icons.home),
       HomePage(),
     ),
-    const Destination(
-      "Friends",
-      Icon(Icons.people),
-      FriendsPage(),
-    ),
-    const Destination(
-      "Settings",
-      Icon(Icons.settings),
-      SettingsPage(),
-    ),
+    // const Destination(
+    //   "Friends",
+    //   Icon(Icons.people),
+    //   FriendsPage(),
+    // ),
+    // const Destination(
+    //   "Settings",
+    //   Icon(Icons.settings),
+    //   SettingsPage(),
+    // ),
   ];
 
   User? currentUser = FirebaseAuth.instance.currentUser;

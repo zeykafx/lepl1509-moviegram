@@ -80,7 +80,7 @@ class _MoviePageState extends State<MoviePage> {
             child: Column(
               children: [
                 _buildMovieInformation(context, size),
-                movie!.actors.length > 0
+                movie!.actors.isNotEmpty
                     ? Column(
                         children: [
                           Padding(
