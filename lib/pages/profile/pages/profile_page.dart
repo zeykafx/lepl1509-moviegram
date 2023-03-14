@@ -9,7 +9,6 @@ import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.d
 import '../widgets/numbers_widget.dart';
 import 'edit_profile_page.dart';
 
-User? currentUser = FirebaseAuth.instance.currentUser;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -21,6 +20,8 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   var db = FirebaseFirestore.instance;
 
+  User? currentUser = FirebaseAuth.instance.currentUser;
+
   UserProfile? userProfile;
 
   @override
@@ -31,10 +32,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // gets the user data from firestore
   Future<void> readUserData() async {
-    await db.collection('users').doc(currentUser?.uid).get().then((value) {
-      setState(() {
-        userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
-      });
+    var value = await db.collection('users').doc(currentUser?.uid).get();
+    await currentUser?.reload();
+    setState(() {
+      userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
     });
   }
 
@@ -49,7 +50,7 @@ class _ProfilePageState extends State<ProfilePage> {
         physics: const BouncingScrollPhysics(),
         children: [
           ProfileWidget(
-            imagePath: userProfile?.photoURL,
+            imagePath: currentUser?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
             inDrawer: false,
             onClicked: () {Navigator.of(context).push(MaterialPageRoute(
               builder:
@@ -68,12 +69,12 @@ class _ProfilePageState extends State<ProfilePage> {
           Column(
             children: [
               Text(
-                userProfile?.name ?? "No name",
+                currentUser?.displayName ?? "No name",
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
               ),
               const SizedBox(height: 4),
               Text(
-                userProfile?.email ?? "No email",
+                currentUser?.email ?? "No email",
                 style: const TextStyle(color: Colors.grey),
               ),
             ],

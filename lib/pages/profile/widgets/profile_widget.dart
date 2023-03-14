@@ -44,7 +44,7 @@ class ProfileWidget extends StatelessWidget {
     return ClipOval(
         child: Material(
             color: Colors.transparent,
-            child: imagePath == null ? CircularProgressIndicator() : Image.network(
+            child: Image.network(
               imagePath!,
               fit: BoxFit.cover,
               width: size,

@@ -95,7 +95,7 @@ class _DrawerState extends State<DrawerComponent> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
                         child: ProfileWidget(
-                          imagePath: userProfile?.photoURL ??
+                          imagePath: currentUser?.photoURL ??
                               'http://www.gravatar.com/avatar/?d=mp',
                           inDrawer: true,
                           onClicked: () {Navigator.of(context).push(MaterialPageRoute(

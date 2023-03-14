@@ -1,38 +1,23 @@
 class UserProfile {
   final String? uid;
-  String? name;
-  String? email;
-  String? photoURL;
   int followers;
   int following;
   int ranking;
   String? bio;
 
-  UserProfile(this.followers, this.following, this.ranking, this.bio,
-      {this.uid, this.name, this.email, this.photoURL});
+  UserProfile({this.uid, this.bio, required this.followers, required this.following, required this.ranking});
 
   static UserProfile fromMap(Map<String, dynamic> map) {
-    return UserProfile(map['followers'], map['following'], map['ranking'], map['bio'],
+    return UserProfile(
         uid: map['uid'],
-        name: map['name'],
-        email: map['email'],
-        photoURL: map['photoURL']);
-  }
-
-  void updatePhotoURL(String photoURL) {
-    this.photoURL = photoURL;
-
-  }
-
-  void updateName(String name) {
-    this.name = name;
+        bio: map['bio'],
+        followers: map['followers'],
+        following: map['following'],
+        ranking: map['ranking'],
+        );
   }
 
   void updateBio(String bio) {
     this.bio = bio;
-  }
-
-  void updateEmail(String email) {
-    this.email = email;
   }
 }

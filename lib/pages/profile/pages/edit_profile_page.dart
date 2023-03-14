@@ -17,7 +17,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../utils/about_preferences.dart';
 
-User? currentUser = FirebaseAuth.instance.currentUser;
 
 class EditProfilePage extends StatefulWidget {
   @override
@@ -29,10 +28,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   var db = FirebaseFirestore.instance;
 
+  User? currentUser = FirebaseAuth.instance.currentUser;
+
+
   String? _name;
   String? _bio;
   String? _photoURL;
-  String? _email;
 
 
   UserProfile? userProfile;
@@ -45,13 +46,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Future<void> readUserData() async {
     DocumentSnapshot<Map<String, dynamic>> value = await db.collection('users').doc(currentUser?.uid).get();
-    setState(() {
-      userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
-      _name = userProfile?.name;
-      _bio = userProfile?.bio;
-      _photoURL = userProfile?.photoURL;
-      _email = userProfile?.email;
-    });
+    userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
+    _name = currentUser?.displayName;
+    _bio = userProfile?.bio;
+    _photoURL = currentUser?.photoURL;
+    setState(() {});
   }
 
   firebase_storage.FirebaseStorage storage =
@@ -61,7 +60,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final ImagePicker _picker = ImagePicker();
 
   bool _change = false;
-
+  bool _loading = false;
 
 
   Future imgFromGallery() async {
@@ -92,13 +91,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Future uploadFile() async {
     if (_photo == null) return;
-    final fileName = basename(_photo!.path);
-    final destination = 'ProfilePics/$fileName';
+    final destination = 'ProfilePics/${currentUser?.uid}';
 
     try {
       final ref = firebase_storage.FirebaseStorage.instance
           .ref(destination)
           .child('image/');
+      setState(() {
+        _loading = true;
+      });
       await ref.putFile(_photo!);
     } catch (e) {
       print('error occured');
@@ -110,8 +111,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     setState(() {
       _change = true;
-      userProfile?.updatePhotoURL(url);
       _photoURL = url;
+      _loading = false;
     });
 
   }
@@ -122,26 +123,35 @@ class _EditProfilePageState extends State<EditProfilePage> {
       appBar: AppBar(
         title: const Text('Edit Profile'),
       ),
-      body: userProfile == null ? CircularProgressIndicator() : ListView(
+      body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 32),
         physics: const BouncingScrollPhysics(),
         children: [
-          ProfileWidget(
-            imagePath: userProfile?.photoURL,
-            inDrawer: false,
-            isEdit: true,
-            onClicked: () {
-              _showPicker(context);
-            },
+          Stack(
+            children: [
+              ProfileWidget(
+                imagePath: _photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
+                inDrawer: false,
+                isEdit: true,
+                onClicked: () {
+                  _showPicker(context);
+                },
+              ),
+              if (_loading)
+                const Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 24),
           TextFieldWidget(
             label: 'Full Name',
-            text: userProfile?.name,
+            text: _name ?? 'No Name',
             onChanged: (name) {
               setState(() {
-                currentUser?.updateDisplayName(name);
-                userProfile?.updateName(name);
                 _name = name;
                 _change = true;
               });
@@ -149,25 +159,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
           const SizedBox(height: 24),
           TextFieldWidget(
-            label: 'Email',
-            text: userProfile?.email,
-            onChanged: (email) {
-              currentUser?.updateEmail(email);
-              setState(() {
-                userProfile?.updateEmail(email);
-                _email = email;
-                _change = true;
-              });
-            },
-          ),
-          const SizedBox(height: 24),
-          TextFieldWidget(
             label: 'About',
-            text: userProfile?.bio,
+            text: userProfile?.bio ?? 'No Bio',
             maxLines: 5,
             onChanged: (about) {
               setState(() {
-                userProfile?.updateBio(about);
                 _bio = about;
                 _change = true;
               });
@@ -220,12 +216,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     if (_change == true){
       final db = FirebaseFirestore.instance;
 
+      currentUser?.updateDisplayName(_name);
+      currentUser?.updatePhotoURL(_photoURL);
       await db.collection('users').doc(currentUser?.uid).update({
-        'name': _name,
         'about': _bio,
-        'email': _email,
-        'photoURL': _photoURL,
-
       });
 
     }
