@@ -7,8 +7,6 @@ import 'package:projet_lepl1509_groupe_17/models/movies.dart';
 import 'package:projet_lepl1509_groupe_17/models/search_movie.dart';
 import 'package:projet_lepl1509_groupe_17/pages/movie/bsb_review_form.dart';
 
-User? currentUser = FirebaseAuth.instance.currentUser;
-
 class MoviePage extends StatefulWidget {
   final SearchMovie? movie;
 
@@ -21,6 +19,7 @@ class MoviePage extends StatefulWidget {
 class _MoviePageState extends State<MoviePage> {
   Movie? movie;
   bool gotMovieDetails = false;
+  User? currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {

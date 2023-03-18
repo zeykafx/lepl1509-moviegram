@@ -282,6 +282,9 @@ class _BsbFormState extends State<BsbForm> {
                       'storyRating': reviewPagesController.storyRating.value,
                       "userID": FirebaseAuth.instance.currentUser!.uid,
                       "movieID": widget.movie.id,
+                      "timestamp": DateTime.now().millisecondsSinceEpoch,
+                      "likes": [],
+                      "comments": []
                     });
 
                     Get.back();

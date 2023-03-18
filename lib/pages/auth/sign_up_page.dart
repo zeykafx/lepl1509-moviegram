@@ -75,17 +75,13 @@ class _SignUpPageState extends State<SignUpPage> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              Text("Create your account to get started!",
-                                  style: TextStyle(fontSize: 20)),
+                              Text("Create your account to get started!", style: TextStyle(fontSize: 20)),
                             ],
                           ).animate().fadeIn(duration: 500.ms).moveY(begin: -5),
                           const Padding(
                             padding: EdgeInsets.all(20.0),
                             child: EmailSignUp(),
-                          )
-                              .animate()
-                              .fadeIn(delay: 200.ms, duration: 500.ms)
-                              .moveY(begin: 2)
+                          ).animate().fadeIn(delay: 200.ms, duration: 500.ms).moveY(begin: 2)
                         ],
                       ),
                     ),
@@ -136,9 +132,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
               TextFormField(
                 keyboardType: TextInputType.name,
                 decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.person),
-                    border: OutlineInputBorder(),
-                    labelText: 'Name'),
+                    prefixIcon: Icon(Icons.person), border: OutlineInputBorder(), labelText: 'Name'),
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Please enter your name';
@@ -185,9 +179,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
               TextFormField(
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.email),
-                    border: OutlineInputBorder(),
-                    labelText: 'Email'),
+                    prefixIcon: Icon(Icons.email), border: OutlineInputBorder(), labelText: 'Email'),
                 validator: (value) => value!.isEmpty ? 'Email can\'t be empty' : null,
                 onSaved: (value) => _email = value!.trim(),
               ),
@@ -271,8 +263,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
       });
       String? userId = '';
       try {
-        UserCredential user = await _auth.createUserWithEmailAndPassword(
-            email: _email, password: _password);
+        UserCredential user = await _auth.createUserWithEmailAndPassword(email: _email, password: _password);
         userId = user.user?.uid;
 
         // update the user's display name and photo URL
@@ -285,7 +276,7 @@ class _EmailSignUpState extends State<EmailSignUp> {
         await db.collection("users").doc(userId).set({
           "email": _email,
           "uid": userId,
-          "photoURL": user.user!.photoURL,
+          "photoURL": photoURL,
           "name": _name,
           "createdAt": DateTime.now().millisecondsSinceEpoch,
           "updatedAt": DateTime.now().millisecondsSinceEpoch,
@@ -303,18 +294,17 @@ class _EmailSignUpState extends State<EmailSignUp> {
         print(e.toString());
         if (e is FirebaseAuthException) {
           if (e.code == 'invalid-email') {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('Your email address appears to be malformed.')));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('Your email address appears to be malformed.')));
           } else if (e.code == "email-already-in-use") {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content:
-                    Text('The email address is already in use by another account.')));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('The email address is already in use by another account.')));
           } else if (e.code == "weak-password") {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('The password must be 6 characters long or more.')));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('The password must be 6 characters long or more.')));
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Error: Invalid email or password')));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('Error: Invalid email or password')));
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
