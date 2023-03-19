@@ -68,6 +68,7 @@ class SearchPageState extends State<SearchPage> {
       setState(() {
         if (initialOpen) initialOpen = false;
         displayList = List.from(movies);
+        displayList.sort((a, b) => b.popularity.compareTo(a.popularity));
       });
     } else {
       print('Request failed with status: ${response.statusCode}.');
@@ -121,7 +122,8 @@ class SearchPageState extends State<SearchPage> {
                   )
                 : displayList.isEmpty
                     ? const Center(
-                        child: Text("No results found", style: TextStyle(fontSize: 20)),
+                        child: Text("No results found",
+                            style: TextStyle(fontSize: 20)),
                       )
                     : Column(
                         mainAxisSize: MainAxisSize.max,
@@ -140,7 +142,9 @@ class SearchPageState extends State<SearchPage> {
                                           ? Container(
                                               decoration: const BoxDecoration(
                                                 borderRadius: BorderRadius.only(
-                                                    topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                                                    topLeft: Radius.circular(8),
+                                                    bottomLeft:
+                                                        Radius.circular(8)),
                                               ),
                                               clipBehavior: Clip.antiAlias,
                                               child: Image.network(
@@ -150,7 +154,8 @@ class SearchPageState extends State<SearchPage> {
                                               ),
                                             )
                                           : const Padding(
-                                              padding: EdgeInsets.fromLTRB(15, 20, 10, 20),
+                                              padding: EdgeInsets.fromLTRB(
+                                                  15, 20, 10, 20),
                                               child: Icon(Icons.movie),
                                             ),
                                       const SizedBox(
@@ -158,11 +163,13 @@ class SearchPageState extends State<SearchPage> {
                                       ),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               movie.title,
-                                              style: const TextStyle(fontWeight: FontWeight.bold),
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
                                             ),
                                             const SizedBox(
                                               height: 5.0,

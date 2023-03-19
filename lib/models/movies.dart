@@ -15,6 +15,7 @@ class Movie {
   final int budget;
   final int revenue;
   final int runtime;
+  final double popularity;
   List<Actor> actors = [];
 
   Movie({
@@ -28,6 +29,7 @@ class Movie {
     required this.budget,
     required this.revenue,
     required this.runtime,
+    required this.popularity,
   });
 
   static Future<List<Actor>> getActors(int id) async {
@@ -80,6 +82,7 @@ class Movie {
       budget: json['budget'],
       revenue: json['revenue'],
       runtime: json['runtime'],
+      popularity: json['popularity'],
     );
   }
 }

@@ -6,6 +6,7 @@ class SearchMovie {
   final String overview;
   final double voteAverage;
   final String releaseDate;
+  final double popularity;
 
   SearchMovie({
     required this.id,
@@ -15,6 +16,7 @@ class SearchMovie {
     required this.overview,
     required this.voteAverage,
     required this.releaseDate,
+    required this.popularity,
   });
 
   factory SearchMovie.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,7 @@ class SearchMovie {
       overview: json['overview'],
       voteAverage: json['vote_average'].toDouble(),
       releaseDate: json['release_date'],
+      popularity: json['popularity'],
     );
   }
 }
