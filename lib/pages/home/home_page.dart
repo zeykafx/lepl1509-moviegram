@@ -67,8 +67,7 @@ class _HomePageState extends State<HomePage> {
                   child: Text("Most recent reviews", style: TextStyle(fontSize: 20)),
                 ),
                 FutureBuilder(
-                    future:
-                        FirebaseFirestore.instance.collection('reviews').orderBy('timestamp', descending: false).get(),
+                    future: FirebaseFirestore.instance.collection('reviews').orderBy('timestamp', descending: false).get(),
                     builder: (context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
                         return Expanded(
