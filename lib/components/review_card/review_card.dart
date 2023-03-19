@@ -400,19 +400,13 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
                         }
                       },
                       icon: Icon(
-                        review!.likes.any((element) => element.uid == widget.user!.uid)
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: review!.likes.any((element) => element.uid == widget.user!.uid)
-                            ? Colors.red
-                            : Theme.of(context).dividerColor,
+                        review!.likes.any((element) => element.uid == widget.user!.uid) ? Icons.favorite : Icons.favorite_border,
+                        color: review!.likes.any((element) => element.uid == widget.user!.uid) ? Colors.red : Theme.of(context).dividerColor,
                       ),
                       label: Text(
                         review!.likes.length.toString(),
                         style: TextStyle(
-                          color: review!.likes.any((element) => element.uid == widget.user!.uid)
-                              ? Colors.red
-                              : Theme.of(context).dividerColor,
+                          color: review!.likes.any((element) => element.uid == widget.user!.uid) ? Colors.red : Theme.of(context).dividerColor,
                           fontSize: 15,
                         ),
                       ),
@@ -490,7 +484,7 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
             children: [
               ClipOval(
                 child: Image.network(
-                  currentUser?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
+                  currentUser?.photoURL != null ? currentUser!.photoURL! : 'http://www.gravatar.com/avatar/?d=mp',
                   width: 35,
                   height: 35,
                   fit: BoxFit.cover,
@@ -671,10 +665,8 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SkeletonAvatar(
-                    style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
-                SkeletonAvatar(
-                    style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
+                SkeletonAvatar(style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
+                SkeletonAvatar(style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
               ],
             ),
             SkeletonParagraph(

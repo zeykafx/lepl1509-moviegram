@@ -22,15 +22,13 @@ class UserProfile {
   static UserProfile fromMap(Map<String, dynamic> map) {
     return UserProfile(
       uid: map['uid'],
-      bio: map['bio'],
-      followers: map['followers'],
-      following: map['following'],
-      ranking: map['ranking'],
-      photoURL: map['photoURL'] != ""
-          ? map['photoURL'] ?? 'http://www.gravatar.com/avatar/?d=mp'
-          : 'http://www.gravatar.com/avatar/?d=mp',
-      name: map['name'],
-      email: map['email'],
+      bio: map['bio'] ?? "No Bio",
+      followers: map['followers'] ?? 0,
+      following: map['following'] ?? 0,
+      ranking: map['ranking'] ?? 0,
+      photoURL: map['photoURL'] != "" ? map['photoURL'] ?? 'http://www.gravatar.com/avatar/?d=mp' : 'http://www.gravatar.com/avatar/?d=mp',
+      name: map['name'] ?? 'No Name',
+      email: map['email'] ?? 'No Email',
     );
   }
 
