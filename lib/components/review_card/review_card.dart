@@ -266,7 +266,7 @@ class _ReviewCardState extends State<ReviewCard>
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 15),
+                    const Icon(Icons.reviews, size: 15),
                     const SizedBox(width: 5),
                     Text(
                       "${movie.voteAverage.toStringAsPrecision(2)}/10",
@@ -718,6 +718,7 @@ class _ReviewCardState extends State<ReviewCard>
 
             const SizedBox(height: 10),
             Row(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SkeletonAvatar(
@@ -746,7 +747,7 @@ class _ReviewCardState extends State<ReviewCard>
             ),
             const SizedBox(height: 10),
             Row(
-              mainAxisSize: MainAxisSize.max,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const SkeletonAvatar(
                   style: SkeletonAvatarStyle(
@@ -758,7 +759,7 @@ class _ReviewCardState extends State<ReviewCard>
                 const SizedBox(width: 8),
                 SkeletonAvatar(
                     style: SkeletonAvatarStyle(
-                        width: MediaQuery.of(context).size.width / 2,
+                        width: MediaQuery.of(context).size.width / 3,
                         height: 30)),
               ],
             ),

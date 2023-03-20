@@ -97,20 +97,30 @@ class _MoviePageState extends State<MoviePage> {
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // MOVIE INFO
                 _buildMovieInformation(context, size),
+
+                // Watch now
+                const SizedBox(height: 20),
+                _buildProviders(),
+
+                // ACTORS
+                const SizedBox(height: 20),
                 movie!.actors.isNotEmpty
                     ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text(
-                              'Actors',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
-                                  ?.copyWith(fontSize: 18.0),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
                             ),
+                            child: Text('Actors',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                )),
                           ),
                           SizedBox.fromSize(
                             size: const Size.fromHeight(140),
@@ -206,16 +216,6 @@ class _MoviePageState extends State<MoviePage> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          const Text(
-            "Watch now",
-            style: TextStyle(
-              color: Colors.amber,
-              fontSize: 24,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(children: _buildProviders()),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -336,28 +336,53 @@ class _MoviePageState extends State<MoviePage> {
     );
   }
 
-  List<Widget> _buildProviders() {
-    return providers.map((provider) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.network(
-              "https://image.tmdb.org/t/p/w500/${provider.logoPath}",
-              width: 70,
-              fit: BoxFit.contain,
+  Widget _buildProviders() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Watch now",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
             ),
-            SizedBox(
-              child: Text(
-                provider.name,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
-                overflow: TextOverflow.clip,
-              ),
-            )
-          ],
-        ),
-      );
-    }).toList();
+          ),
+          const SizedBox(height: 20),
+          SizedBox.fromSize(
+            size: const Size.fromHeight(90),
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: providers.map((provider) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(7, 0, 7, 0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ClipOval(
+                        child: Image.network(
+                          "https://image.tmdb.org/t/p/w500/${provider.logoPath}",
+                          width: 70,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      SizedBox(
+                        child: Text(
+                          provider.name,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall,
+                          overflow: TextOverflow.clip,
+                        ),
+                      )
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
