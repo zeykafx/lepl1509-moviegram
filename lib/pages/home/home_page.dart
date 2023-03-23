@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
 import 'package:projet_lepl1509_groupe_17/components/review_card/review_card.dart';
 import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
+import 'package:projet_lepl1509_groupe_17/pages/home/home_feed.dart';
 import 'package:projet_lepl1509_groupe_17/pages/search/search_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -51,47 +52,9 @@ class _HomePageState extends State<HomePage> {
       body: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 700),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                // const SlidableMovieList(
-                //   size: 250,
-                //   type: SlidableMovieListType.now_playing,
-                //   padding: EdgeInsets.symmetric(horizontal: 8.0),
-                // ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                  child: Text("Most recent reviews", style: TextStyle(fontSize: 20)),
-                ),
-                FutureBuilder(
-                    future: FirebaseFirestore.instance.collection('reviews').orderBy('timestamp', descending: true).get(),
-                    builder: (context, AsyncSnapshot snapshot) {
-                      if (snapshot.hasData) {
-                        print("userProfile: ");
-                        print(userProfile?.name);
-                        return Expanded(
-                          child: ListView.builder(
-                              shrinkWrap: true,
-                              cacheExtent: 20,
-                              addAutomaticKeepAlives: true,
-                              itemCount: snapshot.data.docs.length,
-                              itemBuilder: (context, index) {
-                                return ReviewCard(
-                                  id: snapshot.data.docs[index].id,
-                                  data: snapshot.data.docs[index].data(),
-                                  user: userProfile,
-                                );
-                              }),
-                        );
-                      } else {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                    }),
-              ],
-            ),
+          child: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: HomeFeed(),
           ),
         ),
       ),

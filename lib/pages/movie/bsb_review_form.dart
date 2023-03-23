@@ -273,6 +273,30 @@ class _BsbFormState extends State<BsbForm> {
                     commentController.text.isEmpty ? _validate = true : _validate = false;
                   });
                   if (comment != "") {
+                    // first create the document in firestore/posts/uid/
+                    await FirebaseFirestore.instance
+                        .collection("posts")
+                        .doc(FirebaseAuth.instance.currentUser?.uid)
+                        .set({'_': '_'}); // dummy value, will not be read or written to
+
+                    // then add a subcollection at firestore/posts/uid/userPosts
+                    await FirebaseFirestore.instance
+                        .collection('posts')
+                        .doc(FirebaseAuth.instance.currentUser?.uid)
+                        .collection("userPosts")
+                        .add({
+                      'username': FirebaseAuth.instance.currentUser?.displayName ?? "Anonymous",
+                      'comment': comment,
+                      'rating': reviewPagesController.rating.value,
+                      'actingRating': reviewPagesController.actingRating.value,
+                      'lengthRating': reviewPagesController.lengthRating.value,
+                      'storyRating': reviewPagesController.storyRating.value,
+                      "userID": FirebaseAuth.instance.currentUser!.uid,
+                      "movieID": widget.movie.id,
+                      "timestamp": DateTime.now().millisecondsSinceEpoch,
+                      "likes": [],
+                      "comments": []
+                    });
                     DocumentReference documentRef = await FirebaseFirestore.instance.collection('reviews').add({
                       'username': FirebaseAuth.instance.currentUser?.displayName ?? "Anonymous",
                       'comment': comment,

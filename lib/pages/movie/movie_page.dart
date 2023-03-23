@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:interactive_bottom_sheet/interactive_bottom_sheet.dart';
 import 'package:projet_lepl1509_groupe_17/components/slidable_movie_list/slidable_movie_list.dart';
 import 'package:projet_lepl1509_groupe_17/models/movies.dart';
@@ -41,16 +40,17 @@ class _MoviePageState extends State<MoviePage> {
 
   Future<void> getProvider() async {
     Provider? allProviders = await Provider.getProvider(widget.movie!.id);
-    Map<String, dynamic> providersCountry = allProviders!
-        .countryProviders.entries
-        .singleWhere((element) => element.key == 'BE')
-        .value;
-    List<dynamic> providersBE = providersCountry.entries
-        .singleWhere((element) => element.key == 'flatrate')
-        .value;
+    if (allProviders == null || allProviders.countryProviders.isEmpty) {
+      return;
+    }
+    Map<String, dynamic> providersCountry =
+        allProviders.countryProviders.entries.singleWhere((element) => element.key == 'BE').value;
+    if (providersCountry.isEmpty) {
+      return;
+    }
+    List<dynamic> providersBE = providersCountry.entries.singleWhere((element) => element.key == 'flatrate').value;
     for (var result in providersBE) {
-      ProviderCountry providerCountry =
-          ProviderCountry.getProviderCountry(result);
+      ProviderCountry providerCountry = ProviderCountry.getProviderCountry(result);
       providers.add(providerCountry);
     }
   }
@@ -102,9 +102,11 @@ class _MoviePageState extends State<MoviePage> {
                 // MOVIE INFO
                 _buildMovieInformation(context, size),
 
-                // Watch now
-                const SizedBox(height: 20),
-                _buildProviders(),
+                if (providers.isNotEmpty) ...[
+                  // Watch now
+                  const SizedBox(height: 20),
+                  _buildProviders(),
+                ],
 
                 // ACTORS
                 const SizedBox(height: 20),
@@ -127,8 +129,7 @@ class _MoviePageState extends State<MoviePage> {
                             child: ListView.builder(
                               itemCount: movie!.actors.length,
                               scrollDirection: Axis.horizontal,
-                              padding:
-                                  const EdgeInsets.only(top: 12.0, left: 20.0),
+                              padding: const EdgeInsets.only(top: 12.0, left: 20.0),
                               itemBuilder: _buildActor,
                             ),
                           ),
@@ -162,10 +163,8 @@ class _MoviePageState extends State<MoviePage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: Image.network(
-                    "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
-                    height: 100,
-                    fit: BoxFit.contain),
+                child: Image.network("https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+                    height: 100, fit: BoxFit.contain),
               ),
               const SizedBox(
                 width: 20,
@@ -241,17 +240,12 @@ class _MoviePageState extends State<MoviePage> {
                       builder: (context) {
                         return GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () =>
-                              FocusManager.instance.primaryFocus?.unfocus(),
+                          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
                           child: Padding(
-                            padding: EdgeInsets.only(
-                                bottom:
-                                    MediaQuery.of(context).viewInsets.bottom),
+                            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                             child: SizedBox(
                                 width: size.width,
-                                height: size.height < 800
-                                    ? size.height * 0.50
-                                    : size.height * 0.40,
+                                height: size.height < 800 ? size.height * 0.50 : size.height * 0.40,
                                 child: BsbForm(
                                   movie: movie!,
                                 )),
@@ -271,8 +265,7 @@ class _MoviePageState extends State<MoviePage> {
                 ),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                  child:
-                      Text("Add to watchlist", style: TextStyle(fontSize: 15)),
+                  child: Text("Add to watchlist", style: TextStyle(fontSize: 15)),
                 ),
                 onPressed: () {
                   // show success snackbar
@@ -322,10 +315,7 @@ class _MoviePageState extends State<MoviePage> {
               child: Text(
                 movie!.actors[index].character,
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Theme.of(context).dividerColor),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).dividerColor),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

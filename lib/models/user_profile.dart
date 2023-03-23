@@ -29,7 +29,9 @@ class UserProfile {
       followers: map['followers'] ?? 0,
       following: map['following'] ?? 0,
       ranking: map['ranking'] ?? 0,
-      photoURL: map['photoURL'] != "" ? map['photoURL'] ?? 'http://www.gravatar.com/avatar/?d=mp' : 'http://www.gravatar.com/avatar/?d=mp',
+      photoURL: map['photoURL'] != ""
+          ? map['photoURL'] ?? 'http://www.gravatar.com/avatar/?d=mp'
+          : 'http://www.gravatar.com/avatar/?d=mp',
       name: map['name'] ?? 'No Name',
       email: map['email'] ?? 'No Email',
     );
@@ -45,7 +47,7 @@ class UserProfile {
     return 'UserProfile{uid: $uid, bio: $bio, followers: $followers, following: $following, ranking: $ranking, photoURL: $photoURL, name: $name, email: $email, watched: $watched}';
   }
 
-  toMap() {
+  Map<String, dynamic> toMap() {
     return {
       'uid': uid,
       'bio': bio,
