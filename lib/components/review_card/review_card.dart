@@ -16,15 +16,13 @@ class ReviewCard extends StatefulWidget {
   final Map<String, dynamic> data;
   final UserProfile? user;
 
-  const ReviewCard(
-      {super.key, required this.id, required this.data, required this.user});
+  const ReviewCard({super.key, required this.id, required this.data, required this.user});
 
   @override
   _ReviewCardState createState() => _ReviewCardState();
 }
 
-class _ReviewCardState extends State<ReviewCard>
-    with AutomaticKeepAliveClientMixin {
+class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMixin {
   FirebaseFirestore db = FirebaseFirestore.instance;
   Review? review;
   UserProfile? author;
@@ -47,8 +45,7 @@ class _ReviewCardState extends State<ReviewCard>
   }
 
   Future<void> getAuthor() async {
-    DocumentSnapshot<Map<String, dynamic>> value =
-        await db.collection('users').doc(review?.userID).get();
+    DocumentSnapshot<Map<String, dynamic>> value = await db.collection('users').doc(review?.userID).get();
     if (value != null) {
       setState(() {
         author = UserProfile.fromMap(value.data()!);
@@ -61,7 +58,9 @@ class _ReviewCardState extends State<ReviewCard>
   Future<bool> addLike() async {
     try {
       await FirebaseFirestore.instance
-          .collection("reviews")
+          .collection("posts")
+          .doc(review!.userID)
+          .collection('userPosts')
           .doc(review!.reviewID)
           .update({
         "likes": FieldValue.arrayUnion([widget.user!.uid])
@@ -76,7 +75,9 @@ class _ReviewCardState extends State<ReviewCard>
   Future<bool> removeLike() async {
     try {
       await FirebaseFirestore.instance
-          .collection("reviews")
+          .collection("posts")
+          .doc(review!.userID)
+          .collection('userPosts')
           .doc(review!.reviewID)
           .update({
         "likes": FieldValue.arrayRemove([widget.user!.uid])
@@ -107,8 +108,7 @@ class _ReviewCardState extends State<ReviewCard>
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,9 +129,7 @@ class _ReviewCardState extends State<ReviewCard>
                               indent: 20,
                               endIndent: 20,
                               thickness: 0.8,
-                              color: Theme.of(context)
-                                  .dividerColor
-                                  .withOpacity(0.3),
+                              color: Theme.of(context).dividerColor.withOpacity(0.3),
                             ),
 
                             const SizedBox(height: 10),
@@ -282,8 +280,7 @@ class _ReviewCardState extends State<ReviewCard>
                   movie.overview,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 15, color: Theme.of(context).dividerColor),
+                  style: TextStyle(fontSize: 15, color: Theme.of(context).dividerColor),
                 ),
 
                 const SizedBox(height: 3),
@@ -308,24 +305,19 @@ class _ReviewCardState extends State<ReviewCard>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox.fromSize(
-          size: const Size.fromHeight(50),
+          size: const Size.fromHeight(55),
           child: ListView(
-            physics: const BouncingScrollPhysics(
-                decelerationRate: ScrollDecelerationRate.fast),
+            physics: const BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.fast),
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,
             children: [
-              buildRatingPill(review!.rating.toString(), "Rating",
-                  Icons.movie_creation_outlined),
+              buildRatingPill(review!.rating.toString(), "Rating", Icons.movie_creation_outlined),
               const SizedBox(width: 6),
-              buildRatingPill(
-                  review!.actingRating.toString(), "Actors", Icons.person),
+              buildRatingPill(review!.actingRating.toString(), "Actors", Icons.person),
               const SizedBox(width: 6),
-              buildRatingPill(review!.storyRating.toString(), "Story",
-                  Icons.menu_book_outlined),
+              buildRatingPill(review!.storyRating.toString(), "Story", Icons.menu_book_outlined),
               const SizedBox(width: 6),
-              buildRatingPill(review!.lengthRating.toString(), "Length",
-                  Icons.timelapse_outlined),
+              buildRatingPill(review!.lengthRating.toString(), "Length", Icons.timelapse_outlined),
             ],
           ),
         ),
@@ -352,9 +344,7 @@ class _ReviewCardState extends State<ReviewCard>
             const SizedBox(width: 7),
             Column(
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w500)),
+                Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -390,12 +380,10 @@ class _ReviewCardState extends State<ReviewCard>
                   children: [
                     TextButton.icon(
                       onPressed: () {
-                        if (review!.likes.any(
-                            (element) => element.uid == widget.user!.uid)) {
+                        if (review!.likes.any((element) => element.uid == widget.user!.uid)) {
                           // optimistically remove the like from the ui
                           setState(() {
-                            review!.likes.removeWhere(
-                                (element) => element.uid == widget.user!.uid);
+                            review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
                           });
 
                           // remove the like in the DB, if there is any error, we want to update the ui to show that it didn't work
@@ -417,28 +405,24 @@ class _ReviewCardState extends State<ReviewCard>
                           addLike().then((bool addedLike) {
                             if (!addedLike) {
                               setState(() {
-                                review!.likes.removeWhere((element) =>
-                                    element.uid == widget.user!.uid);
+                                review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
                               });
                             }
                           });
                         }
                       },
                       icon: Icon(
-                        review!.likes.any(
-                                (element) => element.uid == widget.user!.uid)
+                        review!.likes.any((element) => element.uid == widget.user!.uid)
                             ? Icons.favorite
                             : Icons.favorite_border,
-                        color: review!.likes.any(
-                                (element) => element.uid == widget.user!.uid)
+                        color: review!.likes.any((element) => element.uid == widget.user!.uid)
                             ? Colors.red
                             : Theme.of(context).dividerColor,
                       ),
                       label: Text(
                         review!.likes.length.toString(),
                         style: TextStyle(
-                          color: review!.likes.any(
-                                  (element) => element.uid == widget.user!.uid)
+                          color: review!.likes.any((element) => element.uid == widget.user!.uid)
                               ? Colors.red
                               : Theme.of(context).dividerColor,
                           fontSize: 15,
@@ -487,9 +471,7 @@ class _ReviewCardState extends State<ReviewCard>
                                     ),
                                   ),
                                   TextSpan(
-                                    text: review!.likes.length > 2
-                                        ? " others"
-                                        : " other",
+                                    text: review!.likes.length > 2 ? " others" : " other",
                                     style: TextStyle(
                                       color: Theme.of(context).dividerColor,
                                       fontSize: 12,
@@ -507,11 +489,9 @@ class _ReviewCardState extends State<ReviewCard>
             ),
             const Spacer(),
             TextButton.icon(
-              label: Text(review!.comments.length.toString(),
-                  style: TextStyle(color: Theme.of(context).dividerColor)),
+              label: Text(review!.comments.length.toString(), style: TextStyle(color: Theme.of(context).dividerColor)),
               onPressed: () {},
-              icon: Icon(Icons.mode_comment_outlined,
-                  color: Theme.of(context).dividerColor),
+              icon: Icon(Icons.mode_comment_outlined, color: Theme.of(context).dividerColor),
             ),
           ],
         ),
@@ -522,9 +502,7 @@ class _ReviewCardState extends State<ReviewCard>
             children: [
               ClipOval(
                 child: Image.network(
-                  currentUser?.photoURL != null
-                      ? currentUser!.photoURL!
-                      : 'http://www.gravatar.com/avatar/?d=mp',
+                  currentUser?.photoURL != null ? currentUser!.photoURL! : 'http://www.gravatar.com/avatar/?d=mp',
                   width: 35,
                   height: 35,
                   fit: BoxFit.cover,
@@ -591,10 +569,7 @@ class _ReviewCardState extends State<ReviewCard>
                 ),
                 const Spacer(),
                 SkeletonLine(
-                  style: SkeletonLineStyle(
-                      height: 30,
-                      width: 64,
-                      borderRadius: BorderRadius.circular(15)),
+                  style: SkeletonLineStyle(height: 30, width: 64, borderRadius: BorderRadius.circular(15)),
                 )
               ],
             ),
@@ -672,31 +647,19 @@ class _ReviewCardState extends State<ReviewCard>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                     const SizedBox(width: 6),
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                     const SizedBox(width: 6),
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                     const SizedBox(width: 6),
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                   ],
                 ),
@@ -722,15 +685,9 @@ class _ReviewCardState extends State<ReviewCard>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: 40,
-                        height: 40,
-                        borderRadius: BorderRadius.circular(20))),
+                    style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
                 SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: 40,
-                        height: 40,
-                        borderRadius: BorderRadius.circular(20))),
+                    style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
               ],
             ),
             SkeletonParagraph(
@@ -757,10 +714,7 @@ class _ReviewCardState extends State<ReviewCard>
                   ),
                 ),
                 const SizedBox(width: 8),
-                SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: MediaQuery.of(context).size.width / 3,
-                        height: 30)),
+                SkeletonAvatar(style: SkeletonAvatarStyle(width: MediaQuery.of(context).size.width / 3, height: 30)),
               ],
             ),
           ],

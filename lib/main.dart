@@ -8,8 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/pages/auth/auth_page.dart';
-import 'package:projet_lepl1509_groupe_17/pages/home/home_page.dart';
 import 'package:splashscreen/splashscreen.dart';
+
+import 'pages/home/home_page.dart';
 
 const String themoviedbApi = "***REMOVED***";
 
