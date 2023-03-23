@@ -7,12 +7,10 @@ class UserProfile {
   String photoURL;
   String name;
   String email;
-  List<String> reviews;
 
   UserProfile({
     this.uid,
     this.bio,
-    required this.reviews,
     required this.followers,
     required this.following,
     required this.ranking,
@@ -31,7 +29,6 @@ class UserProfile {
       photoURL: map['photoURL'] != "" ? map['photoURL'] ?? 'http://www.gravatar.com/avatar/?d=mp' : 'http://www.gravatar.com/avatar/?d=mp',
       name: map['name'] ?? 'No Name',
       email: map['email'] ?? 'No Email',
-      reviews: map['reviews'] ?? [],
     );
   }
 
@@ -41,7 +38,7 @@ class UserProfile {
 
   @override
   String toString() {
-    return 'UserProfile{uid: $uid, bio: $bio, followers: $followers, following: $following, ranking: $ranking, photoURL: $photoURL, name: $name, email: $email, reviews: $reviews}';
+    return 'UserProfile{uid: $uid, bio: $bio, followers: $followers, following: $following, ranking: $ranking, photoURL: $photoURL, name: $name, email: $email}';
   }
 
   toMap() {
@@ -54,7 +51,6 @@ class UserProfile {
       'photoURL': photoURL,
       'name': name,
       'email': email,
-      'reviews': reviews,
     };
   }
 }

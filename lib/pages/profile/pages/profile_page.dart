@@ -6,7 +6,6 @@ import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/utils/about_preferences.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
 
-import '../../../components/review_card/review_card.dart';
 import '../widgets/numbers_widget.dart';
 import 'edit_profile_page.dart';
 
@@ -117,20 +116,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ],
               )),
-          Expanded(
-            child: ListView.builder(
-                shrinkWrap: true,
-                cacheExtent: 20,
-                addAutomaticKeepAlives: true,
-                itemCount: userProfile?.reviews?.length ?? 0,
-                itemBuilder: (context, index) {
-                  return ReviewCard(
-                    id: userProfile?.reviews[index] ?? '',
-                    data: db.collection('reviews').doc(userProfile?.reviews[index]) as Map<String, dynamic>,
-                    user: userProfile,
-                  );
-                }),
-          ),
         ],
       ),
     );
