@@ -44,18 +44,22 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
     }
     var response = await http.get(Uri.parse(uri));
     if (response.statusCode == 200) {
-      setState(() {
-        popularMovies = [];
-      });
+      if (mounted) {
+        setState(() {
+          popularMovies = [];
+        });
+      }
       Map<String, dynamic> jsonResponse = json.decode(response.body);
       var results = jsonResponse['results'];
       for (var result in results) {
         SearchMovie movie = SearchMovie.fromJson(result);
         movies.add(movie);
       }
-      setState(() {
-        popularMovies = List.from(movies);
-      });
+      if (mounted) {
+        setState(() {
+          popularMovies = List.from(movies);
+        });
+      }
     } else {
       print('Request failed with status: ${response.statusCode}.');
     }
@@ -107,13 +111,12 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                             // background image
                             movie.posterPath != null
                                 ? Image(
-                                   image: ResizeImage(
-                                      NetworkImage(
-                                      "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-                                      ),
-                                     height: widget.size.toInt()*2,
-                                     allowUpscaling: true
-                                   ),
+                                    image: ResizeImage(
+                                        NetworkImage(
+                                          "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                        ),
+                                        height: widget.size.toInt() * 2,
+                                        allowUpscaling: true),
                                     fit: BoxFit.cover,
                                   )
                                 : Container(
