@@ -273,7 +273,7 @@ class _BsbFormState extends State<BsbForm> {
                     commentController.text.isEmpty ? _validate = true : _validate = false;
                   });
                   if (comment != "") {
-                    await FirebaseFirestore.instance.collection('reviews').add({
+                    DocumentReference documentRef = await FirebaseFirestore.instance.collection('reviews').add({
                       'username': FirebaseAuth.instance.currentUser?.displayName ?? "Anonymous",
                       'comment': comment,
                       'rating': reviewPagesController.rating.value,
@@ -286,6 +286,8 @@ class _BsbFormState extends State<BsbForm> {
                       "likes": [],
                       "comments": []
                     });
+                    String documentId = documentRef.id;
+                    await FirebaseFirestore.instance.collection('reviews').doc(documentId).update({"reviewID": documentId});
 
                     Get.back();
 

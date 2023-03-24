@@ -99,7 +99,7 @@ class _DrawerState extends State<DrawerComponent> {
                             Navigator.of(context)
                                 .push(
                               MaterialPageRoute(
-                                builder: (context) => ProfilePage(),
+                                builder: (context) => const ProfilePage(),
                               ),
                             )
                                 .then((_) {
