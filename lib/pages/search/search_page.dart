@@ -147,10 +147,14 @@ class SearchPageState extends State<SearchPage> {
                                                         Radius.circular(8)),
                                               ),
                                               clipBehavior: Clip.antiAlias,
-                                              child: Image.network(
-                                                movie.posterPath!,
+                                              child: Image(
+                                                image: ResizeImage(
+                                                  NetworkImage(
+                                                    movie.posterPath!,
+                                                  ),
+                                                  width: 50,
+                                                ),
                                                 fit: BoxFit.contain,
-                                                width: 50,
                                               ),
                                             )
                                           : const Padding(

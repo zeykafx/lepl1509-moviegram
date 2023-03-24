@@ -106,10 +106,15 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                           children: [
                             // background image
                             movie.posterPath != null
-                                ? Image.network(
-                                    "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                ? Image(
+                                   image: ResizeImage(
+                                      NetworkImage(
+                                      "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                      ),
+                                     height: widget.size.toInt()*2,
+                                     allowUpscaling: true
+                                   ),
                                     fit: BoxFit.cover,
-                                    height: widget.size,
                                   )
                                 : Container(
                                     height: widget.size,
