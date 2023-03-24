@@ -52,8 +52,6 @@ class _ReviewCardState extends State<ReviewCard>
     if (value != null) {
       setState(() {
         author = UserProfile.fromMap(value.data()!);
-        print('curr user');
-        print(widget.user!.uid);
       });
     } else {
       print("failed to get user profile");

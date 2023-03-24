@@ -289,6 +289,10 @@ class _BsbFormState extends State<BsbForm> {
                     String documentId = documentRef.id;
                     await FirebaseFirestore.instance.collection('reviews').doc(documentId).update({"reviewID": documentId});
 
+                    await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).update({
+                      "watched": FieldValue.arrayUnion([documentId]),
+                    });
+
                     Get.back();
 
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

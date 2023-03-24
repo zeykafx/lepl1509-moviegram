@@ -45,7 +45,8 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: const Text('Profile'),
       ),
-      body: Column(
+      body: ListView(
+        physics: const BouncingScrollPhysics(),
         children: [
           ProfileWidget(
             imagePath: currentUser?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
@@ -84,19 +85,43 @@ class _ProfilePageState extends State<ProfilePage> {
           NumbersWidget(
             userProfile: userProfile,
           ),
-          const SizedBox(height: 15),
+      const SizedBox(height: 15),
 
+      // bio and watched
+      Container(
+          padding: const EdgeInsets.symmetric(horizontal: 48),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Bio : ',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '    ${userProfile?.bio ?? "No bio"}',
+                style: const TextStyle(fontSize: 16, height: 1.4),
+              ),
+              const SizedBox(height: 10),
 
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-            child: Text("Watched", style: TextStyle(fontSize: 20)),
+              const Divider(),
+
+              const SizedBox(height: 15),
+
+              // watched section
+              const Text(
+                'Watched : ',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
+        ),
           FutureBuilder(
             future: db.collection('reviews').where('reviewID', whereIn: userProfile?.watched.isEmpty ?? true ? [''] : userProfile?.watched).get(),
             builder: (context, AsyncSnapshot snapshot) {
               if (snapshot.hasData) {
-                return Expanded(
-                  child: ListView.builder(
+                return ListView.builder(
+                      physics: const BouncingScrollPhysics(),
                       shrinkWrap: true,
                       cacheExtent: 20,
                       addAutomaticKeepAlives: true,
@@ -107,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           data: snapshot.data.docs[index].data(),
                           user: userProfile,
                         );
-                      }),
+                      }
                 );
               } else {
                 return const Center(child: CircularProgressIndicator());

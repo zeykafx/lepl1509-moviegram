@@ -27,7 +27,6 @@ class _ReviewCardPPState extends State<ReviewCardPP>
     with AutomaticKeepAliveClientMixin {
   FirebaseFirestore db = FirebaseFirestore.instance;
   Review? review;
-  UserProfile? author;
   User? currentUser = FirebaseAuth.instance.currentUser;
 
   TextEditingController commentController = TextEditingController();
@@ -41,51 +40,8 @@ class _ReviewCardPPState extends State<ReviewCardPP>
       setState(() {
         review = value;
       });
-      getAuthor();
     });
     super.initState();
-  }
-
-  Future<void> getAuthor() async {
-    DocumentSnapshot<Map<String, dynamic>> value =
-    await db.collection('users').doc(review?.userID).get();
-    if (value != null) {
-      setState(() {
-        author = UserProfile.fromMap(value.data()!);
-      });
-    } else {
-      print("failed to get user profile");
-    }
-  }
-
-  Future<bool> addLike() async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("reviews")
-          .doc(review!.reviewID)
-          .update({
-        "likes": FieldValue.arrayUnion([widget.user!.uid])
-      });
-      return true;
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
-
-  Future<bool> removeLike() async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("reviews")
-          .doc(review!.reviewID)
-          .update({
-        "likes": FieldValue.arrayRemove([widget.user!.uid])
-      });
-      return true;
-    } catch (e) {
-      print(e);
-      return false;
-    }
   }
 
   @override
@@ -96,7 +52,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
         future: Movie.getMovieDetails(review!.movieID),
         builder: (context, snapshot) {
           Movie? movie = snapshot.data;
-          return snapshot.hasData && author != null
+          return snapshot.hasData
               ? Card(
             elevation: 0.5,
             shape: RoundedRectangleBorder(
@@ -154,55 +110,19 @@ class _ReviewCardPPState extends State<ReviewCardPP>
   Widget buildHeader() {
     return Row(
       children: [
-        // avatar picture
-        ClipOval(
-          child: Image.network(
-            author?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
-            width: 35,
-          ),
-        ),
-        const SizedBox(width: 8),
-
         // author name and time since
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // author name
-            Text(
-              author!.name,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-            ),
             // time since
             Text(
               formatTime(review!.postedTime.millisecondsSinceEpoch),
-              style: TextStyle(
-                color: Theme.of(context).dividerColor,
-                fontSize: 14,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
           ],
         ),
-
-        const Spacer(),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.star, color: Colors.amber, size: 15),
-                const SizedBox(width: 5),
-                Text(review!.rating.toString()),
-              ],
-            ),
-          ),
-        )
       ],
     );
   }
@@ -237,7 +157,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
             clipBehavior: Clip.antiAlias,
             child: Image.network(
               "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-              width: 80,
+              width: 60,
               fit: BoxFit.contain,
             ),
           )
@@ -262,32 +182,6 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                     )),
 
                 const SizedBox(height: 3),
-                // movie rating
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.reviews, size: 15),
-                    const SizedBox(width: 5),
-                    Text(
-                      "${movie.voteAverage.toStringAsPrecision(2)}/10",
-                      style: const TextStyle(fontSize: 15),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 3),
-
-                // description
-                Text(
-                  movie.overview,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 15, color: Theme.of(context).dividerColor),
-                ),
-
-                const SizedBox(height: 3),
-
                 // year, length
                 Text(
                   "${DateTime.parse(movie.releaseDate).year} | ${movie.runtime} min",
@@ -397,30 +291,11 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                             review!.likes.removeWhere(
                                     (element) => element.uid == widget.user!.uid);
                           });
-
-                          // remove the like in the DB, if there is any error, we want to update the ui to show that it didn't work
-                          removeLike().then((value) {
-                            if (!value) {
-                              setState(() {
-                                review!.likes.add(widget.user!);
-                              });
-                            }
-                          });
                         } else {
                           // add the like
                           // optimistically add the like to the ui
                           setState(() {
                             review!.likes.add(widget.user!);
-                          });
-
-                          // add the like in the DB, if there is any error, we want to update the ui to show that it didn't work
-                          addLike().then((bool addedLike) {
-                            if (!addedLike) {
-                              setState(() {
-                                review!.likes.removeWhere((element) =>
-                                element.uid == widget.user!.uid);
-                              });
-                            }
                           });
                         }
                       },
@@ -514,35 +389,6 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                   color: Theme.of(context).dividerColor),
             ),
           ],
-        ),
-        SizedBox(height: review!.likes.isNotEmpty ? 5 : 0),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            children: [
-              ClipOval(
-                child: Image.network(
-                  currentUser?.photoURL != null
-                      ? currentUser!.photoURL!
-                      : 'http://www.gravatar.com/avatar/?d=mp',
-                  width: 35,
-                  height: 35,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  controller: commentController,
-                  decoration: InputDecoration(
-                    hintText: "Add a comment...",
-                    hintStyle: TextStyle(color: Theme.of(context).dividerColor),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ],
     );
