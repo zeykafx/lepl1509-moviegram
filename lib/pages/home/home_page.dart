@@ -70,6 +70,8 @@ class _HomePageState extends State<HomePage> {
                     future: FirebaseFirestore.instance.collection('reviews').orderBy('timestamp', descending: false).get(),
                     builder: (context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
+                        print("userProfile: ");
+                        print(userProfile?.name);
                         return Expanded(
                           child: ListView.builder(
                               shrinkWrap: true,

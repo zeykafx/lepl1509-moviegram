@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:projet_lepl1509_groupe_17/components/review_card/review_card_pp.dart';
 import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/utils/about_preferences.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
 
+import '../../../components/review_card/review_card.dart';
 import '../widgets/numbers_widget.dart';
 import 'edit_profile_page.dart';
 
@@ -46,8 +48,7 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: const Text('Profile'),
       ),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
+      body: Column(
         children: [
           ProfileWidget(
             imagePath: currentUser?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
@@ -88,36 +89,54 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 15),
 
-          // bio and watched
-          Container(
-              padding: const EdgeInsets.symmetric(horizontal: 48),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Bio : ',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '    ${userProfile?.bio ?? "No bio"}',
-                    style: const TextStyle(fontSize: 16, height: 1.4),
-                  ),
-                  const SizedBox(height: 10),
 
-                  const Divider(),
-
-                  const SizedBox(height: 15),
-
-                  // watched section
-                  const Text(
-                    'Watched : ',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              )),
-        ],
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+            child: Text("Watched", style: TextStyle(fontSize: 20)),
+          ),
+          FutureBuilder(
+            future: db.collection('reviews').where('reviewID', whereIn: userProfile?.watched.isEmpty ?? true ? [''] : userProfile?.watched).get(),
+            builder: (context, AsyncSnapshot snapshot) {
+              if (snapshot.hasData) {
+                print("length : ");
+                print(snapshot.data.docs.length);
+                print(userProfile?.watched.isEmpty ?? true ? ['a'] : userProfile?.watched);
+                return Expanded(
+                  child: ListView.builder(
+                      shrinkWrap: true,
+                      cacheExtent: 20,
+                      addAutomaticKeepAlives: true,
+                      itemCount: snapshot.data.docs.length,
+                      itemBuilder: (context, index) {
+                        return ReviewCard(
+                          id: snapshot.data.docs[index].id,
+                          data: snapshot.data.docs[index].data(),
+                          user: userProfile,
+                        );
+                      }),
+                );
+              } else {
+                print("no data");
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
+          ),
+                  ],
       ),
     );
+  }
+
+  Future<List<DocumentSnapshot>> getDocuments(List<String> ids) async {
+    List<Future<DocumentSnapshot>> futures = [];
+
+    // create a future for each document
+    for (String id in ids) {
+      futures.add(db.doc(id).get());
+    }
+
+    // wait for all futures to complete
+    List<DocumentSnapshot> documents = await Future.wait(futures);
+
+    return documents;
   }
 }
