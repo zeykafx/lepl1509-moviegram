@@ -16,23 +16,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  FirebaseFirestore db = FirebaseFirestore.instance;
-  UserProfile? userProfile;
-  User? currentUser = FirebaseAuth.instance.currentUser;
-
-  @override
-  void initState() {
-    super.initState();
-    readUserData();
-  }
-
-  Future<void> readUserData() async {
-    await db.collection('users').doc(currentUser?.uid).get().then((value) {
-      setState(() {
-        userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

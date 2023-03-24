@@ -43,14 +43,19 @@ class _MoviePageState extends State<MoviePage> {
     if (allProviders == null || allProviders.countryProviders.isEmpty) {
       return;
     }
-    Map<String, dynamic> providersCountry =
-        allProviders.countryProviders.entries.singleWhere((element) => element.key == 'BE').value;
+    Map<String, dynamic> providersCountry = allProviders
+        .countryProviders.entries
+        .singleWhere((element) => element.key == 'BE')
+        .value;
     if (providersCountry.isEmpty) {
       return;
     }
-    List<dynamic> providersBE = providersCountry.entries.singleWhere((element) => element.key == 'flatrate').value;
+    List<dynamic> providersBE = providersCountry.entries
+        .singleWhere((element) => element.key == 'flatrate')
+        .value;
     for (var result in providersBE) {
-      ProviderCountry providerCountry = ProviderCountry.getProviderCountry(result);
+      ProviderCountry providerCountry =
+          ProviderCountry.getProviderCountry(result);
       providers.add(providerCountry);
     }
   }
@@ -84,10 +89,17 @@ class _MoviePageState extends State<MoviePage> {
       ),
       body: !gotMovieDetails && movie == null
           ? const Center(child: CircularProgressIndicator())
-          : Image.network(
-              "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
-              width: double.infinity,
-              fit: BoxFit.fitHeight,
+          : SizedBox(
+              width: size.width,
+              child: Image(
+                image: ResizeImage(
+                  NetworkImage(
+                    "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+                  ),
+                  width: size.width.toInt() * 2,
+                ),
+                fit: BoxFit.fitHeight,
+              ),
             ),
     );
   }
@@ -129,7 +141,8 @@ class _MoviePageState extends State<MoviePage> {
                             child: ListView.builder(
                               itemCount: movie!.actors.length,
                               scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.only(top: 12.0, left: 20.0),
+                              padding:
+                                  const EdgeInsets.only(top: 12.0, left: 20.0),
                               itemBuilder: _buildActor,
                             ),
                           ),
@@ -163,8 +176,18 @@ class _MoviePageState extends State<MoviePage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: Image.network("https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
-                    height: 100, fit: BoxFit.contain),
+                child: SizedBox(
+                  height: 100,
+                  child: Image(
+                    image: ResizeImage(
+                      NetworkImage(
+                        "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+                      ),
+                      width: 200,
+                    ),
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
               const SizedBox(
                 width: 20,
@@ -240,12 +263,17 @@ class _MoviePageState extends State<MoviePage> {
                       builder: (context) {
                         return GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                          onTap: () =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
                           child: Padding(
-                            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                            padding: EdgeInsets.only(
+                                bottom:
+                                    MediaQuery.of(context).viewInsets.bottom),
                             child: SizedBox(
                                 width: size.width,
-                                height: size.height < 800 ? size.height * 0.50 : size.height * 0.40,
+                                height: size.height < 800
+                                    ? size.height * 0.50
+                                    : size.height * 0.40,
                                 child: BsbForm(
                                   movie: movie!,
                                 )),
@@ -265,7 +293,8 @@ class _MoviePageState extends State<MoviePage> {
                 ),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                  child: Text("Add to watchlist", style: TextStyle(fontSize: 15)),
+                  child:
+                      Text("Add to watchlist", style: TextStyle(fontSize: 15)),
                 ),
                 onPressed: () {
                   // show success snackbar
@@ -297,8 +326,11 @@ class _MoviePageState extends State<MoviePage> {
         children: [
           CircleAvatar(
             backgroundImage: movie!.actors[index].profilePath != null
-                ? NetworkImage(
-                    "https://image.tmdb.org/t/p/w500/${movie!.actors[index].profilePath}",
+                ? ResizeImage(
+                    NetworkImage(
+                      "https://image.tmdb.org/t/p/w500/${movie!.actors[index].profilePath}",
+                    ),
+                    width: 200,
                   )
                 : null,
             radius: 35,
@@ -315,7 +347,10 @@ class _MoviePageState extends State<MoviePage> {
               child: Text(
                 movie!.actors[index].character,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).dividerColor),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).dividerColor),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

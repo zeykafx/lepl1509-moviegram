@@ -40,15 +40,22 @@ class ProfileWidget extends StatelessWidget {
   }
 
   Widget buildImage(double size) {
-
     return ClipOval(
         child: Material(
             color: Colors.transparent,
-            child: Image.network(
-              imagePath!,
-              fit: BoxFit.cover,
+            child: SizedBox(
               width: size,
               height: size,
+              child: Image(
+                image: ResizeImage(
+                  NetworkImage(
+                    imagePath!,
+                  ),
+                  width: size.toInt()*2,
+                  height: size.toInt()*2,
+                ),
+                fit: BoxFit.cover,
+              ),
             )
             // child: Ink.image(
             //   image: image,

@@ -12,112 +12,162 @@ class HomeFeed extends StatefulWidget {
 }
 
 class _HomeFeedState extends State<HomeFeed> {
-  int page = 5;
-  bool loadingMore = false;
-  ScrollController scrollController = ScrollController();
-
   User? currentUser = FirebaseAuth.instance.currentUser;
   FirebaseFirestore db = FirebaseFirestore.instance;
-  List<String> following = [];
+  List<Map<String, dynamic>> following = [];
   UserProfile? userProfile;
-  int batchSize = 5;
+
+  bool loading = false;
+  ScrollController scrollController = ScrollController();
+
+  List<Map<String, dynamic>> feedContent = [];
 
   @override
   void initState() {
     super.initState();
-    readUserData();
+
 
     scrollController.addListener(() async {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
-        setState(() {
-          page = page + 5;
-          loadingMore = true;
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
+        getMoreReviews().then((value) {
+          setState(() {
+            feedContent.addAll(value);
+          });
         });
       }
     });
-
-    if (currentUser != null) {
-      db.collection('following').doc(currentUser?.uid).collection('userFollowing').get().then((value) {
-        for (var element in value.docs) {
-          following.add(element.id);
-        }
+    readUserData().then((_) {
+      getReviews().then((value) {
+        setState(() {
+          feedContent = value;
+        });
       });
-    }
+    });
   }
 
   Future<void> readUserData() async {
-    await db.collection('users').doc(currentUser?.uid).get().then((value) {
-      setState(() {
-        userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
-      });
+    setState(() {
+      loading = true;
+    });
+    var value = await db.collection('users').doc(currentUser?.uid).get();
+    setState(() {
+      userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
+    });
+    var followingVal = await db
+        .collection('following')
+        .doc(currentUser?.uid)
+        .collection('userFollowing')
+        .get();
+    for (var element in followingVal.docs) {
+      following.add({"uid": element.id, "lastDoc": null});
+    }
+    setState(() {
+      following.shuffle();
+      loading = false;
     });
   }
 
   Future<List<Map<String, dynamic>>> getReviews() async {
+    setState(() {
+      loading = true;
+    });
     List<Map<String, dynamic>> followingReviews = [];
 
-    for (String followingUserID in following) {
-      var value = await db
+    for (Map<String, dynamic> followingUserMap in following) {
+      QuerySnapshot<Map<String, dynamic>> value = await db
           .collection("posts")
-          .doc(followingUserID)
+          .doc(followingUserMap["uid"])
           .collection("userPosts")
           .orderBy('timestamp', descending: true)
-          .limit(page) // trying to show recent posts by each of the following users
+          .limit(10)
           .get();
+
       for (var element in value.docs) {
         followingReviews.add({"id": element.id, "data": element.data()});
       }
+      followingUserMap["lastDoc"] = value.docs.last;
     }
+    setState(() {
+      loading = false;
+    });
+    return followingReviews;
+  }
 
+  Future<List<Map<String, dynamic>>> getMoreReviews() async {
+    setState(() {
+      loading = true;
+    });
+    List<Map<String, dynamic>> followingReviews = [];
+
+    for (Map<String, dynamic> followingUserMap in following) {
+      QuerySnapshot<Map<String, dynamic>> value;
+      if (followingUserMap["lastDoc"] == null) {
+        value = await db
+            .collection("posts")
+            .doc(followingUserMap["uid"])
+            .collection("userPosts")
+            .orderBy('timestamp', descending: true)
+            .limit(10)
+            .get();
+      } else {
+        value = await db
+            .collection("posts")
+            .doc(followingUserMap["uid"])
+            .collection("userPosts")
+            .orderBy('timestamp', descending: true)
+            .startAfterDocument(followingUserMap["lastDoc"]!)
+            .limit(10)
+            .get();
+      }
+
+      for (var element in value.docs) {
+        followingReviews.add({"id": element.id, "data": element.data()});
+
+        if (element.id == value.docs.last.id) {
+          followingUserMap["lastDoc"] = element;
+        }
+      }
+    }
+    setState(() {
+      loading = false;
+    });
     return followingReviews;
   }
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {},
-      child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        child: Column(
+    return Stack(
+      children: [
+        Column(
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text("Following", style: TextStyle(fontSize: 20)),
-            // put anything that will always be above the feed here
-            SizedBox(
-                height: MediaQuery.of(context).size.height,
-                child: FutureBuilder(
-                  future: getReviews(),
-                  builder: (BuildContext context, snapshot) {
-                    if (snapshot.hasData && snapshot.data != null) {
-                      return ListView.builder(
-                        controller: scrollController,
-                        itemCount: snapshot.data!.length,
-                        addAutomaticKeepAlives: true,
-                        cacheExtent: 20,
-                        itemBuilder: (BuildContext context, int index) {
-                          return ReviewCard(
-                            id: snapshot.data![index]["id"],
-                            data: snapshot.data![index]["data"],
-                            user: userProfile,
-                          );
-                        },
-                      );
-                    } else if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    } else {
-                      return const Center(
-                        child: Text("No reviews posted by your friends",
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                      );
-                    }
-                  },
-                )),
+            Expanded(
+              child: ListView.builder(
+                key: const Key('homeFeedList'),
+                addRepaintBoundaries: true,
+                controller: scrollController,
+                itemCount: feedContent.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ReviewCard(
+                    key: Key(feedContent[index]["id"]),
+                    id: feedContent[index]["id"],
+                    data: feedContent[index]["data"],
+                    user: userProfile,
+                  );
+                },
+              ),
+            ),
           ],
         ),
-      ),
+        if (loading)
+          const Align(
+            alignment: Alignment.topCenter,
+            child: CircularProgressIndicator(),
+          ),
+      ],
     );
   }
 }
