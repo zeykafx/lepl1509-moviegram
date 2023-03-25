@@ -142,7 +142,7 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                                   const SizedBox(
                                     height: 5.0,
                                   ),
-                                  Container(
+                                  SizedBox(
                                     width: 100,
                                     child: Text(
                                       movie.title,
@@ -150,8 +150,9 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                                       textAlign: TextAlign.center,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(
@@ -161,8 +162,9 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                                     DateFormat('MMM. dd, yyyy').format(
                                         DateTime.parse(movie.releaseDate)),
                                     style: TextStyle(
-                                        fontSize: 11,
-                                        color: Theme.of(context).dividerColor),
+                                      fontSize: 12,
+                                      color: Theme.of(context).dividerColor,
+                                    ),
                                   ),
                                 ],
                               ],

@@ -131,12 +131,13 @@ class _ReviewCardState extends State<ReviewCard>
 
                             // movie card, on which you can click
                             Card(
-                              elevation: 0,
+                              elevation: 0.5,
+                              shadowColor: Colors.transparent,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 side: BorderSide(
                                   color: Colors.grey.withOpacity(0.2),
-                                  width: 1,
+                                  width: 0.8,
                                 ),
                               ),
                               child: Padding(
