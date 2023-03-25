@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 700),
           child: const Padding(
-            padding: EdgeInsets.all(8.0),
+            padding: EdgeInsets.symmetric(horizontal: 10),
             child: HomeFeed(),
           ),
         ),
