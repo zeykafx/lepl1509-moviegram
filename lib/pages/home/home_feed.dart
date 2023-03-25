@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:projet_lepl1509_groupe_17/components/review_card/review_card.dart';
 import 'package:projet_lepl1509_groupe_17/components/slidable_movie_list/slidable_movie_list.dart';
 import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
@@ -78,6 +79,7 @@ class _HomeFeedState extends State<HomeFeed> {
     List<Map<String, dynamic>> followingReviews = [];
 
     for (Map<String, dynamic> followingUserMap in following) {
+      // get followers reviews
       QuerySnapshot<Map<String, dynamic>> value = await db
           .collection("posts")
           .doc(followingUserMap["uid"])
@@ -85,17 +87,24 @@ class _HomeFeedState extends State<HomeFeed> {
           .orderBy('timestamp', descending: true)
           .limit(10)
           .get();
+      // add random recommendations
       List<bool> randomList =
           List.generate(value.docs.length, (_) => random.nextBool());
+
+      // add reviews
       for (int i = 0; i < value.docs.length; i++) {
         QueryDocumentSnapshot<Map<String, dynamic>> element = value.docs[i];
         followingReviews.add({"id": element.id, "data": element.data()});
         if (randomList[i]) {
+          var values = SlidableMovieListType.values;
+          int randomIndex = random.nextInt(values.length);
+          SlidableMovieListType randomType = values[randomIndex];
+          if (randomType == SlidableMovieListType.recommendations) {
+            randomType = SlidableMovieListType.top_rated;
+          }
           followingReviews.add({
             "isRecommendation": true,
-            "type": (random.nextInt(2) % 2) == 0
-                ? SlidableMovieListType.popular
-                : SlidableMovieListType.top_rated,
+            "type": randomType,
           });
         }
       }
@@ -166,37 +175,19 @@ class _HomeFeedState extends State<HomeFeed> {
               controller: scrollController,
               itemCount: feedContent.length,
               itemBuilder: (BuildContext context, int index) {
-                if (index == 0) {
-                  return Column(
-                    children: [
-                      const Text(
-                        "Following",
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                        child: ReviewCard(
-                          key: Key(feedContent[index]["id"]),
-                          id: feedContent[index]["id"],
-                          data: feedContent[index]["data"],
-                          user: userProfile,
-                        ),
-                      ),
-                    ],
-                  );
-                }
                 if (feedContent[index].containsKey("isRecommendation")) {
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
                     child: SlidableMovieList(
                       key: Key(feedContent[index]["type"].toString()),
+                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                       type: feedContent[index]["type"],
-                      size: 200,
+                      size: 250,
                     ),
                   );
                 }
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                   child: ReviewCard(
                     key: Key(feedContent[index]["id"]),
                     id: feedContent[index]["id"],
@@ -212,6 +203,6 @@ class _HomeFeedState extends State<HomeFeed> {
             child: CircularProgressIndicator(),
           ),
       ],
-    );
+    ).animate().fadeIn();
   }
 }

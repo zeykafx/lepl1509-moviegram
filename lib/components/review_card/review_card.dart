@@ -148,7 +148,7 @@ class _ReviewCardState extends State<ReviewCard>
                             // review content
                             buildComment(),
 
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 5),
 
                             buildLikesAndComments(),
                           ],
@@ -353,7 +353,7 @@ class _ReviewCardState extends State<ReviewCard>
             ],
           ),
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 12),
         Text(
           review!.comment,
           style: TextStyle(fontSize: 18, color: Theme.of(context).dividerColor),
