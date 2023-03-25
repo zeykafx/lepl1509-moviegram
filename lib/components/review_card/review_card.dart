@@ -130,17 +130,19 @@ class _ReviewCardState extends State<ReviewCard>
                             const SizedBox(height: 13),
 
                             // movie card, on which you can click
-                            buildMovieInfo(movie!),
-
-                            const SizedBox(height: 10),
-
-                            Divider(
-                              indent: 20,
-                              endIndent: 20,
-                              thickness: 0.8,
-                              color: Theme.of(context)
-                                  .dividerColor
-                                  .withOpacity(0.3),
+                            Card(
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                side: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: buildMovieInfo(movie!),
+                              ),
                             ),
 
                             const SizedBox(height: 10),
@@ -370,17 +372,26 @@ class _ReviewCardState extends State<ReviewCard>
         borderRadius: BorderRadius.circular(15),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Theme.of(context).dividerColor, size: 20),
-            const SizedBox(width: 7),
+            Icon(icon, color: Theme.of(context).dividerColor, size: 18),
+            const SizedBox(width: 5),
             Column(
               key: ValueKey("column $title"),
               children: [
-                Text(title,
+                Flexible(
+                  child: Text(
+                    title,
                     style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w500)),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
