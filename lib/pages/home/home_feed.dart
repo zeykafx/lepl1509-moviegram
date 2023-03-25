@@ -31,7 +31,8 @@ class _HomeFeedState extends State<HomeFeed> {
   void initState() {
     super.initState();
     scrollController.addListener(() async {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
         getMoreReviews().then((value) {
           setState(() {
             feedContent.addAll(value);
@@ -56,7 +57,11 @@ class _HomeFeedState extends State<HomeFeed> {
     setState(() {
       userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
     });
-    var followingVal = await db.collection('following').doc(currentUser?.uid).collection('userFollowing').get();
+    var followingVal = await db
+        .collection('following')
+        .doc(currentUser?.uid)
+        .collection('userFollowing')
+        .get();
     for (var element in followingVal.docs) {
       following.add({"uid": element.id, "lastDoc": null});
     }
@@ -80,14 +85,17 @@ class _HomeFeedState extends State<HomeFeed> {
           .orderBy('timestamp', descending: true)
           .limit(10)
           .get();
-      List<bool> randomList = List.generate(value.docs.length, (_) => random.nextBool());
+      List<bool> randomList =
+          List.generate(value.docs.length, (_) => random.nextBool());
       for (int i = 0; i < value.docs.length; i++) {
         QueryDocumentSnapshot<Map<String, dynamic>> element = value.docs[i];
         followingReviews.add({"id": element.id, "data": element.data()});
         if (randomList[i]) {
           followingReviews.add({
             "isRecommendation": true,
-            "type": (random.nextInt(2) % 2) == 0 ? SlidableMovieListType.popular : SlidableMovieListType.top_rated,
+            "type": (random.nextInt(2) % 2) == 0
+                ? SlidableMovieListType.popular
+                : SlidableMovieListType.top_rated,
           });
         }
       }
@@ -144,44 +152,63 @@ class _HomeFeedState extends State<HomeFeed> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Following", style: TextStyle(fontSize: 20)),
-            Expanded(
-              child: ListView.builder(
-                  key: const Key('homeFeedList'),
-                  addRepaintBoundaries: true,
-                  controller: scrollController,
-                  itemCount: feedContent.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    if (feedContent[index].containsKey("isRecommendation")) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        child: SlidableMovieList(
-                          key: Key(feedContent[index]["type"].toString()),
-                          type: feedContent[index]["type"],
-                          size: 200,
-                        ),
-                      );
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      child: ReviewCard(
-                        key: Key(feedContent[index]["id"]),
-                        id: feedContent[index]["id"],
-                        data: feedContent[index]["data"],
-                        user: userProfile,
+        RefreshIndicator(
+          onRefresh: () async {
+            getReviews().then((value) {
+              setState(() {
+                feedContent = value;
+              });
+            });
+          },
+          child: ListView.builder(
+              key: const Key('homeFeedList'),
+              addRepaintBoundaries: true,
+              controller: scrollController,
+              itemCount: feedContent.length,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == 0) {
+                  return Column(
+                    children: [
+                      const Text(
+                        "Following",
+                        style: TextStyle(fontSize: 20),
                       ),
-                    );
-                  }),
-            ),
-          ],
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                        child: ReviewCard(
+                          key: Key(feedContent[index]["id"]),
+                          id: feedContent[index]["id"],
+                          data: feedContent[index]["data"],
+                          user: userProfile,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+                if (feedContent[index].containsKey("isRecommendation")) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                    child: SlidableMovieList(
+                      key: Key(feedContent[index]["type"].toString()),
+                      type: feedContent[index]["type"],
+                      size: 200,
+                    ),
+                  );
+                }
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                  child: ReviewCard(
+                    key: Key(feedContent[index]["id"]),
+                    id: feedContent[index]["id"],
+                    data: feedContent[index]["data"],
+                    user: userProfile,
+                  ),
+                );
+              }),
         ),
         if (loading)
           const Align(
-            alignment: Alignment.topCenter,
+            alignment: Alignment.center,
             child: CircularProgressIndicator(),
           ),
       ],
