@@ -45,14 +45,24 @@ class _MoviePageState extends State<MoviePage> {
         allProviders.countryProviders.entries.isEmpty) {
       return;
     }
-    Map<String, dynamic> providersCountry =
-        allProviders.countryProviders.entries.singleWhere((element) => element.key == 'BE').value;
+    Map<String, dynamic> providersCountry;
+    try {
+      // hack: use orElse instead
+      providersCountry = allProviders.countryProviders.entries
+          .singleWhere((element) => element.key == 'BE')
+          .value;
+    } catch (e) {
+      return;
+    }
     if (providersCountry.isEmpty) {
       return;
     }
-    List<dynamic> providersBE = providersCountry.entries.singleWhere((element) => element.key == 'flatrate').value;
+    List<dynamic> providersBE = providersCountry.entries
+        .singleWhere((element) => element.key == 'flatrate')
+        .value;
     for (var result in providersBE) {
-      ProviderCountry providerCountry = ProviderCountry.getProviderCountry(result);
+      ProviderCountry providerCountry =
+          ProviderCountry.getProviderCountry(result);
       providers.add(providerCountry);
     }
   }
@@ -113,12 +123,12 @@ class _MoviePageState extends State<MoviePage> {
 
                 if (providers.isNotEmpty) ...[
                   // Watch now
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
                   _buildProviders(),
                 ],
 
                 // ACTORS
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
                 movie!.actors.isNotEmpty
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,7 +148,8 @@ class _MoviePageState extends State<MoviePage> {
                             child: ListView.builder(
                               itemCount: movie!.actors.length,
                               scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.only(top: 12.0, left: 20.0),
+                              padding:
+                                  const EdgeInsets.only(top: 12.0, left: 20.0),
                               itemBuilder: _buildActor,
                             ),
                           ),
@@ -159,7 +170,7 @@ class _MoviePageState extends State<MoviePage> {
 
   Widget _buildMovieInformation(BuildContext context, Size size) {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -259,12 +270,17 @@ class _MoviePageState extends State<MoviePage> {
                       builder: (context) {
                         return GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                          onTap: () =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
                           child: Padding(
-                            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                            padding: EdgeInsets.only(
+                                bottom:
+                                    MediaQuery.of(context).viewInsets.bottom),
                             child: SizedBox(
                                 width: size.width,
-                                height: size.height < 800 ? size.height * 0.50 : size.height * 0.40,
+                                height: size.height < 800
+                                    ? size.height * 0.50
+                                    : size.height * 0.40,
                                 child: BsbForm(
                                   movie: movie!,
                                 )),
@@ -284,7 +300,8 @@ class _MoviePageState extends State<MoviePage> {
                 ),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                  child: Text("Add to watchlist", style: TextStyle(fontSize: 15)),
+                  child:
+                      Text("Add to watchlist", style: TextStyle(fontSize: 15)),
                 ),
                 onPressed: () {
                   // show success snackbar
@@ -337,7 +354,10 @@ class _MoviePageState extends State<MoviePage> {
               child: Text(
                 movie!.actors[index].character,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).dividerColor),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).dividerColor),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
