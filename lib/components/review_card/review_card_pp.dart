@@ -36,12 +36,49 @@ class _ReviewCardPPState extends State<ReviewCardPP>
 
   @override
   void initState() {
-    Review.fromJson(widget.id, widget.data).then((value) {
-      setState(() {
-        review = value;
-      });
-    });
     super.initState();
+
+    Review.fromJson(widget.id, widget.data).then((value) {
+      if (mounted) {
+        setState(() {
+          review = value;
+        });
+      }
+    });
+  }
+
+  Future<bool> addLike() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("posts")
+          .doc(review!.userID)
+          .collection('userPosts')
+          .doc(review!.reviewID)
+          .update({
+        "likes": FieldValue.arrayUnion([widget.user!.uid])
+      });
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future<bool> removeLike() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("posts")
+          .doc(review!.userID)
+          .collection('userPosts')
+          .doc(review!.reviewID)
+          .update({
+        "likes": FieldValue.arrayRemove([widget.user!.uid])
+      });
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
   }
 
   @override
@@ -49,61 +86,65 @@ class _ReviewCardPPState extends State<ReviewCardPP>
     super.build(context);
     return review != null
         ? FutureBuilder(
-        future: Movie.getMovieDetails(review!.movieID),
-        builder: (context, snapshot) {
-          Movie? movie = snapshot.data;
-          return snapshot.hasData
-              ? Card(
-            elevation: 0.5,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-              side: BorderSide(
-                color: Colors.grey.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  vertical: 10, horizontal: 15),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
+            future: Movie.getMovieDetails(review!.movieID),
+            builder: (context, snapshot) {
+              Movie? movie = snapshot.data;
+              return snapshot.hasData
+                  ? Card(
+                      key: Key(review!.reviewID),
+                      elevation: 0.5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        side: BorderSide(
+                          color: Colors.grey.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 15),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
 
-                  // header
-                  buildHeader(),
+                            // header
+                            buildHeader(),
 
-                  const SizedBox(height: 13),
+                            const SizedBox(height: 13),
 
-                  // movie card, on which you can click
-                  buildMovieInfo(movie!),
+                            // movie card, on which you can click
+                            Card(
+                              elevation: 0.5,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                side: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: buildMovieInfo(movie!),
+                              ),
+                            ),
 
-                  const SizedBox(height: 10),
+                            const SizedBox(height: 10),
 
-                  Divider(
-                    indent: 20,
-                    endIndent: 20,
-                    thickness: 0.8,
-                    color: Theme.of(context)
-                        .dividerColor
-                        .withOpacity(0.3),
-                  ),
+                            // review content
+                            buildComment(),
 
-                  const SizedBox(height: 10),
+                            const SizedBox(height: 5),
 
-                  // review content
-                  buildComment(),
-
-                  const SizedBox(height: 10),
-
-                  buildLikesAndComments(),
-                ],
-              ),
-            ),
-          )
-              : buildSkeletonCard().animate().fadeIn();
-        }).animate().fadeIn()
+                            buildLikesAndComments(),
+                          ],
+                        ),
+                      ),
+                    )
+                  : buildSkeletonCard().animate().fadeIn();
+            }).animate().fadeIn()
         : buildSkeletonCard().animate().fadeIn();
   }
 
@@ -123,6 +164,25 @@ class _ReviewCardPPState extends State<ReviewCardPP>
             ),
           ],
         ),
+
+        const Spacer(),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star, color: Colors.amber, size: 15),
+                const SizedBox(width: 5),
+                Text(review!.rating.toString()),
+              ],
+            ),
+          ),
+        )
       ],
     );
   }
@@ -131,7 +191,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
     return InkWell(
       onTap: () {
         Get.to(
-              () => MoviePage(
+          () => MoviePage(
             movie: SearchMovie(
               id: review!.movieID,
               title: movie.title,
@@ -153,18 +213,24 @@ class _ReviewCardPPState extends State<ReviewCardPP>
           // movie poster
           movie.posterPath != null
               ? ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            clipBehavior: Clip.antiAlias,
-            child: Image.network(
-              "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-              width: 60,
-              fit: BoxFit.contain,
-            ),
-          )
+                  borderRadius: BorderRadius.circular(8),
+                  clipBehavior: Clip.antiAlias,
+                  child: SizedBox(
+                    width: 80,
+                    child: Image(
+                      image: ResizeImage(
+                          NetworkImage(
+                              "https://image.tmdb.org/t/p/w500${movie.posterPath}"),
+                          width: 160,
+                          allowUpscaling: true),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                )
               : const SizedBox(
-            width: 80,
-            child: Icon(Icons.movie, size: 35),
-          ),
+                  width: 80,
+                  child: Icon(Icons.movie, size: 35),
+                ),
 
           const SizedBox(width: 15),
 
@@ -202,7 +268,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox.fromSize(
-          size: const Size.fromHeight(50),
+          size: const Size.fromHeight(55),
           child: ListView(
             physics: const BouncingScrollPhysics(
                 decelerationRate: ScrollDecelerationRate.fast),
@@ -223,7 +289,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
             ],
           ),
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 12),
         Text(
           review!.comment,
           style: TextStyle(fontSize: 18, color: Theme.of(context).dividerColor),
@@ -234,21 +300,32 @@ class _ReviewCardPPState extends State<ReviewCardPP>
 
   Widget buildRatingPill(String rating, String title, IconData icon) {
     return Container(
+      key: ValueKey(title),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary.withOpacity(0.10),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Theme.of(context).dividerColor, size: 20),
-            const SizedBox(width: 7),
+            Icon(icon, color: Theme.of(context).dividerColor, size: 18),
+            const SizedBox(width: 5),
             Column(
+              key: ValueKey("column $title"),
               children: [
-                Text(title,
+                Flexible(
+                  child: Text(
+                    title,
                     style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w500)),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -285,17 +362,36 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                     TextButton.icon(
                       onPressed: () {
                         if (review!.likes.any(
-                                (element) => element.uid == widget.user!.uid)) {
+                            (element) => element.uid == widget.user!.uid)) {
                           // optimistically remove the like from the ui
                           setState(() {
                             review!.likes.removeWhere(
-                                    (element) => element.uid == widget.user!.uid);
+                                (element) => element.uid == widget.user!.uid);
+                          });
+
+                          // remove the like in the DB, if there is any error, we want to update the ui to show that it didn't work
+                          removeLike().then((value) {
+                            if (!value) {
+                              setState(() {
+                                review!.likes.add(widget.user!);
+                              });
+                            }
                           });
                         } else {
                           // add the like
                           // optimistically add the like to the ui
                           setState(() {
                             review!.likes.add(widget.user!);
+                          });
+
+                          // add the like in the DB, if there is any error, we want to update the ui to show that it didn't work
+                          addLike().then((bool addedLike) {
+                            if (!addedLike) {
+                              setState(() {
+                                review!.likes.removeWhere((element) =>
+                                    element.uid == widget.user!.uid);
+                              });
+                            }
                           });
                         }
                       },
@@ -408,209 +504,209 @@ class _ReviewCardPPState extends State<ReviewCardPP>
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
         child: SkeletonItem(
             child: Column(
+          children: [
+            const SizedBox(height: 8),
+
+            // header
+            Row(
               children: [
-                const SizedBox(height: 8),
-
-                // header
-                Row(
-                  children: [
-                    const SkeletonAvatar(
-                      style: SkeletonAvatarStyle(
-                        shape: BoxShape.circle,
-                        width: 35,
-                        height: 35,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SkeletonParagraph(
-                      style: SkeletonParagraphStyle(
-                          lines: 2,
-                          spacing: 6,
-                          lineStyle: SkeletonLineStyle(
-                            randomLength: true,
-                            height: 10,
-                            width: 100,
-                            borderRadius: BorderRadius.circular(8),
-                            minLength: MediaQuery.of(context).size.width / 6,
-                            maxLength: MediaQuery.of(context).size.width / 3,
-                          )),
-                    ),
-                    const Spacer(),
-                    SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 30,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
-                    )
-                  ],
+                const SkeletonAvatar(
+                  style: SkeletonAvatarStyle(
+                    shape: BoxShape.circle,
+                    width: 35,
+                    height: 35,
+                  ),
                 ),
-
-                const SizedBox(height: 13),
-
-                // movie info
-                Row(
-                  children: [
-                    // movie poster
-                    SkeletonAvatar(
-                      style: SkeletonAvatarStyle(
-                        width: 80,
-                        height: 120,
-                        borderRadius: BorderRadius.circular(8),
-                        minHeight: MediaQuery.of(context).size.height / 8,
-                      ),
-                    ),
-
-                    const SizedBox(width: 15),
-
-                    Expanded(
-                      child: Column(
-                        children: [
-                          // movie title
-                          SkeletonParagraph(
-                            style: SkeletonParagraphStyle(
-                                lines: 1,
-                                spacing: 6,
-                                lineStyle: SkeletonLineStyle(
-                                  randomLength: true,
-                                  height: 18,
-                                  borderRadius: BorderRadius.circular(8),
-                                  minLength: MediaQuery.of(context).size.width / 2,
-                                )),
-                          ),
-
-                          const SizedBox(height: 5),
-
-                          // movie description
-                          SkeletonParagraph(
-                            style: SkeletonParagraphStyle(
-                                lines: 4,
-                                spacing: 6,
-                                lineStyle: SkeletonLineStyle(
-                                  randomLength: true,
-                                  height: 10,
-                                  borderRadius: BorderRadius.circular(8),
-                                  minLength: MediaQuery.of(context).size.width / 2,
-                                )),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 10),
-
-                Divider(
-                  indent: 20,
-                  endIndent: 20,
-                  thickness: 0.8,
-                  color: Theme.of(context).dividerColor.withOpacity(0.3),
-                ),
-
-                const SizedBox(height: 10),
-
-                // review content
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // rating
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SkeletonLine(
-                          style: SkeletonLineStyle(
-                              height: 40,
-                              width: 64,
-                              borderRadius: BorderRadius.circular(15)),
-                        ),
-                        const SizedBox(width: 6),
-                        SkeletonLine(
-                          style: SkeletonLineStyle(
-                              height: 40,
-                              width: 64,
-                              borderRadius: BorderRadius.circular(15)),
-                        ),
-                        const SizedBox(width: 6),
-                        SkeletonLine(
-                          style: SkeletonLineStyle(
-                              height: 40,
-                              width: 64,
-                              borderRadius: BorderRadius.circular(15)),
-                        ),
-                        const SizedBox(width: 6),
-                        SkeletonLine(
-                          style: SkeletonLineStyle(
-                              height: 40,
-                              width: 64,
-                              borderRadius: BorderRadius.circular(15)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    // review text
-                    SkeletonParagraph(
-                      style: SkeletonParagraphStyle(
-                          lines: 3,
-                          spacing: 6,
-                          lineStyle: SkeletonLineStyle(
-                            // randomLength: true,
-                            height: 13,
-                            borderRadius: BorderRadius.circular(8),
-                            minLength: MediaQuery.of(context).size.width / 2,
-                          )),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SkeletonAvatar(
-                        style: SkeletonAvatarStyle(
-                            width: 40,
-                            height: 40,
-                            borderRadius: BorderRadius.circular(20))),
-                    SkeletonAvatar(
-                        style: SkeletonAvatarStyle(
-                            width: 40,
-                            height: 40,
-                            borderRadius: BorderRadius.circular(20))),
-                  ],
-                ),
+                const SizedBox(width: 8),
                 SkeletonParagraph(
                   style: SkeletonParagraphStyle(
-                      lines: 1,
+                      lines: 2,
                       spacing: 6,
                       lineStyle: SkeletonLineStyle(
                         randomLength: true,
+                        height: 10,
+                        width: 100,
+                        borderRadius: BorderRadius.circular(8),
+                        minLength: MediaQuery.of(context).size.width / 6,
+                        maxLength: MediaQuery.of(context).size.width / 3,
+                      )),
+                ),
+                const Spacer(),
+                SkeletonLine(
+                  style: SkeletonLineStyle(
+                      height: 30,
+                      width: 64,
+                      borderRadius: BorderRadius.circular(15)),
+                )
+              ],
+            ),
+
+            const SizedBox(height: 13),
+
+            // movie info
+            Row(
+              children: [
+                // movie poster
+                SkeletonAvatar(
+                  style: SkeletonAvatarStyle(
+                    width: 80,
+                    height: 120,
+                    borderRadius: BorderRadius.circular(8),
+                    minHeight: MediaQuery.of(context).size.height / 8,
+                  ),
+                ),
+
+                const SizedBox(width: 15),
+
+                Expanded(
+                  child: Column(
+                    children: [
+                      // movie title
+                      SkeletonParagraph(
+                        style: SkeletonParagraphStyle(
+                            lines: 1,
+                            spacing: 6,
+                            lineStyle: SkeletonLineStyle(
+                              randomLength: true,
+                              height: 18,
+                              borderRadius: BorderRadius.circular(8),
+                              minLength: MediaQuery.of(context).size.width / 2,
+                            )),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      // movie description
+                      SkeletonParagraph(
+                        style: SkeletonParagraphStyle(
+                            lines: 4,
+                            spacing: 6,
+                            lineStyle: SkeletonLineStyle(
+                              randomLength: true,
+                              height: 10,
+                              borderRadius: BorderRadius.circular(8),
+                              minLength: MediaQuery.of(context).size.width / 2,
+                            )),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            Divider(
+              indent: 20,
+              endIndent: 20,
+              thickness: 0.8,
+              color: Theme.of(context).dividerColor.withOpacity(0.3),
+            ),
+
+            const SizedBox(height: 10),
+
+            // review content
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // rating
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SkeletonLine(
+                      style: SkeletonLineStyle(
+                          height: 40,
+                          width: 64,
+                          borderRadius: BorderRadius.circular(15)),
+                    ),
+                    const SizedBox(width: 6),
+                    SkeletonLine(
+                      style: SkeletonLineStyle(
+                          height: 40,
+                          width: 64,
+                          borderRadius: BorderRadius.circular(15)),
+                    ),
+                    const SizedBox(width: 6),
+                    SkeletonLine(
+                      style: SkeletonLineStyle(
+                          height: 40,
+                          width: 64,
+                          borderRadius: BorderRadius.circular(15)),
+                    ),
+                    const SizedBox(width: 6),
+                    SkeletonLine(
+                      style: SkeletonLineStyle(
+                          height: 40,
+                          width: 64,
+                          borderRadius: BorderRadius.circular(15)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // review text
+                SkeletonParagraph(
+                  style: SkeletonParagraphStyle(
+                      lines: 3,
+                      spacing: 6,
+                      lineStyle: SkeletonLineStyle(
+                        // randomLength: true,
                         height: 13,
                         borderRadius: BorderRadius.circular(8),
                         minLength: MediaQuery.of(context).size.width / 2,
-                        // maxLength: MediaQuery.of(context).size.width / 3,
                       )),
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SkeletonAvatar(
-                      style: SkeletonAvatarStyle(
-                        shape: BoxShape.circle,
-                        width: 35,
-                        height: 35,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SkeletonAvatar(
-                        style: SkeletonAvatarStyle(
-                            width: MediaQuery.of(context).size.width / 3,
-                            height: 30)),
-                  ],
-                ),
               ],
-            )),
+            ),
+
+            const SizedBox(height: 10),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SkeletonAvatar(
+                    style: SkeletonAvatarStyle(
+                        width: 40,
+                        height: 40,
+                        borderRadius: BorderRadius.circular(20))),
+                SkeletonAvatar(
+                    style: SkeletonAvatarStyle(
+                        width: 40,
+                        height: 40,
+                        borderRadius: BorderRadius.circular(20))),
+              ],
+            ),
+            SkeletonParagraph(
+              style: SkeletonParagraphStyle(
+                  lines: 1,
+                  spacing: 6,
+                  lineStyle: SkeletonLineStyle(
+                    randomLength: true,
+                    height: 13,
+                    borderRadius: BorderRadius.circular(8),
+                    minLength: MediaQuery.of(context).size.width / 2,
+                    // maxLength: MediaQuery.of(context).size.width / 3,
+                  )),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SkeletonAvatar(
+                  style: SkeletonAvatarStyle(
+                    shape: BoxShape.circle,
+                    width: 35,
+                    height: 35,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SkeletonAvatar(
+                    style: SkeletonAvatarStyle(
+                        width: MediaQuery.of(context).size.width / 3,
+                        height: 30)),
+              ],
+            ),
+          ],
+        )),
       ),
     );
   }
