@@ -297,25 +297,6 @@ class _BsbFormState extends State<BsbForm> {
                       "likes": [],
                       "comments": []
                     });
-                    DocumentReference documentRef = await FirebaseFirestore.instance.collection('reviews').add({
-                      'username': FirebaseAuth.instance.currentUser?.displayName ?? "Anonymous",
-                      'comment': comment,
-                      'rating': reviewPagesController.rating.value,
-                      'actingRating': reviewPagesController.actingRating.value,
-                      'lengthRating': reviewPagesController.lengthRating.value,
-                      'storyRating': reviewPagesController.storyRating.value,
-                      "userID": FirebaseAuth.instance.currentUser!.uid,
-                      "movieID": widget.movie.id,
-                      "timestamp": DateTime.now().millisecondsSinceEpoch,
-                      "likes": [],
-                      "comments": []
-                    });
-                    String documentId = documentRef.id;
-                    await FirebaseFirestore.instance.collection('reviews').doc(documentId).update({"reviewID": documentId});
-
-                    await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).update({
-                      "watched": FieldValue.arrayUnion([documentId]),
-                    });
 
                     Get.back();
 
