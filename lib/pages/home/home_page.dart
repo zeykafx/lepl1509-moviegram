@@ -3,8 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
-import 'package:projet_lepl1509_groupe_17/components/review_card/review_card.dart';
-import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/explore_feed.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/home_feed.dart';
 import 'package:projet_lepl1509_groupe_17/pages/search/search_page.dart';

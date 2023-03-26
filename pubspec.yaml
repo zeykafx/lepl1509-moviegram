@@ -62,6 +62,7 @@ dependencies:
       url: https://github.com/alex27riva/time_formatter.git
       ref: master
   firebase_crashlytics: ^3.0.17
+  url_launcher: ^6.1.10
 
 dev_dependencies:
   flutter_test:
