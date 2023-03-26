@@ -46,24 +46,26 @@ class _MoviePageState extends State<MoviePage> {
       return;
     }
     Map<String, dynamic> providersCountry;
+    List<dynamic> providersBE;
     try {
       // hack: use orElse instead
       providersCountry = allProviders.countryProviders.entries
           .singleWhere((element) => element.key == 'BE')
           .value;
+
+      if (providersCountry.isEmpty) {
+        return;
+      }
+      providersBE = providersCountry.entries
+          .singleWhere((element) => element.key == 'flatrate')
+          .value;
+      for (var result in providersBE) {
+        ProviderCountry providerCountry =
+            ProviderCountry.getProviderCountry(result);
+        providers.add(providerCountry);
+      }
     } catch (e) {
       return;
-    }
-    if (providersCountry.isEmpty) {
-      return;
-    }
-    List<dynamic> providersBE = providersCountry.entries
-        .singleWhere((element) => element.key == 'flatrate')
-        .value;
-    for (var result in providersBE) {
-      ProviderCountry providerCountry =
-          ProviderCountry.getProviderCountry(result);
-      providers.add(providerCountry);
     }
   }
 

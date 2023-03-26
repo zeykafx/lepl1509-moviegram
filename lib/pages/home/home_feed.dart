@@ -87,6 +87,7 @@ class _HomeFeedState extends State<HomeFeed> {
           .orderBy('timestamp', descending: true)
           .limit(10)
           .get();
+
       // add random recommendations
       List<bool> randomList =
           List.generate(value.docs.length, (_) => random.nextBool());
@@ -95,6 +96,7 @@ class _HomeFeedState extends State<HomeFeed> {
       for (int i = 0; i < value.docs.length; i++) {
         QueryDocumentSnapshot<Map<String, dynamic>> element = value.docs[i];
         followingReviews.add({"id": element.id, "data": element.data()});
+
         if (randomList[i]) {
           var values = SlidableMovieListType.values;
           int randomIndex = random.nextInt(values.length);
@@ -108,7 +110,9 @@ class _HomeFeedState extends State<HomeFeed> {
           });
         }
       }
-      followingUserMap["lastDoc"] = value.docs.last;
+      if (value.docs.isNotEmpty) {
+        followingUserMap["lastDoc"] = value.docs.last;
+      }
     }
     setState(() {
       loading = false;

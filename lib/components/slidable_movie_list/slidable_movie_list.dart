@@ -127,11 +127,11 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                                     clipBehavior: Clip.antiAlias,
                                     child: Image(
                                       image: ResizeImage(
-                                          NetworkImage(
-                                            "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-                                          ),
-                                          height: widget.size.toInt() * 2,
-                                          allowUpscaling: true),
+                                        NetworkImage(
+                                          "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                        ),
+                                        height: (widget.size * 1.5).toInt(),
+                                      ),
                                       fit: BoxFit.cover,
                                     ),
                                   ),
