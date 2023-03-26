@@ -111,15 +111,21 @@ class _MoviePageState extends State<MoviePage> {
                   child: SizedBox(
                     height: size.height * 0.5,
                     width: double.infinity,
-                    child: Image(
-                      image: ResizeImage(
-                        NetworkImage(
-                          "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
-                        ),
-                        width: size.width.toInt() * 2,
-                      ),
-                      fit: BoxFit.fitWidth,
-                    ),
+                    child: movie!.posterPath != null
+                        ? Image(
+                            image: ResizeImage(
+                              NetworkImage(
+                                "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+                              ),
+                              width: size.width.toInt() * 2,
+                            ),
+                            fit: BoxFit.fitWidth,
+                          )
+                        : const Center(
+                            child: Text(
+                              "No image available",
+                            ),
+                          ),
                   ),
                 ),
                 Align(
@@ -172,7 +178,7 @@ class _MoviePageState extends State<MoviePage> {
                               itemCount: movie!.actors.length,
                               scrollDirection: Axis.horizontal,
                               padding:
-                                  const EdgeInsets.only(top: 12.0, left: 20.0),
+                                  const EdgeInsets.only(top: 12.0, left: 0),
                               itemBuilder: _buildActor,
                             ),
                           ),
@@ -208,15 +214,21 @@ class _MoviePageState extends State<MoviePage> {
                 clipBehavior: Clip.antiAlias,
                 child: SizedBox(
                   height: 100,
-                  child: Image(
-                    image: ResizeImage(
-                      NetworkImage(
-                        "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
-                      ),
-                      width: 200,
-                    ),
-                    fit: BoxFit.contain,
-                  ),
+                  child: movie!.posterPath != null
+                      ? Image(
+                          image: ResizeImage(
+                            NetworkImage(
+                              "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+                            ),
+                            width: 200,
+                          ),
+                          fit: BoxFit.contain,
+                        )
+                      : const Center(
+                          child: Text(
+                            "No image",
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(
@@ -236,12 +248,13 @@ class _MoviePageState extends State<MoviePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      "${DateTime.parse(movie!.releaseDate).day}/${DateTime.parse(movie!.releaseDate).month}/${DateTime.parse(movie!.releaseDate).year} - ${Duration(minutes: movie!.runtime).inHours}h ${Duration(minutes: movie!.runtime).inMinutes % 60}m",
-                      style: const TextStyle(
-                        fontSize: 18,
+                    if (movie!.releaseDate != "")
+                      Text(
+                        "${DateTime.parse(movie!.releaseDate).day}/${DateTime.parse(movie!.releaseDate).month}/${DateTime.parse(movie!.releaseDate).year} - ${Duration(minutes: movie!.runtime).inHours}h ${Duration(minutes: movie!.runtime).inMinutes % 60}m",
+                        style: const TextStyle(
+                          fontSize: 18,
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 10.0),
                     RatingBar.builder(
                       initialRating: movie!.voteAverage / 2,
@@ -441,11 +454,16 @@ class _MoviePageState extends State<MoviePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ClipOval(
-                        child: Image.network(
-                          "https://image.tmdb.org/t/p/w500/${provider.logoPath}",
-                          width: 70,
-                          fit: BoxFit.contain,
-                        ),
+                        child: provider.logoPath != ""
+                            ? Image.network(
+                                "https://image.tmdb.org/t/p/w500/${provider.logoPath}",
+                                width: 70,
+                                fit: BoxFit.contain,
+                              )
+                            : const SizedBox(
+                                width: 70,
+                                height: 70,
+                              ),
                       ),
                       SizedBox(
                         child: Text(

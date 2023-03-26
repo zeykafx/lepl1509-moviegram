@@ -63,6 +63,8 @@ dependencies:
       ref: master
   firebase_crashlytics: ^3.0.17
   url_launcher: ^6.1.10
+  intl: ^0.17.0
+  http: ^0.13.5
 
 dev_dependencies:
   flutter_test:
