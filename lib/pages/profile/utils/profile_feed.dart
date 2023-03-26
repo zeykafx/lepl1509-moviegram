@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:projet_lepl1509_groupe_17/components/review_card/review_card.dart';
 import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 
+import '../../../components/review_card/review_card_pp.dart';
 import '../pages/edit_profile_page.dart';
 import '../widgets/numbers_widget.dart';
 import '../widgets/profile_widget.dart';
@@ -233,7 +233,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
                 itemBuilder: (BuildContext context, int index) {
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                    child: ReviewCard(
+                    child: ReviewCardPP(
                       key: Key(feedContent[index]["id"]),
                       id: feedContent[index]["id"],
                       data: feedContent[index]["data"],
