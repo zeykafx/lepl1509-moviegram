@@ -97,7 +97,7 @@ class _HomeFeedState extends State<HomeFeed> {
         QueryDocumentSnapshot<Map<String, dynamic>> element = value.docs[i];
         followingReviews.add({"id": element.id, "data": element.data()});
 
-        if (randomList[i]) {
+        if (randomList[i] && random.nextBool()) {
           var values = SlidableMovieListType.values;
           int randomIndex = random.nextInt(values.length);
           SlidableMovieListType randomType = values[randomIndex];
