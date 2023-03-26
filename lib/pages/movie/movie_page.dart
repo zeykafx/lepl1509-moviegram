@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:interactive_bottom_sheet/interactive_bottom_sheet.dart';
 import 'package:projet_lepl1509_groupe_17/components/slidable_movie_list/slidable_movie_list.dart';
 import 'package:projet_lepl1509_groupe_17/models/movies.dart';
 import 'package:projet_lepl1509_groupe_17/models/providers.dart';
 import 'package:projet_lepl1509_groupe_17/models/search_movie.dart';
 import 'package:projet_lepl1509_groupe_17/pages/movie/bsb_review_form.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MoviePage extends StatefulWidget {
   final SearchMovie? movie;
@@ -33,6 +33,7 @@ class _MoviePageState extends State<MoviePage> {
   Future<void> getMovie() async {
     movie = await Movie.getMovieDetails(widget.movie!.id);
     movie!.actors = await Movie.getActors(movie!.id);
+    movie!.trailerURL = await Movie.getTrailerURL(movie!.id);
     setState(() {
       gotMovieDetails = true;
     });
@@ -76,44 +77,64 @@ class _MoviePageState extends State<MoviePage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         // title: Text(!gotMovieDetails && movie == null ? "Details" : movie!.title),
+        scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
         elevation: 0,
-      ),
-      bottomSheet: InteractiveBottomSheet(
-        options: InteractiveBottomSheetOptions(
-          maxSize: 0.85,
-          initialSize: 0.65,
-          snapList: [0.30, 0.65],
-          backgroundColor: Theme.of(context).colorScheme.surface,
+        leading: Container(
+          margin: const EdgeInsets.only(left: 10),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Theme.of(context).colorScheme.surface,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
-        draggableAreaOptions: DraggableAreaOptions(
-          topBorderRadius: 10,
-          height: 30,
-          indicatorColor: Colors.grey,
-          indicatorWidth: 20,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          shadows: [],
-        ),
-        child: buildMovieModalSheet(context, size),
       ),
       body: !gotMovieDetails && movie == null
           ? const Center(child: CircularProgressIndicator())
-          : SizedBox(
-              width: size.width,
-              child: Image(
-                image: ResizeImage(
-                  NetworkImage(
-                    "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+          : Stack(
+              children: [
+                ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (rect) {
+                    return const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.black, Colors.black, Colors.transparent],
+                      stops: [0.1, 0.1, 1],
+                    ).createShader(
+                      Rect.fromLTRB(0, 0, rect.width, rect.height),
+                    );
+                  },
+                  child: SizedBox(
+                    height: size.height * 0.5,
+                    width: double.infinity,
+                    child: Image(
+                      image: ResizeImage(
+                        NetworkImage(
+                          "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+                        ),
+                        width: size.width.toInt() * 2,
+                      ),
+                      fit: BoxFit.fitWidth,
+                    ),
                   ),
-                  width: size.width.toInt() * 2,
                 ),
-                fit: BoxFit.fitHeight,
-              ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: SizedBox(
+                    height: size.height * 0.6,
+                    child: buildMovieDetails(context, size),
+                  ),
+                )
+              ],
             ),
     );
   }
 
-  Widget buildMovieModalSheet(context, Size size) {
+  Widget buildMovieDetails(context, Size size) {
     return movie == null
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
@@ -178,7 +199,7 @@ class _MoviePageState extends State<MoviePage> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 decoration: BoxDecoration(
@@ -245,6 +266,27 @@ class _MoviePageState extends State<MoviePage> {
                   ],
                 ),
               ),
+              if (movie!.trailerURL != null) ...[
+                InkWell(
+                  onTap: () async {
+                    final url = Uri.parse(movie!.trailerURL!);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url);
+                    }
+                  },
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 20),
@@ -337,11 +379,15 @@ class _MoviePageState extends State<MoviePage> {
             backgroundImage: movie!.actors[index].profilePath != null
                 ? ResizeImage(
                     NetworkImage(
-                      "https://image.tmdb.org/t/p/w500/${movie!.actors[index].profilePath}",
-                    ),
+                        "https://image.tmdb.org/t/p/w500/${movie!.actors[index].profilePath}"),
                     width: 200,
                   )
-                : null,
+                : const ResizeImage(
+                    NetworkImage(
+                      'http://www.gravatar.com/avatar/?d=mp',
+                    ),
+                    width: 200,
+                  ),
             radius: 35,
           ),
           Padding(

@@ -38,6 +38,7 @@ class SlidableMovieList extends StatefulWidget {
 class _SlidableMovieListState extends State<SlidableMovieList> {
   List<SearchMovie> popularMovies = [];
 
+  @override
   initState() {
     super.initState();
     getPopularMovies();

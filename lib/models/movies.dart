@@ -17,6 +17,7 @@ class Movie {
   final int runtime;
   final double popularity;
   List<Actor> actors = [];
+  String? trailerURL = null;
 
   Movie({
     required this.id,
@@ -64,6 +65,27 @@ class Movie {
       }
     }
     return movie;
+  }
+
+  static Future<String> getTrailerURL(int id) async {
+    String trailerURL = "";
+    var response = await http.get(Uri.parse(
+        "https://api.themoviedb.org/3/movie/$id/videos?api_key=$themoviedbApi&language=en-US&page=1&include_adult=false"));
+    if (response.statusCode == 200) {
+      Map<String, dynamic> jsonResponse = json.decode(response.body);
+      var videos = jsonResponse['results'];
+      for (var video in videos) {
+        if (video['type'] == "Trailer") {
+          trailerURL = "https://www.youtube.com/watch?v=${video['key']}";
+          break;
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print('Failed to get trailer with status: ${response.statusCode}.');
+      }
+    }
+    return trailerURL;
   }
 
   factory Movie.fromJson(Map<String, dynamic> json) {
