@@ -130,6 +130,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ProfileWidget(
                     imagePath: _photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
                     inDrawer: false,
+                    access: true,
+                    self: true,
                     isEdit: true,
                     onClicked: () {
                       _showPicker(context);

@@ -7,7 +7,14 @@ import '../utils/profile_feed.dart';
 
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final bool accessToFeed;
+  final String uid;
+
+  const ProfilePage({
+    Key? key,
+    required this.accessToFeed,
+    required this.uid,
+  }) : super(key: key);
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -15,8 +22,6 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   var db = FirebaseFirestore.instance;
-
-  User? currentUser = FirebaseAuth.instance.currentUser;
 
   UserProfile? userProfile;
 
@@ -28,8 +33,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // gets the user data from firestore
   Future<void> readUserData() async {
-    var value = await db.collection('users').doc(currentUser?.uid).get();
-    await currentUser?.reload();
+    var value = await db.collection('users').doc(widget.uid).get();
     setState(() {
       userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
     });
@@ -45,7 +49,11 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Center(
             child: Container(
               constraints: const BoxConstraints(maxWidth: 700),
-              child: const ProfileFeed(),
+              child: ProfileFeed(
+                  uid : widget.uid,
+                  accessToFeed : widget.accessToFeed,
+                  isCurrentUser: widget.uid == FirebaseAuth.instance.currentUser?.uid,
+              ),
             ),
       ),
     );

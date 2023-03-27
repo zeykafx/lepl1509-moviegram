@@ -8,6 +8,7 @@ import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart'
 import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
 
 import '../../models/user_profile.dart';
+import '../../pages/friends/friends_page.dart';
 
 class DrawerComponent extends StatefulWidget {
   const DrawerComponent({super.key});
@@ -43,11 +44,11 @@ class _DrawerState extends State<DrawerComponent> {
       Icon(Icons.home),
       HomePage(),
     ),
-    // const Destination(
-    //   "Friends",
-    //   Icon(Icons.people),
-    //   FriendsPage(),
-    // ),
+    const Destination(
+       "Friends",
+       Icon(Icons.people),
+       FriendsPage(),
+    ),
     // const Destination(
     //   "Settings",
     //   Icon(Icons.settings),
@@ -87,7 +88,7 @@ class _DrawerState extends State<DrawerComponent> {
               // user header with profile picture
               DrawerHeader(
                 child: InkWell(
-                  onTap: () => Get.to(() => const ProfilePage(), transition: Transition.fadeIn),
+                  onTap: () => Get.to(() => ProfilePage(accessToFeed: true, uid: currentUser?.uid ?? ''), transition: Transition.fadeIn),
                   child: Column(
                     children: [
                       Padding(
@@ -95,11 +96,13 @@ class _DrawerState extends State<DrawerComponent> {
                         child: ProfileWidget(
                           imagePath: currentUser?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
                           inDrawer: true,
+                          access: true,
+                          self: true,
                           onClicked: () {
                             Navigator.of(context)
                                 .push(
                               MaterialPageRoute(
-                                builder: (context) => const ProfilePage(),
+                                builder: (context) => ProfilePage(accessToFeed: true, uid: currentUser?.uid ?? ''),
                               ),
                             )
                                 .then((_) {

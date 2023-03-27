@@ -5,6 +5,8 @@ class ProfileWidget extends StatelessWidget {
   final bool isEdit;
   final bool inDrawer;
   final VoidCallback onClicked;
+  final bool access;
+  final bool self;
 
   const ProfileWidget({
     Key? key,
@@ -12,6 +14,8 @@ class ProfileWidget extends StatelessWidget {
     this.isEdit = false,
     required this.onClicked,
     required this.inDrawer,
+    required this.access,
+    required this.self,
   }) : super(key: key);
 
   @override
@@ -74,7 +78,7 @@ class ProfileWidget extends StatelessWidget {
           color: color,
           all: 8,
           child: Icon(
-            isEdit ? Icons.add_a_photo : Icons.edit,
+            self ? (isEdit ? Icons.add_a_photo : Icons.edit) : (access ? Icons.person_remove : Icons.person_add),
             color: Colors.white,
             size: 15,
           ),

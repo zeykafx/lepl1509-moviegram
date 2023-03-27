@@ -12,14 +12,22 @@ import '../widgets/numbers_widget.dart';
 import '../widgets/profile_widget.dart';
 
 class ProfileFeed extends StatefulWidget {
-  const ProfileFeed({super.key});
+  final String uid;
+  final bool accessToFeed;
+  final bool isCurrentUser;
+  const ProfileFeed({
+    super.key,
+    required this.uid,
+    required this.accessToFeed,
+    required this.isCurrentUser,
+  });
 
   @override
   _ProfileFeedState createState() => _ProfileFeedState();
 }
 
 class _ProfileFeedState extends State<ProfileFeed> {
-  User? currentUser = FirebaseAuth.instance.currentUser;
+  //User? currentUser = FirebaseAuth.instance.currentUser;
   FirebaseFirestore db = FirebaseFirestore.instance;
   Map<String, dynamic> followingUserMap = {
     "lastDoc": null
@@ -59,8 +67,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
     setState(() {
       loading = true;
     });
-    var value = await db.collection('users').doc(currentUser?.uid).get();
-    await currentUser?.reload();
+    var value = await db.collection('users').doc(widget.uid).get();
     setState(() {
       userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
     });
@@ -156,9 +163,11 @@ class _ProfileFeedState extends State<ProfileFeed> {
           child: ListView(
             children : [
               ProfileWidget(
-                imagePath: currentUser?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
+                imagePath: userProfile?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
                 inDrawer: false,
-                onClicked: () {Navigator.of(context).push(MaterialPageRoute(
+                self: widget.isCurrentUser,
+                access : widget.accessToFeed,
+                onClicked: () {widget.isCurrentUser ? Navigator.of(context).push(MaterialPageRoute(
                   builder:
                       (context) => EditProfilePage(),
                 ),
@@ -166,7 +175,10 @@ class _ProfileFeedState extends State<ProfileFeed> {
                   setState(() {
                     readUserData();
                   });
-                });
+                }) : (widget.accessToFeed ?
+                DoubleRemoveFriend(to: widget.uid, from: FirebaseAuth.instance.currentUser!.uid) :
+                sendRequest(to: widget.uid, from: FirebaseAuth.instance.currentUser!.uid)
+                );
                 },
               ),
               const SizedBox(height: 10),
@@ -175,12 +187,12 @@ class _ProfileFeedState extends State<ProfileFeed> {
               Column(
                 children: [
                   Text(
-                    currentUser?.displayName ?? "No name",
+                    userProfile?.name ?? "No name",
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    currentUser?.email ?? "No email",
+                    userProfile?.email ?? "No email",
                     style: const TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -223,7 +235,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
                 ),
               ),
 
-              ListView.builder(
+              widget.accessToFeed ? ListView.builder(
                 key: const Key('profileFeedList'),
                 shrinkWrap: true,
                 physics: ScrollPhysics(),
@@ -241,7 +253,12 @@ class _ProfileFeedState extends State<ProfileFeed> {
                     ),
                   );
                 }
-              ),
+              ) : const Center(
+                child:  Text(
+                  'This user is private',
+                  style: TextStyle(fontSize: 20),
+                ),
+              )
             ],
 
           )
@@ -254,4 +271,17 @@ class _ProfileFeedState extends State<ProfileFeed> {
       ],
     ).animate().fadeIn();
   }
+
+  void sendRequest({String? to, String? from}) {
+    FirebaseFirestore.instance.collection('following').doc(to).collection('friendRequests').doc(from).set({});
+  }
+}
+
+void removeFriend({String? to, String? from}) {
+  FirebaseFirestore.instance.collection('following').doc(to).collection('userFollowing').doc(from).delete();
+}
+
+void DoubleRemoveFriend({String? to, String? from}) {
+  removeFriend(to: to, from: from);
+  removeFriend(to: from, from: to);
 }
