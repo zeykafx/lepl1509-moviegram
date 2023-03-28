@@ -5,7 +5,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:projet_lepl1509_groupe_17/components/slidable_movie_list/slidable_movie_list.dart';
 import 'package:projet_lepl1509_groupe_17/models/search_movie.dart';
 import 'package:projet_lepl1509_groupe_17/pages/movie/movie_page.dart';
 
@@ -52,9 +51,7 @@ class SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(textFieldContent == ""
-            ? "Search for a movie"
-            : "Results for $textFieldContent"),
+        title: Text(textFieldContent == "" ? "Search for a movie" : "Results for $textFieldContent"),
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
@@ -93,23 +90,23 @@ class SearchPageState extends State<SearchPage> {
               height: 10.0,
             ),
             displayList.isEmpty && initialOpen
-                ? const SlidableMovieList(
-                    size: 200,
-                    type: SlidableMovieListType.popular,
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                // ? const SlidableMovieList(
+                //     size: 200,
+                //     type: SlidableMovieListType.popular,
+                //     padding: EdgeInsets.symmetric(horizontal: 8.0),
+                //   )
+                ? const Center(
+                    child: Text("Search for a movie", style: TextStyle(fontSize: 20)),
                   )
                 : displayList.isEmpty
                     ? const Center(
-                        child: Text("No results found",
-                            style: TextStyle(fontSize: 20)),
+                        child: Text("No results found", style: TextStyle(fontSize: 20)),
                       )
                     : Expanded(
                         child: GridView(
                           // mainAxisSize: MainAxisSize.max,
-                          gridDelegate:
-                              const SliverGridDelegateWithMaxCrossAxisExtent(
-                                  maxCrossAxisExtent: 150,
-                                  childAspectRatio: 0.7),
+                          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 150, childAspectRatio: 0.7),
                           children: [
                             ...displayList.map(
                               (movie) => Padding(
@@ -126,8 +123,7 @@ class SearchPageState extends State<SearchPage> {
                                         Expanded(
                                           child: Container(
                                             decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
+                                              borderRadius: BorderRadius.circular(10),
                                             ),
                                             clipBehavior: Clip.antiAlias,
                                             child: movie.posterPath != null
@@ -136,8 +132,7 @@ class SearchPageState extends State<SearchPage> {
                                                       NetworkImage(
                                                         "https://image.tmdb.org/t/p/w500${movie.posterPath}",
                                                       ),
-                                                      height:
-                                                          (200 * 1.5).toInt(),
+                                                      height: (200 * 1.5).toInt(),
                                                     ),
                                                     fit: BoxFit.cover,
                                                   )
@@ -177,8 +172,7 @@ class SearchPageState extends State<SearchPage> {
                                             ),
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: Theme.of(context)
-                                                  .dividerColor,
+                                              color: Theme.of(context).dividerColor,
                                             ),
                                           ),
                                       ],
