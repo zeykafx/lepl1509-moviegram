@@ -11,6 +11,8 @@ import 'package:projet_lepl1509_groupe_17/pages/movie/movie_page.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:time_formatter/time_formatter.dart';
 
+import '../../pages/comments/comment_page.dart';
+
 class ReviewCardPP extends StatefulWidget {
   final String id;
   final Map<String, dynamic> data;
@@ -28,6 +30,9 @@ class _ReviewCardPPState extends State<ReviewCardPP>
   FirebaseFirestore db = FirebaseFirestore.instance;
   Review? review;
   User? currentUser = FirebaseAuth.instance.currentUser;
+  int nbComments = 0;
+
+
 
   TextEditingController commentController = TextEditingController();
 
@@ -43,7 +48,19 @@ class _ReviewCardPPState extends State<ReviewCardPP>
         setState(() {
           review = value;
         });
+        getNbComments();
       }
+    });
+  }
+
+  Future<void> getNbComments() async {
+    var followingVal = await db
+        .collection('comments')
+        .doc(widget.id)
+        .collection('comments')
+        .get();
+    setState(() {
+      nbComments = followingVal.docs.length;
     });
   }
 
@@ -478,11 +495,15 @@ class _ReviewCardPPState extends State<ReviewCardPP>
             ),
             const Spacer(),
             TextButton.icon(
-              label: Text(review!.comments.length.toString(),
+              label: Text(nbComments.toString(),
                   style: TextStyle(color: Theme.of(context).dividerColor)),
               onPressed: () {},
-              icon: Icon(Icons.mode_comment_outlined,
-                  color: Theme.of(context).dividerColor),
+              icon: IconButton(
+                  onPressed: () {
+                    Get.to(CommentPage(postId: widget.id));
+                  },
+                  icon:Icon(Icons.mode_comment_outlined,
+                  color: Theme.of(context).dividerColor)),
             ),
           ],
         ),

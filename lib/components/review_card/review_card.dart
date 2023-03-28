@@ -7,6 +7,7 @@ import 'package:projet_lepl1509_groupe_17/models/movies.dart';
 import 'package:projet_lepl1509_groupe_17/models/review.dart';
 import 'package:projet_lepl1509_groupe_17/models/search_movie.dart';
 import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
+import 'package:projet_lepl1509_groupe_17/pages/comments/comment_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/movie/movie_page.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:time_formatter/time_formatter.dart';
@@ -29,6 +30,9 @@ class _ReviewCardState extends State<ReviewCard>
   Review? review;
   UserProfile? author;
   User? currentUser = FirebaseAuth.instance.currentUser;
+  int nbComments = 0;
+
+
 
   TextEditingController commentController = TextEditingController();
 
@@ -60,6 +64,14 @@ class _ReviewCardState extends State<ReviewCard>
       print(
           "failed to get user profile in review card, maybe the card was disposed before the future finished");
     }
+    var followingVal = await db
+        .collection('comments')
+        .doc(widget.id)
+        .collection('comments')
+        .get();
+    setState(() {
+      nbComments = followingVal.docs.length;
+    });
   }
 
   Future<bool> addLike() async {
@@ -545,11 +557,15 @@ class _ReviewCardState extends State<ReviewCard>
             ),
             const Spacer(),
             TextButton.icon(
-              label: Text(review!.comments.length.toString(),
+              label: Text(nbComments.toString(),
                   style: TextStyle(color: Theme.of(context).dividerColor)),
               onPressed: () {},
-              icon: Icon(Icons.mode_comment_outlined,
-                  color: Theme.of(context).dividerColor),
+              icon: IconButton(
+                  onPressed: () {
+                    Get.to(CommentPage(postId: widget.id));
+                  },
+                  icon:Icon(Icons.mode_comment_outlined,
+                  color: Theme.of(context).dividerColor)),
             ),
           ],
         ),
@@ -576,13 +592,18 @@ class _ReviewCardState extends State<ReviewCard>
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: TextField(
+                child: TextFormField(
                   controller: commentController,
                   decoration: InputDecoration(
                     hintText: "Add a comment...",
                     hintStyle: TextStyle(color: Theme.of(context).dividerColor),
                     border: InputBorder.none,
                   ),
+                  onFieldSubmitted: (value) {
+                    if (value.isNotEmpty) {
+                      addComment(value);
+                    }
+                  },
                 ),
               ),
             ],
@@ -811,5 +832,14 @@ class _ReviewCardState extends State<ReviewCard>
         )),
       ),
     );
+  }
+
+  Future<void> addComment(String query) async {
+    await db.collection('comments').doc(widget.id).collection('comments').add({
+      'comment': query,
+      'uid': FirebaseAuth.instance.currentUser!.uid,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+    commentController.clear();
   }
 }
