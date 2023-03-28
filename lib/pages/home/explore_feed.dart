@@ -17,7 +17,13 @@ class _ExploreFeedState extends State<ExploreFeed> {
           size: 250,
           type: SlidableMovieListType.popular,
           padding: EdgeInsets.only(left: 20, right: 20, top: 20),
-        )
+        ),
+        // SlidableMovieList(
+        //   size: 200,
+        //   type: SlidableMovieListType.now_playing,
+        //   padding: EdgeInsets.only(left: 20, right: 20, top: 20),
+        //   vertical: true,
+        // ),
       ],
     );
   }

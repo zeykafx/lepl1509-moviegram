@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
-import 'package:projet_lepl1509_groupe_17/pages/home/explore_feed.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/home_feed.dart';
 import 'package:projet_lepl1509_groupe_17/pages/search/search_page.dart';
 
@@ -17,7 +16,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       initialIndex: 0,
-      length: 2,
+      length: 1, // TODO change back to 2
       child: Scaffold(
         drawer: const DrawerComponent(),
         appBar: AppBar(
@@ -30,16 +29,16 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.search),
             ),
           ],
-          bottom: const TabBar(
-            tabs: [
-              Tab(
-                text: "Following",
-              ),
-              Tab(
-                text: "Explore",
-              ),
-            ],
-          ),
+          // bottom: const TabBar(
+          //   tabs: [
+          //     Tab(
+          //       text: "Following",
+          //     ),
+          //     Tab(
+          //       text: "Explore",
+          //     ),
+          //   ],
+          // ),
         ),
         body: Center(
           child: Container(
@@ -47,7 +46,7 @@ class _HomePageState extends State<HomePage> {
             child: const TabBarView(
               children: [
                 HomeFeed(),
-                ExploreFeed(),
+                // ExploreFeed(),
               ],
             ),
           ),

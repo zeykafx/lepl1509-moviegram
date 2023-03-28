@@ -10,26 +10,22 @@ import 'package:projet_lepl1509_groupe_17/pages/movie/movie_page.dart';
 
 import '../../main.dart';
 
-enum SlidableMovieListType {
-  popular,
-  now_playing,
-  top_rated,
-  recommendations,
-  upcoming
-}
+enum SlidableMovieListType { popular, now_playing, top_rated, recommendations, upcoming }
 
 class SlidableMovieList extends StatefulWidget {
   final double size;
   final SlidableMovieListType type;
   final int id;
   final EdgeInsets padding;
+  final bool vertical;
 
   const SlidableMovieList(
       {super.key,
       required this.size,
       required this.type,
       this.id = 0,
-      this.padding = EdgeInsets.zero});
+      this.padding = EdgeInsets.zero,
+      this.vertical = false});
 
   @override
   _SlidableMovieListState createState() => _SlidableMovieListState();
@@ -77,119 +73,118 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
     }
   }
 
+  Widget buildList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: widget.padding,
+          child: Text(
+            widget.type == SlidableMovieListType.popular
+                ? "Popular now"
+                : widget.type == SlidableMovieListType.now_playing
+                    ? "Now playing"
+                    : widget.type == SlidableMovieListType.recommendations
+                        ? "Recommended"
+                        : widget.type == SlidableMovieListType.top_rated
+                            ? "Top Rated"
+                            : widget.type == SlidableMovieListType.upcoming
+                                ? "Upcoming"
+                                : "Movies you might like", // default
+            style: const TextStyle(fontSize: 20),
+          ),
+        ),
+        const SizedBox(
+          height: 10.0,
+        ),
+        Expanded(
+          child: ListView(
+            scrollDirection: widget.vertical ? Axis.vertical : Axis.horizontal,
+            children: [
+              ...popularMovies.map((movie) {
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: InkWell(
+                    onTap: () {
+                      Get.back();
+                      Get.to(() => MoviePage(movie: movie));
+                    },
+                    child: movie.posterPath != null
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: Image(
+                                    image: ResizeImage(
+                                      NetworkImage(
+                                        "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                      ),
+                                      height: (widget.size * 1.5).toInt(),
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+
+                              // show title and formatted release date only if the widget is big enough
+                              if (widget.size > 200) ...[
+                                const SizedBox(
+                                  height: 5.0,
+                                ),
+                                SizedBox(
+                                  width: 100,
+                                  child: Text(
+                                    movie.title,
+                                    maxLines: 1,
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5.0,
+                                ),
+                                Text(
+                                  DateFormat('MMM. dd, yyyy').format(DateTime.parse(movie.releaseDate)),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context).dividerColor,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          )
+                        : Container(
+                            height: widget.size,
+                            color: Colors.grey,
+                          ),
+                  ).animate().fadeIn(),
+                );
+              })
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return popularMovies.isNotEmpty
-        ? SizedBox.fromSize(
-            size: Size.fromHeight(widget.size),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: widget.padding,
-                  child: Text(
-                    widget.type == SlidableMovieListType.popular
-                        ? "Popular now"
-                        : widget.type == SlidableMovieListType.now_playing
-                            ? "Now playing"
-                            : widget.type ==
-                                    SlidableMovieListType.recommendations
-                                ? "Recommended"
-                                : widget.type == SlidableMovieListType.top_rated
-                                    ? "Top Rated"
-                                    : widget.type ==
-                                            SlidableMovieListType.upcoming
-                                        ? "Upcoming"
-                                        : "Movies you might like", // default
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10.0,
-                ),
-                Expanded(
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      ...popularMovies.map((movie) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: InkWell(
-                            onTap: () {
-                              Get.back();
-                              Get.to(() => MoviePage(movie: movie));
-                            },
-                            child: movie.posterPath != null
-                                ? Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Expanded(
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                          clipBehavior: Clip.antiAlias,
-                                          child: Image(
-                                            image: ResizeImage(
-                                              NetworkImage(
-                                                "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-                                              ),
-                                              height:
-                                                  (widget.size * 1.5).toInt(),
-                                            ),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-
-                                      // show title and formatted release date only if the widget is big enough
-                                      if (widget.size > 200) ...[
-                                        const SizedBox(
-                                          height: 5.0,
-                                        ),
-                                        SizedBox(
-                                          width: 100,
-                                          child: Text(
-                                            movie.title,
-                                            maxLines: 1,
-                                            textAlign: TextAlign.center,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: 5.0,
-                                        ),
-                                        Text(
-                                          DateFormat('MMM. dd, yyyy').format(
-                                              DateTime.parse(
-                                                  movie.releaseDate)),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color:
-                                                Theme.of(context).dividerColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  )
-                                : Container(
-                                    height: widget.size,
-                                    color: Colors.grey,
-                                  ),
-                          ).animate().fadeIn(),
-                        );
-                      })
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          )
+        ? widget.vertical
+            ? Expanded(child: buildList())
+            : SizedBox.fromSize(
+                size: Size.fromHeight(widget.size),
+                child: buildList(),
+              )
         : Container();
   }
 }

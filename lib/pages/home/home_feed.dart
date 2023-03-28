@@ -32,8 +32,7 @@ class _HomeFeedState extends State<HomeFeed> {
   void initState() {
     super.initState();
     scrollController.addListener(() async {
-      if (scrollController.position.pixels ==
-          scrollController.position.maxScrollExtent) {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
         getMoreReviews().then((value) {
           setState(() {
             feedContent.addAll(value);
@@ -58,11 +57,7 @@ class _HomeFeedState extends State<HomeFeed> {
     setState(() {
       userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
     });
-    var followingVal = await db
-        .collection('following')
-        .doc(currentUser?.uid)
-        .collection('userFollowing')
-        .get();
+    var followingVal = await db.collection('following').doc(currentUser?.uid).collection('userFollowing').get();
     for (var element in followingVal.docs) {
       following.add({"uid": element.id, "lastDoc": null});
     }
@@ -89,8 +84,7 @@ class _HomeFeedState extends State<HomeFeed> {
           .get();
 
       // add random recommendations
-      List<bool> randomList =
-          List.generate(value.docs.length, (_) => random.nextBool());
+      List<bool> randomList = List.generate(value.docs.length, (_) => random.nextBool());
 
       // add reviews
       for (int i = 0; i < value.docs.length; i++) {
@@ -173,33 +167,37 @@ class _HomeFeedState extends State<HomeFeed> {
               });
             });
           },
-          child: ListView.builder(
-              key: const Key('homeFeedList'),
-              addRepaintBoundaries: true,
-              controller: scrollController,
-              itemCount: feedContent.length,
-              itemBuilder: (BuildContext context, int index) {
-                if (feedContent[index].containsKey("isRecommendation")) {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                    child: SlidableMovieList(
-                      key: Key(feedContent[index]["type"].toString()),
-                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                      type: feedContent[index]["type"],
-                      size: 250,
-                    ),
-                  );
-                }
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                  child: ReviewCard(
-                    key: Key(feedContent[index]["id"]),
-                    id: feedContent[index]["id"],
-                    data: feedContent[index]["data"],
-                    user: userProfile,
-                  ),
-                );
-              }),
+          child: feedContent.isNotEmpty
+              ? ListView.builder(
+                  key: const Key('homeFeedList'),
+                  addRepaintBoundaries: true,
+                  controller: scrollController,
+                  itemCount: feedContent.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (feedContent[index].containsKey("isRecommendation")) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                        child: SlidableMovieList(
+                          key: Key(feedContent[index]["type"].toString()),
+                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                          type: feedContent[index]["type"],
+                          size: 250,
+                        ),
+                      );
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                      child: ReviewCard(
+                        key: Key(feedContent[index]["id"]),
+                        id: feedContent[index]["id"],
+                        data: feedContent[index]["data"],
+                        user: userProfile,
+                      ),
+                    );
+                  })
+              : const Center(
+                  child: Text("No reviews posted by your friends yet."),
+                ),
         ),
         if (loading)
           const Align(

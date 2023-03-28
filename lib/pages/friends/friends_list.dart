@@ -15,8 +15,6 @@ class FriendsList extends StatefulWidget {
 class _FriendsListState extends State<FriendsList> {
   User? currentUser = FirebaseAuth.instance.currentUser;
   FirebaseFirestore db = FirebaseFirestore.instance;
-  List<Map<String, dynamic>> following = [];
-  UserProfile? userProfile;
   bool loading = false;
 
   List<UserProfile> friends = [];
@@ -24,9 +22,9 @@ class _FriendsListState extends State<FriendsList> {
   @override
   void initState() {
     super.initState();
-    readUserData().then((_) {
+    readUserData().then((List<Map<String, dynamic>> following) {
       if (following.isNotEmpty) {
-        getFriends().then((value) {
+        getFriends(following).then((value) {
           setState(() {
             friends = value;
           });
@@ -35,24 +33,23 @@ class _FriendsListState extends State<FriendsList> {
     });
   }
 
-  Future<void> readUserData() async {
+  Future<List<Map<String, dynamic>>> readUserData() async {
+    List<Map<String, dynamic>> following = [];
+
     setState(() {
       loading = true;
     });
-    var value = await db.collection('users').doc(currentUser?.uid).get();
-    setState(() {
-      userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
-    });
     var followingVal = await db.collection('following').doc(currentUser?.uid).collection('userFollowing').get();
     for (var element in followingVal.docs) {
-      following.add({"uid": element.id, "lastDoc": null});
+      following.add({"uid": element.id});
     }
     setState(() {
       loading = false;
     });
+    return following;
   }
 
-  Future<List<UserProfile>> getFriends() async {
+  Future<List<UserProfile>> getFriends(List<Map<String, dynamic>> following) async {
     setState(() {
       loading = true;
     });
@@ -80,7 +77,7 @@ class _FriendsListState extends State<FriendsList> {
 
   @override
   Widget build(BuildContext context) {
-    if (following.isEmpty) {
+    if (friends.isEmpty) {
       return const Center(child: Text("It's empty here, add some friends!"));
     } else {
       if (loading) return const Center(child: CircularProgressIndicator());
