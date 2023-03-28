@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/components/slidable_movie_list/slidable_movie_list.dart';
 import 'package:projet_lepl1509_groupe_17/models/movies.dart';
 import 'package:projet_lepl1509_groupe_17/models/providers.dart';
@@ -50,19 +51,14 @@ class _MoviePageState extends State<MoviePage> {
     List<dynamic> providersBE;
     try {
       // hack: use orElse instead
-      providersCountry = allProviders.countryProviders.entries
-          .singleWhere((element) => element.key == 'BE')
-          .value;
+      providersCountry = allProviders.countryProviders.entries.singleWhere((element) => element.key == 'BE').value;
 
       if (providersCountry.isEmpty) {
         return;
       }
-      providersBE = providersCountry.entries
-          .singleWhere((element) => element.key == 'flatrate')
-          .value;
+      providersBE = providersCountry.entries.singleWhere((element) => element.key == 'flatrate').value;
       for (var result in providersBE) {
-        ProviderCountry providerCountry =
-            ProviderCountry.getProviderCountry(result);
+        ProviderCountry providerCountry = ProviderCountry.getProviderCountry(result);
         providers.add(providerCountry);
       }
     } catch (e) {
@@ -88,7 +84,7 @@ class _MoviePageState extends State<MoviePage> {
           ),
           child: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Get.back(),
           ),
         ),
       ),
@@ -177,8 +173,7 @@ class _MoviePageState extends State<MoviePage> {
                             child: ListView.builder(
                               itemCount: movie!.actors.length,
                               scrollDirection: Axis.horizontal,
-                              padding:
-                                  const EdgeInsets.only(top: 12.0, left: 0),
+                              padding: const EdgeInsets.only(top: 12.0, left: 0),
                               itemBuilder: _buildActor,
                             ),
                           ),
@@ -327,17 +322,12 @@ class _MoviePageState extends State<MoviePage> {
                       builder: (context) {
                         return GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () =>
-                              FocusManager.instance.primaryFocus?.unfocus(),
+                          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
                           child: Padding(
-                            padding: EdgeInsets.only(
-                                bottom:
-                                    MediaQuery.of(context).viewInsets.bottom),
+                            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                             child: SizedBox(
                                 width: size.width,
-                                height: size.height < 800
-                                    ? size.height * 0.50
-                                    : size.height * 0.40,
+                                height: size.height < 800 ? size.height * 0.50 : size.height * 0.40,
                                 child: BsbForm(
                                   movie: movie!,
                                 )),
@@ -357,8 +347,7 @@ class _MoviePageState extends State<MoviePage> {
                 ),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                  child:
-                      Text("Add to watchlist", style: TextStyle(fontSize: 15)),
+                  child: Text("Add to watchlist", style: TextStyle(fontSize: 15)),
                 ),
                 onPressed: () {
                   // show success snackbar
@@ -391,8 +380,7 @@ class _MoviePageState extends State<MoviePage> {
           CircleAvatar(
             backgroundImage: movie!.actors[index].profilePath != null
                 ? ResizeImage(
-                    NetworkImage(
-                        "https://image.tmdb.org/t/p/w500/${movie!.actors[index].profilePath}"),
+                    NetworkImage("https://image.tmdb.org/t/p/w500/${movie!.actors[index].profilePath}"),
                     width: 200,
                   )
                 : const ResizeImage(
@@ -415,10 +403,7 @@ class _MoviePageState extends State<MoviePage> {
               child: Text(
                 movie!.actors[index].character,
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Theme.of(context).dividerColor),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).dividerColor),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
