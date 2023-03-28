@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:projet_lepl1509_groupe_17/main.dart';
+import 'package:projet_lepl1509_groupe_17/models/comment.dart';
 import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 
 import 'movies.dart';
@@ -19,7 +20,7 @@ class Review {
   final String username;
   final String userID;
   final DateTime postedTime;
-  final List<ReviewComment> comments;
+  final List<Comment> comments;
   final List<UserProfile> likes;
 
   Review(this.comment, this.rating, this.actingRating, this.storyRating, this.lengthRating, this.movieID, this.username,
@@ -41,15 +42,22 @@ class Review {
   }
 
   static Future<Review> fromJson(String id, Map<String, dynamic> json) async {
-    List<ReviewComment> comments = [];
+    List<Comment> comments = [];
     List<UserProfile> likes = [];
-    if (json['comments'] != null) {
-      for (var i = 0; i < json['comments'].length; i++) {
-        DocumentSnapshot<Map<String, dynamic>> value =
-            await FirebaseFirestore.instance.collection('comments').doc(json["comments"][i]).get();
-        comments.add(ReviewComment.fromJson(json['comments'][i], value.data()!));
-      }
+    var commentVal = await FirebaseFirestore.instance.collection('comments').doc(id).collection('comments').get();
+    for (var element in commentVal.docs) {
+      Comment comment = Comment(
+        commId: element.id,
+        comment: element.data()["comment"],
+        uid: element.data()["uid"],
+        timestamp: element.data()["timestamp"],
+        user: UserProfile.fromMap(
+            (await FirebaseFirestore.instance.collection('users').doc(element.data()["uid"]).get()).data()!),
+      );
+      comments.add(comment);
     }
+    comments.sort((a, b) => b.date.compareTo(a.date));
+
     if (json['likes'] != null) {
       for (var i = 0; i < json['likes'].length; i++) {
         DocumentSnapshot<Map<String, dynamic>> value =
@@ -71,26 +79,6 @@ class Review {
       id,
       json['comments'] != null ? comments : [],
       json['likes'] != null ? likes : [],
-    );
-  }
-}
-
-class ReviewComment {
-  final String commentID;
-  final String content;
-  final String reviewID;
-  final String userID;
-  final DateTime postedTime;
-
-  ReviewComment(this.commentID, this.content, this.reviewID, this.userID, this.postedTime);
-
-  static ReviewComment fromJson(String id, Map<String, dynamic> json) {
-    return ReviewComment(
-      id,
-      json['content'],
-      json['reviewID'],
-      json['userID'],
-      DateTime.fromMillisecondsSinceEpoch(json['timestamp']),
     );
   }
 }

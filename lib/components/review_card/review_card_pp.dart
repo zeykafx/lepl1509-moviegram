@@ -18,21 +18,17 @@ class ReviewCardPP extends StatefulWidget {
   final Map<String, dynamic> data;
   final UserProfile? user;
 
-  const ReviewCardPP(
-      {super.key, required this.id, required this.data, required this.user});
+  const ReviewCardPP({super.key, required this.id, required this.data, required this.user});
 
   @override
   _ReviewCardPPState createState() => _ReviewCardPPState();
 }
 
-class _ReviewCardPPState extends State<ReviewCardPP>
-    with AutomaticKeepAliveClientMixin {
+class _ReviewCardPPState extends State<ReviewCardPP> with AutomaticKeepAliveClientMixin {
   FirebaseFirestore db = FirebaseFirestore.instance;
   Review? review;
   User? currentUser = FirebaseAuth.instance.currentUser;
   int nbComments = 0;
-
-
 
   TextEditingController commentController = TextEditingController();
 
@@ -54,11 +50,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
   }
 
   Future<void> getNbComments() async {
-    var followingVal = await db
-        .collection('comments')
-        .doc(widget.id)
-        .collection('comments')
-        .get();
+    var followingVal = await db.collection('comments').doc(widget.id).collection('comments').get();
     setState(() {
       nbComments = followingVal.docs.length;
     });
@@ -118,8 +110,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,11 +226,8 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                   child: SizedBox(
                     width: 80,
                     child: Image(
-                      image: ResizeImage(
-                          NetworkImage(
-                              "https://image.tmdb.org/t/p/w500${movie.posterPath}"),
-                          width: 160,
-                          allowUpscaling: true),
+                      image: ResizeImage(NetworkImage("https://image.tmdb.org/t/p/w500${movie.posterPath}"),
+                          width: 160, allowUpscaling: true),
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -287,22 +275,17 @@ class _ReviewCardPPState extends State<ReviewCardPP>
         SizedBox.fromSize(
           size: const Size.fromHeight(55),
           child: ListView(
-            physics: const BouncingScrollPhysics(
-                decelerationRate: ScrollDecelerationRate.fast),
+            physics: const BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.fast),
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,
             children: [
-              buildRatingPill(review!.rating.toString(), "Rating",
-                  Icons.movie_creation_outlined),
+              buildRatingPill(review!.rating.toString(), "Rating", Icons.movie_creation_outlined),
               const SizedBox(width: 6),
-              buildRatingPill(
-                  review!.actingRating.toString(), "Actors", Icons.person),
+              buildRatingPill(review!.actingRating.toString(), "Actors", Icons.person),
               const SizedBox(width: 6),
-              buildRatingPill(review!.storyRating.toString(), "Story",
-                  Icons.menu_book_outlined),
+              buildRatingPill(review!.storyRating.toString(), "Story", Icons.menu_book_outlined),
               const SizedBox(width: 6),
-              buildRatingPill(review!.lengthRating.toString(), "Length",
-                  Icons.timelapse_outlined),
+              buildRatingPill(review!.lengthRating.toString(), "Length", Icons.timelapse_outlined),
             ],
           ),
         ),
@@ -378,12 +361,10 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                   children: [
                     TextButton.icon(
                       onPressed: () {
-                        if (review!.likes.any(
-                            (element) => element.uid == widget.user!.uid)) {
+                        if (review!.likes.any((element) => element.uid == widget.user!.uid)) {
                           // optimistically remove the like from the ui
                           setState(() {
-                            review!.likes.removeWhere(
-                                (element) => element.uid == widget.user!.uid);
+                            review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
                           });
 
                           // remove the like in the DB, if there is any error, we want to update the ui to show that it didn't work
@@ -405,28 +386,24 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                           addLike().then((bool addedLike) {
                             if (!addedLike) {
                               setState(() {
-                                review!.likes.removeWhere((element) =>
-                                    element.uid == widget.user!.uid);
+                                review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
                               });
                             }
                           });
                         }
                       },
                       icon: Icon(
-                        review!.likes.any(
-                                (element) => element.uid == widget.user!.uid)
+                        review!.likes.any((element) => element.uid == widget.user!.uid)
                             ? Icons.favorite
                             : Icons.favorite_border,
-                        color: review!.likes.any(
-                                (element) => element.uid == widget.user!.uid)
+                        color: review!.likes.any((element) => element.uid == widget.user!.uid)
                             ? Colors.red
                             : Theme.of(context).dividerColor,
                       ),
                       label: Text(
                         review!.likes.length.toString(),
                         style: TextStyle(
-                          color: review!.likes.any(
-                                  (element) => element.uid == widget.user!.uid)
+                          color: review!.likes.any((element) => element.uid == widget.user!.uid)
                               ? Colors.red
                               : Theme.of(context).dividerColor,
                           fontSize: 15,
@@ -475,9 +452,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                                     ),
                                   ),
                                   TextSpan(
-                                    text: review!.likes.length > 2
-                                        ? " others"
-                                        : " other",
+                                    text: review!.likes.length > 2 ? " others" : " other",
                                     style: TextStyle(
                                       color: Theme.of(context).dividerColor,
                                       fontSize: 12,
@@ -495,15 +470,18 @@ class _ReviewCardPPState extends State<ReviewCardPP>
             ),
             const Spacer(),
             TextButton.icon(
-              label: Text(nbComments.toString(),
-                  style: TextStyle(color: Theme.of(context).dividerColor)),
+              label: Text(nbComments.toString(), style: TextStyle(color: Theme.of(context).dividerColor)),
               onPressed: () {},
               icon: IconButton(
                   onPressed: () {
-                    Get.to(CommentPage(postId: widget.id));
+                    Get.to(
+                      CommentPage(
+                        review: review!,
+                        setStateCallback: () => setState(() {}),
+                      ),
+                    );
                   },
-                  icon:Icon(Icons.mode_comment_outlined,
-                  color: Theme.of(context).dividerColor)),
+                  icon: Icon(Icons.mode_comment_outlined, color: Theme.of(context).dividerColor)),
             ),
           ],
         ),
@@ -554,10 +532,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                 ),
                 const Spacer(),
                 SkeletonLine(
-                  style: SkeletonLineStyle(
-                      height: 30,
-                      width: 64,
-                      borderRadius: BorderRadius.circular(15)),
+                  style: SkeletonLineStyle(height: 30, width: 64, borderRadius: BorderRadius.circular(15)),
                 )
               ],
             ),
@@ -635,31 +610,19 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                     const SizedBox(width: 6),
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                     const SizedBox(width: 6),
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                     const SizedBox(width: 6),
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                   ],
                 ),
@@ -685,15 +648,9 @@ class _ReviewCardPPState extends State<ReviewCardPP>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: 40,
-                        height: 40,
-                        borderRadius: BorderRadius.circular(20))),
+                    style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
                 SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: 40,
-                        height: 40,
-                        borderRadius: BorderRadius.circular(20))),
+                    style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
               ],
             ),
             SkeletonParagraph(
@@ -720,10 +677,7 @@ class _ReviewCardPPState extends State<ReviewCardPP>
                   ),
                 ),
                 const SizedBox(width: 8),
-                SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: MediaQuery.of(context).size.width / 3,
-                        height: 30)),
+                SkeletonAvatar(style: SkeletonAvatarStyle(width: MediaQuery.of(context).size.width / 3, height: 30)),
               ],
             ),
           ],

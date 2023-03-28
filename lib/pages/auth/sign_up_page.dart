@@ -286,6 +286,8 @@ class _EmailSignUpState extends State<EmailSignUp> {
           "ranking": 0,
         });
 
+        await db.collection('following').doc(userId).set({"_": "_"});
+
         setState(() {
           _isLoading = false;
         });

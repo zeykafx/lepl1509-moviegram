@@ -280,7 +280,7 @@ class _BsbFormState extends State<BsbForm> {
                         .set({'_': '_'}); // dummy value, will not be read or written to
 
                     // then add a subcollection at firestore/posts/uid/userPosts
-                    await FirebaseFirestore.instance
+                    var val = await FirebaseFirestore.instance
                         .collection('posts')
                         .doc(FirebaseAuth.instance.currentUser?.uid)
                         .collection("userPosts")
@@ -297,6 +297,12 @@ class _BsbFormState extends State<BsbForm> {
                       "likes": [],
                       "comments": []
                     });
+
+                    // then create the comments subcollection for this post
+                    await FirebaseFirestore.instance
+                        .collection("comments")
+                        .doc(val.id)
+                        .set({'_': '_'}); // dummy value, will not be read or written to
 
                     Get.back();
 

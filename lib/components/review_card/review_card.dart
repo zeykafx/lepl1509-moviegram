@@ -17,22 +17,18 @@ class ReviewCard extends StatefulWidget {
   final Map<String, dynamic> data;
   final UserProfile? user;
 
-  const ReviewCard(
-      {super.key, required this.id, required this.data, required this.user});
+  const ReviewCard({super.key, required this.id, required this.data, required this.user});
 
   @override
   _ReviewCardState createState() => _ReviewCardState();
 }
 
-class _ReviewCardState extends State<ReviewCard>
-    with AutomaticKeepAliveClientMixin {
+class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMixin {
   FirebaseFirestore db = FirebaseFirestore.instance;
   Review? review;
   UserProfile? author;
   User? currentUser = FirebaseAuth.instance.currentUser;
   int nbComments = 0;
-
-
 
   TextEditingController commentController = TextEditingController();
 
@@ -54,23 +50,17 @@ class _ReviewCardState extends State<ReviewCard>
   }
 
   Future<void> getAuthor() async {
-    DocumentSnapshot<Map<String, dynamic>> value =
-        await db.collection('users').doc(review?.userID).get();
+    DocumentSnapshot<Map<String, dynamic>> value = await db.collection('users').doc(review?.userID).get();
     if (value != null && mounted) {
       setState(() {
         author = UserProfile.fromMap(value.data()!);
       });
     } else {
-      print(
-          "failed to get user profile in review card, maybe the card was disposed before the future finished");
+      print("failed to get user profile in review card, maybe the card was disposed before the future finished");
     }
-    var followingVal = await db
-        .collection('comments')
-        .doc(widget.id)
-        .collection('comments')
-        .get();
+    var commentsVal = await db.collection('comments').doc(widget.id).collection('comments').get();
     setState(() {
-      nbComments = followingVal.docs.length;
+      nbComments = commentsVal.docs.length;
     });
   }
 
@@ -108,6 +98,15 @@ class _ReviewCardState extends State<ReviewCard>
     }
   }
 
+  Future<void> addComment(String query) async {
+    await db.collection('comments').doc(widget.id).collection('comments').add({
+      'comment': query,
+      'uid': FirebaseAuth.instance.currentUser!.uid,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+    commentController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -128,8 +127,7 @@ class _ReviewCardState extends State<ReviewCard>
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,11 +269,8 @@ class _ReviewCardState extends State<ReviewCard>
                   child: SizedBox(
                     width: 80,
                     child: Image(
-                      image: ResizeImage(
-                          NetworkImage(
-                              "https://image.tmdb.org/t/p/w500${movie.posterPath}"),
-                          width: 160,
-                          allowUpscaling: true),
+                      image: ResizeImage(NetworkImage("https://image.tmdb.org/t/p/w500${movie.posterPath}"),
+                          width: 160, allowUpscaling: true),
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -321,8 +316,7 @@ class _ReviewCardState extends State<ReviewCard>
                   movie.overview,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 15, color: Theme.of(context).dividerColor),
+                  style: TextStyle(fontSize: 15, color: Theme.of(context).dividerColor),
                 ),
 
                 const SizedBox(height: 3),
@@ -349,22 +343,17 @@ class _ReviewCardState extends State<ReviewCard>
         SizedBox.fromSize(
           size: const Size.fromHeight(55),
           child: ListView(
-            physics: const BouncingScrollPhysics(
-                decelerationRate: ScrollDecelerationRate.fast),
+            physics: const BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.fast),
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,
             children: [
-              buildRatingPill(review!.rating.toString(), "Rating",
-                  Icons.movie_creation_outlined),
+              buildRatingPill(review!.rating.toString(), "Rating", Icons.movie_creation_outlined),
               const SizedBox(width: 6),
-              buildRatingPill(
-                  review!.actingRating.toString(), "Actors", Icons.person),
+              buildRatingPill(review!.actingRating.toString(), "Actors", Icons.person),
               const SizedBox(width: 6),
-              buildRatingPill(review!.storyRating.toString(), "Story",
-                  Icons.menu_book_outlined),
+              buildRatingPill(review!.storyRating.toString(), "Story", Icons.menu_book_outlined),
               const SizedBox(width: 6),
-              buildRatingPill(review!.lengthRating.toString(), "Length",
-                  Icons.timelapse_outlined),
+              buildRatingPill(review!.lengthRating.toString(), "Length", Icons.timelapse_outlined),
             ],
           ),
         ),
@@ -440,12 +429,10 @@ class _ReviewCardState extends State<ReviewCard>
                   children: [
                     TextButton.icon(
                       onPressed: () {
-                        if (review!.likes.any(
-                            (element) => element.uid == widget.user!.uid)) {
+                        if (review!.likes.any((element) => element.uid == widget.user!.uid)) {
                           // optimistically remove the like from the ui
                           setState(() {
-                            review!.likes.removeWhere(
-                                (element) => element.uid == widget.user!.uid);
+                            review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
                           });
 
                           // remove the like in the DB, if there is any error, we want to update the ui to show that it didn't work
@@ -467,28 +454,24 @@ class _ReviewCardState extends State<ReviewCard>
                           addLike().then((bool addedLike) {
                             if (!addedLike) {
                               setState(() {
-                                review!.likes.removeWhere((element) =>
-                                    element.uid == widget.user!.uid);
+                                review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
                               });
                             }
                           });
                         }
                       },
                       icon: Icon(
-                        review!.likes.any(
-                                (element) => element.uid == widget.user!.uid)
+                        review!.likes.any((element) => element.uid == widget.user!.uid)
                             ? Icons.favorite
                             : Icons.favorite_border,
-                        color: review!.likes.any(
-                                (element) => element.uid == widget.user!.uid)
+                        color: review!.likes.any((element) => element.uid == widget.user!.uid)
                             ? Colors.red
                             : Theme.of(context).dividerColor,
                       ),
                       label: Text(
                         review!.likes.length.toString(),
                         style: TextStyle(
-                          color: review!.likes.any(
-                                  (element) => element.uid == widget.user!.uid)
+                          color: review!.likes.any((element) => element.uid == widget.user!.uid)
                               ? Colors.red
                               : Theme.of(context).dividerColor,
                           fontSize: 15,
@@ -537,9 +520,7 @@ class _ReviewCardState extends State<ReviewCard>
                                     ),
                                   ),
                                   TextSpan(
-                                    text: review!.likes.length > 2
-                                        ? " others"
-                                        : " other",
+                                    text: review!.likes.length > 2 ? " others" : " other",
                                     style: TextStyle(
                                       color: Theme.of(context).dividerColor,
                                       fontSize: 12,
@@ -557,58 +538,69 @@ class _ReviewCardState extends State<ReviewCard>
             ),
             const Spacer(),
             TextButton.icon(
-              label: Text(nbComments.toString(),
-                  style: TextStyle(color: Theme.of(context).dividerColor)),
+              label: Text(review!.comments.length.toString(), style: TextStyle(color: Theme.of(context).dividerColor)),
               onPressed: () {},
               icon: IconButton(
                   onPressed: () {
-                    Get.to(CommentPage(postId: widget.id));
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: CommentPage(
+                                review: review!,
+                                setStateCallback: () => setState(() {}),
+                              ),
+                            ),
+                          );
+                        });
                   },
-                  icon:Icon(Icons.mode_comment_outlined,
-                  color: Theme.of(context).dividerColor)),
+                  icon: Icon(Icons.mode_comment_outlined, color: Theme.of(context).dividerColor)),
             ),
           ],
         ),
         SizedBox(height: review!.likes.isNotEmpty ? 5 : 0),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            children: [
-              ClipOval(
-                child: SizedBox(
-                  width: 35,
-                  height: 35,
-                  child: Image(
-                    image: ResizeImage(
-                      NetworkImage(currentUser?.photoURL != null
-                          ? currentUser!.photoURL!
-                          : 'http://www.gravatar.com/avatar/?d=mp'),
-                      width: 70,
-                      height: 70,
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextFormField(
-                  controller: commentController,
-                  decoration: InputDecoration(
-                    hintText: "Add a comment...",
-                    hintStyle: TextStyle(color: Theme.of(context).dividerColor),
-                    border: InputBorder.none,
-                  ),
-                  onFieldSubmitted: (value) {
-                    if (value.isNotEmpty) {
-                      addComment(value);
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+        // Padding(
+        //   padding: const EdgeInsets.symmetric(horizontal: 10),
+        //   child: Row(
+        //     children: [
+        //       ClipOval(
+        //         child: SizedBox(
+        //           width: 35,
+        //           height: 35,
+        //           child: Image(
+        //             image: ResizeImage(
+        //               NetworkImage(currentUser?.photoURL != null
+        //                   ? currentUser!.photoURL!
+        //                   : 'http://www.gravatar.com/avatar/?d=mp'),
+        //               width: 70,
+        //               height: 70,
+        //             ),
+        //             fit: BoxFit.cover,
+        //           ),
+        //         ),
+        //       ),
+        //       const SizedBox(width: 8),
+        //       Expanded(
+        //         child: TextFormField(
+        //           controller: commentController,
+        //           decoration: InputDecoration(
+        //             hintText: "Add a comment...",
+        //             hintStyle: TextStyle(color: Theme.of(context).dividerColor),
+        //             border: InputBorder.none,
+        //           ),
+        //
+        //           onFieldSubmitted: (value) {
+        //             if (value.isNotEmpty) {
+        //               addComment(value);
+        //             }
+        //           },
+        //         ),
+        //       ),
+        //     ],
+        //   ),
+        // ),
       ],
     );
   }
@@ -656,10 +648,7 @@ class _ReviewCardState extends State<ReviewCard>
                 ),
                 const Spacer(),
                 SkeletonLine(
-                  style: SkeletonLineStyle(
-                      height: 30,
-                      width: 64,
-                      borderRadius: BorderRadius.circular(15)),
+                  style: SkeletonLineStyle(height: 30, width: 64, borderRadius: BorderRadius.circular(15)),
                 )
               ],
             ),
@@ -737,31 +726,19 @@ class _ReviewCardState extends State<ReviewCard>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                     const SizedBox(width: 6),
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                     const SizedBox(width: 6),
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                     const SizedBox(width: 6),
                     SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 40,
-                          width: 64,
-                          borderRadius: BorderRadius.circular(15)),
+                      style: SkeletonLineStyle(height: 40, width: 64, borderRadius: BorderRadius.circular(15)),
                     ),
                   ],
                 ),
@@ -787,15 +764,9 @@ class _ReviewCardState extends State<ReviewCard>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: 40,
-                        height: 40,
-                        borderRadius: BorderRadius.circular(20))),
+                    style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
                 SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: 40,
-                        height: 40,
-                        borderRadius: BorderRadius.circular(20))),
+                    style: SkeletonAvatarStyle(width: 40, height: 40, borderRadius: BorderRadius.circular(20))),
               ],
             ),
             SkeletonParagraph(
@@ -822,24 +793,12 @@ class _ReviewCardState extends State<ReviewCard>
                   ),
                 ),
                 const SizedBox(width: 8),
-                SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: MediaQuery.of(context).size.width / 3,
-                        height: 30)),
+                SkeletonAvatar(style: SkeletonAvatarStyle(width: MediaQuery.of(context).size.width / 3, height: 30)),
               ],
             ),
           ],
         )),
       ),
     );
-  }
-
-  Future<void> addComment(String query) async {
-    await db.collection('comments').doc(widget.id).collection('comments').add({
-      'comment': query,
-      'uid': FirebaseAuth.instance.currentUser!.uid,
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-    });
-    commentController.clear();
   }
 }
