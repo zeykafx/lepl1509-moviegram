@@ -67,7 +67,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   bool _loading = false;
 
   Future imgFromGallery() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 30);
 
     setState(() {
       if (pickedFile != null) {
@@ -80,7 +80,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Future imgFromCamera() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera, imageQuality: 30);
 
     setState(() {
       if (pickedFile != null) {

@@ -45,9 +45,9 @@ class _DrawerState extends State<DrawerComponent> {
       HomePage(),
     ),
     const Destination(
-       "Friends",
-       Icon(Icons.people),
-       FriendsPage(),
+      "Friends",
+      Icon(Icons.people),
+      FriendsPage(),
     ),
     // const Destination(
     //   "Settings",
@@ -88,7 +88,8 @@ class _DrawerState extends State<DrawerComponent> {
               // user header with profile picture
               DrawerHeader(
                 child: InkWell(
-                  onTap: () => Get.to(() => ProfilePage(accessToFeed: true, uid: currentUser?.uid ?? ''), transition: Transition.fadeIn),
+                  onTap: () => Get.to(() => ProfilePage(accessToFeed: true, uid: currentUser?.uid ?? ''),
+                      transition: Transition.fadeIn),
                   child: Column(
                     children: [
                       Padding(

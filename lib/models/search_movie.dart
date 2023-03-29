@@ -23,15 +23,11 @@ class SearchMovie {
     return SearchMovie(
       id: json['id'],
       title: json['title'],
-      posterPath: json['poster_path'] != null
-          ? "https://image.tmdb.org/t/p/w500${json['poster_path']}"
-          : null,
-      backdropPath: json['backdrop_path'] != null
-          ? "https://image.tmdb.org/t/p/w500${json['backdrop_path']}"
-          : null,
+      posterPath: json['poster_path'] != null ? "https://image.tmdb.org/t/p/w500${json['poster_path']}" : null,
+      backdropPath: json['backdrop_path'] != null ? "https://image.tmdb.org/t/p/w500${json['backdrop_path']}" : null,
       overview: json['overview'],
       voteAverage: json['vote_average'].toDouble(),
-      releaseDate: json['release_date'],
+      releaseDate: json['release_date'] ?? "1970-01-01",
       popularity: json['popularity'],
     );
   }

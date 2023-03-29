@@ -36,7 +36,7 @@ class _FriendsPageState extends State<FriendsPage> {
         setState(() {
           users = value;
           currentUserFriends = userFriends;
-          print(currentUserFriends);
+          // print(currentUserFriends);
           loading = false;
         });
       });
