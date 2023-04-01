@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:optimized_cached_image/optimized_cached_image.dart';
 
 import '../../models/user_profile.dart';
 import '../profile/pages/profile_page.dart';
@@ -40,7 +41,11 @@ class _RequestListState extends State<RequestList> {
       loading = true;
     });
 
-    var followingVal = await db.collection('following').doc(currentUser?.uid).collection('friendRequests').get();
+    var followingVal = await db
+        .collection('following')
+        .doc(currentUser?.uid)
+        .collection('friendRequests')
+        .get();
     for (var element in followingVal.docs) {
       requests.add({"uid": element.id});
     }
@@ -50,13 +55,17 @@ class _RequestListState extends State<RequestList> {
     return requests;
   }
 
-  Future<List<UserProfile>> getProfiles(List<Map<String, dynamic>> requests) async {
+  Future<List<UserProfile>> getProfiles(
+      List<Map<String, dynamic>> requests) async {
     setState(() {
       loading = true;
     });
     List<UserProfile> results = [];
 
-    var snapshot = await db.collection('users').where('uid', whereIn: requests.map((e) => e["uid"])).get();
+    var snapshot = await db
+        .collection('users')
+        .where('uid', whereIn: requests.map((e) => e["uid"]))
+        .get();
     snapshot.docs.forEach((doc) async {
       UserProfile user = UserProfile.fromMap(doc.data());
       results.add(user);
@@ -68,14 +77,24 @@ class _RequestListState extends State<RequestList> {
   }
 
   void follow({String? to, String? from}) {
-    FirebaseFirestore.instance.collection('following').doc(to).collection('userFollowing').doc(from).set({});
+    FirebaseFirestore.instance
+        .collection('following')
+        .doc(to)
+        .collection('userFollowing')
+        .doc(from)
+        .set({});
     setState(() {
       requestsProfiles.removeWhere((element) => element.uid == from);
     });
   }
 
   void removeRequest({String? to, String? from}) {
-    FirebaseFirestore.instance.collection('following').doc(to).collection('friendRequests').doc(from).delete();
+    FirebaseFirestore.instance
+        .collection('following')
+        .doc(to)
+        .collection('friendRequests')
+        .doc(from)
+        .delete();
     setState(() {
       requestsProfiles.removeWhere((element) => element.uid == from);
     });
@@ -93,14 +112,15 @@ class _RequestListState extends State<RequestList> {
         children: requestsProfiles.map((UserProfile user) {
           return ListTile(
             leading: CircleAvatar(
-              backgroundImage: NetworkImage(user.photoURL),
+              backgroundImage: OptimizedCacheImageProvider(user.photoURL),
             ),
             title: Text(user.name),
             subtitle: Text(user.bio ?? " "),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => ProfilePage(accessToFeed: true, uid: user.uid ?? ''),
+                  builder: (context) =>
+                      ProfilePage(accessToFeed: true, uid: user.uid ?? ''),
                 ),
               );
             },

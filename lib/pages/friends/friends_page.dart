@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:optimized_cached_image/optimized_cached_image.dart';
 import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
 import 'package:projet_lepl1509_groupe_17/pages/friends/friends_list.dart';
 import 'package:projet_lepl1509_groupe_17/pages/friends/request_list.dart';
@@ -57,7 +58,11 @@ class _FriendsPageState extends State<FriendsPage> {
 
   Future<List<UserProfile>> getCurrentUserFriends() async {
     List<UserProfile> results = [];
-    var snapshot = await db.collection('following').doc(currentUser?.uid).collection('userFollowing').get();
+    var snapshot = await db
+        .collection('following')
+        .doc(currentUser?.uid)
+        .collection('userFollowing')
+        .get();
     for (var doc in snapshot.docs) {
       var userSnapshot = await db.collection('users').doc(doc.id).get();
       UserProfile user = UserProfile.fromMap(userSnapshot.data()!);
@@ -67,7 +72,12 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   void sendRequest({String? to, String? from}) {
-    FirebaseFirestore.instance.collection('following').doc(to).collection('friendRequests').doc(from).set({});
+    FirebaseFirestore.instance
+        .collection('following')
+        .doc(to)
+        .collection('friendRequests')
+        .doc(from)
+        .set({});
     setState(() {});
     // show a snackbar
     ScaffoldMessenger.of(context).showSnackBar(
@@ -78,7 +88,12 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   void removeFriend({String? to, String? from}) {
-    FirebaseFirestore.instance.collection('following').doc(to).collection('userFollowing').doc(from).delete();
+    FirebaseFirestore.instance
+        .collection('following')
+        .doc(to)
+        .collection('userFollowing')
+        .doc(from)
+        .delete();
     setState(() {});
   }
 
@@ -107,23 +122,30 @@ class _FriendsPageState extends State<FriendsPage> {
                       if (loading) {
                         return const Center(child: CircularProgressIndicator());
                       } else {
-                        bool isFriend = currentUserFriends.where((element) => element.uid == user.uid).isNotEmpty;
+                        bool isFriend = currentUserFriends
+                            .where((element) => element.uid == user.uid)
+                            .isNotEmpty;
                         print("name: ${user.name} isFriend: $isFriend");
                         return ListTile(
                             leading: CircleAvatar(
-                              backgroundImage: NetworkImage(user.photoURL),
+                              backgroundImage:
+                                  OptimizedCacheImageProvider(user.photoURL),
                             ),
                             title: Text(user.name),
                             subtitle: Text(user.bio ?? " "),
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) => ProfilePage(accessToFeed: isFriend, uid: user.uid ?? ''),
+                                  builder: (context) => ProfilePage(
+                                      accessToFeed: isFriend,
+                                      uid: user.uid ?? ''),
                                 ),
                               );
                             },
                             trailing: IconButton(
-                              icon: isFriend ? const Icon(Icons.person_remove) : const Icon(Icons.person_add),
+                              icon: isFriend
+                                  ? const Icon(Icons.person_remove)
+                                  : const Icon(Icons.person_add),
                               onPressed: () {
                                 if (isFriend) {
                                   print("remove friend");
@@ -132,19 +154,30 @@ class _FriendsPageState extends State<FriendsPage> {
                                     context: context,
                                     builder: (context) => AlertDialog(
                                       title: const Text("Remove friend"),
-                                      content: const Text("Are you sure you want to remove this friend?"),
+                                      content: const Text(
+                                          "Are you sure you want to remove this friend?"),
                                       actions: [
                                         TextButton(
-                                            onPressed: () => Navigator.of(context).pop(), child: const Text("Cancel")),
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text("Cancel")),
                                         TextButton(
                                             onPressed: () {
                                               Navigator.of(context).pop();
-                                              removeFriend(to: user.uid, from: FirebaseAuth.instance.currentUser?.uid);
-                                              removeFriend(to: FirebaseAuth.instance.currentUser?.uid, from: user.uid);
+                                              removeFriend(
+                                                  to: user.uid,
+                                                  from: FirebaseAuth.instance
+                                                      .currentUser?.uid);
+                                              removeFriend(
+                                                  to: FirebaseAuth.instance
+                                                      .currentUser?.uid,
+                                                  from: user.uid);
                                               // show a snackbar
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
                                                 const SnackBar(
-                                                  content: Text('Friend removed!'),
+                                                  content:
+                                                      Text('Friend removed!'),
                                                 ),
                                               );
                                             },
@@ -153,7 +186,8 @@ class _FriendsPageState extends State<FriendsPage> {
                                     ),
                                   );
                                 } else {
-                                  sendRequest(to: user.uid, from: currentUser?.uid);
+                                  sendRequest(
+                                      to: user.uid, from: currentUser?.uid);
                                 }
                               },
                             ));
@@ -180,7 +214,8 @@ class _FriendsPageState extends State<FriendsPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        final DrawerPageController drawerPageController = Get.put(DrawerPageController());
+        final DrawerPageController drawerPageController =
+            Get.put(DrawerPageController());
         drawerPageController.changeCurrentPage(0);
         return true;
       },
