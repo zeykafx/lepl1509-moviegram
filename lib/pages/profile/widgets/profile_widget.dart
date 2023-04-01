@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:optimized_cached_image/optimized_cached_image.dart';
 
 class ProfileWidget extends StatelessWidget {
   final String? imagePath;
@@ -48,19 +49,24 @@ class ProfileWidget extends StatelessWidget {
         child: Material(
             color: Colors.transparent,
             child: SizedBox(
-              width: size,
-              height: size,
-              child: Image(
-                image: ResizeImage(
-                  NetworkImage(
-                    imagePath!,
-                  ),
-                  width: size.toInt()*2,
-                  height: size.toInt()*2,
-                ),
-                fit: BoxFit.cover,
-              ),
-            )
+                width: size,
+                height: size,
+                // child: Image(
+                //   image: ResizeImage(
+                //     NetworkImage(
+                //       imagePath!,
+                //     ),
+                //     width: size.toInt()*2,
+                //     height: size.toInt()*2,
+                //   ),
+                //   fit: BoxFit.cover,
+                // ),
+                child: Image(
+                  image: OptimizedCacheImageProvider(imagePath!),
+                  width: size.toInt() * 2,
+                  height: size.toInt() * 2,
+                  fit: BoxFit.cover,
+                ))
             // child: Ink.image(
             //   image: image,
             //   fit: BoxFit.cover,
@@ -78,7 +84,9 @@ class ProfileWidget extends StatelessWidget {
           color: color,
           all: 8,
           child: Icon(
-            self ? (isEdit ? Icons.add_a_photo : Icons.edit) : (access ? Icons.person_remove : Icons.person_add),
+            self
+                ? (isEdit ? Icons.add_a_photo : Icons.edit)
+                : (access ? Icons.person_remove : Icons.person_add),
             color: Colors.white,
             size: 15,
           ),

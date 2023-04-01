@@ -107,7 +107,7 @@ class _MoviePageState extends State<MoviePage> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [Colors.black, Colors.black, Colors.transparent],
-                      stops: [0.1, 0.1, 1],
+                      stops: [0.1, 0.5, 1],
                     ).createShader(
                       Rect.fromLTRB(0, 0, rect.width, rect.height),
                     );
@@ -134,7 +134,7 @@ class _MoviePageState extends State<MoviePage> {
                   ),
                 ),
                 BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                   // top padding to avoid the appbar
                   child: Align(
                     alignment: Alignment.bottomCenter,

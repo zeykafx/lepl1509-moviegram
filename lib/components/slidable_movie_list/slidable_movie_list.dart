@@ -141,7 +141,7 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                                     // ),
                                     child: OptimizedCacheImage(
                                       fit: BoxFit.cover,
-                                      height: widget.size,
+                                      height: widget.size * 1.5,
                                       imageUrl:
                                           "https://image.tmdb.org/t/p/w500${movie.posterPath}",
                                       errorWidget: (context, url, error) =>
