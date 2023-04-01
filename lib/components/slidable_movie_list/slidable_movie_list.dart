@@ -2,15 +2,21 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:optimized_cached_image/optimized_cached_image.dart';
 import 'package:projet_lepl1509_groupe_17/models/search_movie.dart';
 import 'package:projet_lepl1509_groupe_17/pages/movie/movie_page.dart';
 
 import '../../main.dart';
 
-enum SlidableMovieListType { popular, now_playing, top_rated, recommendations, upcoming }
+enum SlidableMovieListType {
+  popular,
+  now_playing,
+  top_rated,
+  recommendations,
+  upcoming
+}
 
 class SlidableMovieList extends StatefulWidget {
   final double size;
@@ -103,11 +109,16 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
             children: [
               ...popularMovies.map((movie) {
                 return Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
+                  padding: const EdgeInsets.only(left: 12.0),
                   child: InkWell(
                     onTap: () {
-                      Get.back();
-                      Get.to(() => MoviePage(movie: movie));
+                      // Get.back();
+                      // Get.to(() => MoviePage(movie: movie));
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => MoviePage(movie: movie),
+                        ),
+                      );
                     },
                     child: movie.posterPath != null
                         ? Column(
@@ -115,20 +126,27 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                             children: [
                               Expanded(
                                 child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Image(
-                                    image: ResizeImage(
-                                      NetworkImage(
-                                        "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-                                      ),
-                                      height: (widget.size * 1.5).toInt(),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                                    clipBehavior: Clip.antiAlias,
+                                    // child: Image(
+                                    //   image: ResizeImage(
+                                    //     NetworkImage(
+                                    //       "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                    //     ),
+                                    //     height: (widget.size * 1.5).toInt(),
+                                    //   ),
+                                    //   fit: BoxFit.cover,
+                                    // ),
+                                    child: OptimizedCacheImage(
+                                      fit: BoxFit.cover,
+                                      height: widget.size,
+                                      imageUrl:
+                                          "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
+                                    )),
                               ),
 
                               // show title and formatted release date only if the widget is big enough
@@ -153,7 +171,8 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                                   height: 5.0,
                                 ),
                                 Text(
-                                  DateFormat('MMM. dd, yyyy').format(DateTime.parse(movie.releaseDate)),
+                                  DateFormat('MMM. dd, yyyy').format(
+                                      DateTime.parse(movie.releaseDate)),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Theme.of(context).dividerColor,

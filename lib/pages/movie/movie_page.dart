@@ -1,7 +1,10 @@
+import 'dart:ui';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
+import 'package:optimized_cached_image/optimized_cached_image.dart';
 import 'package:projet_lepl1509_groupe_17/components/slidable_movie_list/slidable_movie_list.dart';
 import 'package:projet_lepl1509_groupe_17/models/movies.dart';
 import 'package:projet_lepl1509_groupe_17/models/providers.dart';
@@ -51,14 +54,19 @@ class _MoviePageState extends State<MoviePage> {
     List<dynamic> providersBE;
     try {
       // hack: use orElse instead
-      providersCountry = allProviders.countryProviders.entries.singleWhere((element) => element.key == 'BE').value;
+      providersCountry = allProviders.countryProviders.entries
+          .singleWhere((element) => element.key == 'BE')
+          .value;
 
       if (providersCountry.isEmpty) {
         return;
       }
-      providersBE = providersCountry.entries.singleWhere((element) => element.key == 'flatrate').value;
+      providersBE = providersCountry.entries
+          .singleWhere((element) => element.key == 'flatrate')
+          .value;
       for (var result in providersBE) {
-        ProviderCountry providerCountry = ProviderCountry.getProviderCountry(result);
+        ProviderCountry providerCountry =
+            ProviderCountry.getProviderCountry(result);
         providers.add(providerCountry);
       }
     } catch (e) {
@@ -105,17 +113,18 @@ class _MoviePageState extends State<MoviePage> {
                     );
                   },
                   child: SizedBox(
-                    height: size.height * 0.5,
+                    height: size.height * 0.7,
                     width: double.infinity,
                     child: movie!.posterPath != null
-                        ? Image(
-                            image: ResizeImage(
-                              NetworkImage(
-                                "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
-                              ),
-                              width: size.width.toInt() * 2,
+                        ? Opacity(
+                            opacity: 0.5,
+                            child: OptimizedCacheImage(
+                              fit: BoxFit.cover,
+                              imageUrl:
+                                  "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
                             ),
-                            fit: BoxFit.fitWidth,
                           )
                         : const Center(
                             child: Text(
@@ -124,10 +133,11 @@ class _MoviePageState extends State<MoviePage> {
                           ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: SizedBox(
-                    height: size.height * 0.6,
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                  // top padding to avoid the appbar
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
                     child: buildMovieDetails(context, size),
                   ),
                 )
@@ -143,6 +153,9 @@ class _MoviePageState extends State<MoviePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Sized box to shift down the content to be able to see the poster behind
+                SizedBox.fromSize(size: Size.fromHeight(size.height * 0.3)),
+
                 // MOVIE INFO
                 _buildMovieInformation(context, size),
 
@@ -160,7 +173,7 @@ class _MoviePageState extends State<MoviePage> {
                         children: [
                           const Padding(
                             padding: EdgeInsets.symmetric(
-                              horizontal: 8,
+                              horizontal: 12,
                             ),
                             child: Text('Actors',
                                 style: TextStyle(
@@ -173,7 +186,8 @@ class _MoviePageState extends State<MoviePage> {
                             child: ListView.builder(
                               itemCount: movie!.actors.length,
                               scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.only(top: 12.0, left: 0),
+                              padding:
+                                  const EdgeInsets.only(top: 12.0, left: 12),
                               itemBuilder: _buildActor,
                             ),
                           ),
@@ -184,7 +198,7 @@ class _MoviePageState extends State<MoviePage> {
                   size: 150,
                   type: SlidableMovieListType.recommendations,
                   id: movie!.id,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -210,14 +224,12 @@ class _MoviePageState extends State<MoviePage> {
                 child: SizedBox(
                   height: 100,
                   child: movie!.posterPath != null
-                      ? Image(
-                          image: ResizeImage(
-                            NetworkImage(
+                      ? OptimizedCacheImage(
+                          fit: BoxFit.fitHeight,
+                          imageUrl:
                               "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
-                            ),
-                            width: 200,
-                          ),
-                          fit: BoxFit.contain,
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
                         )
                       : const Center(
                           child: Text(
@@ -322,12 +334,17 @@ class _MoviePageState extends State<MoviePage> {
                       builder: (context) {
                         return GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                          onTap: () =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
                           child: Padding(
-                            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                            padding: EdgeInsets.only(
+                                bottom:
+                                    MediaQuery.of(context).viewInsets.bottom),
                             child: SizedBox(
                                 width: size.width,
-                                height: size.height < 800 ? size.height * 0.50 : size.height * 0.40,
+                                height: size.height < 800
+                                    ? size.height * 0.50
+                                    : size.height * 0.40,
                                 child: BsbForm(
                                   movie: movie!,
                                 )),
@@ -347,7 +364,8 @@ class _MoviePageState extends State<MoviePage> {
                 ),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                  child: Text("Add to watchlist", style: TextStyle(fontSize: 15)),
+                  child:
+                      Text("Add to watchlist", style: TextStyle(fontSize: 15)),
                 ),
                 onPressed: () {
                   // show success snackbar
@@ -379,16 +397,16 @@ class _MoviePageState extends State<MoviePage> {
         children: [
           CircleAvatar(
             backgroundImage: movie!.actors[index].profilePath != null
-                ? ResizeImage(
-                    NetworkImage("https://image.tmdb.org/t/p/w500/${movie!.actors[index].profilePath}"),
-                    width: 200,
-                  )
-                : const ResizeImage(
-                    NetworkImage(
-                      'http://www.gravatar.com/avatar/?d=mp',
+                ? Image(
+                    image: OptimizedCacheImageProvider(
+                      "https://image.tmdb.org/t/p/w500/${movie!.actors[index].profilePath}",
                     ),
-                    width: 200,
-                  ),
+                  ).image
+                : const Image(
+                    image: OptimizedCacheImageProvider(
+                      "http://www.gravatar.com/avatar/?d=mp",
+                    ),
+                  ).image,
             radius: 35,
           ),
           Padding(
@@ -403,7 +421,10 @@ class _MoviePageState extends State<MoviePage> {
               child: Text(
                 movie!.actors[index].character,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).dividerColor),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).dividerColor),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -416,7 +437,7 @@ class _MoviePageState extends State<MoviePage> {
 
   Widget _buildProviders() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -434,7 +455,7 @@ class _MoviePageState extends State<MoviePage> {
               scrollDirection: Axis.horizontal,
               children: providers.map((provider) {
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(7, 0, 7, 0),
+                  padding: const EdgeInsets.fromLTRB(9, 0, 9, 0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

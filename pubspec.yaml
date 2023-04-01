@@ -66,6 +66,7 @@ dependencies:
   intl: ^0.17.0
   http: ^0.13.5
   search_page: ^2.3.0
+  optimized_cached_image: ^3.0.1
 
 dev_dependencies:
   flutter_test:
