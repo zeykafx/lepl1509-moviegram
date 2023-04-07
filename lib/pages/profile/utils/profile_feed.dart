@@ -273,15 +273,64 @@ class _ProfileFeedState extends State<ProfileFeed> {
   }
 
   void sendRequest({String? to, String? from}) {
-    FirebaseFirestore.instance.collection('following').doc(to).collection('friendRequests').doc(from).set({});
+    FirebaseFirestore.instance
+        .collection('following')
+        .doc(to)
+        .collection('friendRequests')
+        .doc(from)
+        .set({});
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Request sent!'),
+      ),
+    );
   }
-}
 
-void removeFriend({String? to, String? from}) {
-  FirebaseFirestore.instance.collection('following').doc(to).collection('userFollowing').doc(from).delete();
-}
+  void removeFriend({String? to, String? from}) {
+    FirebaseFirestore.instance
+        .collection('following')
+        .doc(to)
+        .collection('userFollowing')
+        .doc(from)
+        .delete();
+    db.collection('users').doc(from).update({"following": FieldValue.increment(-1), "followers": FieldValue.increment(-1)});
+    setState(() {});
+  }
 
-void DoubleRemoveFriend({String? to, String? from}) {
-  removeFriend(to: to, from: from);
-  removeFriend(to: from, from: to);
+  void DoubleRemoveFriend({String? to, String? from}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Remove friend"),
+        content: const Text(
+            "Are you sure you want to remove this friend?"),
+        actions: [
+          TextButton(
+              onPressed: () =>
+                  Navigator.of(context).pop(),
+              child: const Text("Cancel")),
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                removeFriend(
+                    to: to,
+                    from: from);
+                removeFriend(
+                    to: from,
+                    from: to);
+                // show a snackbar
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(
+                  const SnackBar(
+                    content:
+                    Text('Friend removed!'),
+                  ),
+                );
+              },
+              child: const Text("Remove")),
+        ],
+      ),
+    );
+  }
 }

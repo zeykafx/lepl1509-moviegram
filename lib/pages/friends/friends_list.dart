@@ -85,6 +85,7 @@ class _FriendsListState extends State<FriendsList> {
         .doc(from)
         .delete();
     setState(() {
+      db.collection('users').doc(from).update({"following": FieldValue.increment(-1), "followers": FieldValue.increment(-1)});
       friends.removeWhere((element) => element.uid == to);
     });
   }

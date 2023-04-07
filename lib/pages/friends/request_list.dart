@@ -84,6 +84,7 @@ class _RequestListState extends State<RequestList> {
         .doc(from)
         .set({});
     setState(() {
+      db.collection('users').doc(from).update({"following": FieldValue.increment(1), "followers": FieldValue.increment(1)});
       requestsProfiles.removeWhere((element) => element.uid == from);
     });
   }
@@ -120,7 +121,7 @@ class _RequestListState extends State<RequestList> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) =>
-                      ProfilePage(accessToFeed: true, uid: user.uid ?? ''),
+                      ProfilePage(accessToFeed: false, uid: user.uid ?? ''),
                 ),
               );
             },

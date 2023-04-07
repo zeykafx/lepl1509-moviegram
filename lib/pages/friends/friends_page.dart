@@ -94,7 +94,9 @@ class _FriendsPageState extends State<FriendsPage> {
         .collection('userFollowing')
         .doc(from)
         .delete();
-    setState(() {});
+    setState(() {
+      db.collection('users').doc(from).update({"following": FieldValue.increment(-1), "followers": FieldValue.increment(-1)});
+    });
   }
 
   AppBar buildSearchField() {
