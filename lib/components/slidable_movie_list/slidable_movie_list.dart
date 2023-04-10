@@ -95,7 +95,7 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                         : widget.type == SlidableMovieListType.top_rated
                             ? "Top Rated"
                             : widget.type == SlidableMovieListType.upcoming
-                                ? "Upcoming"
+                                ? "Upcoming - Recently released"
                                 : "Movies you might like", // default
             style: const TextStyle(fontSize: 20),
           ),
@@ -105,7 +105,7 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
         ),
         Expanded(
           child: ListView(
-            scrollDirection: widget.vertical ? Axis.vertical : Axis.horizontal,
+            scrollDirection: Axis.horizontal,
             children: [
               ...popularMovies.map((movie) {
                 return Padding(

@@ -10,6 +10,7 @@ import 'package:projet_lepl1509_groupe_17/models/search_movie.dart';
 import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 import 'package:projet_lepl1509_groupe_17/pages/comments/comment_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/movie/movie_page.dart';
+import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:time_formatter/time_formatter.dart';
 
@@ -17,9 +18,14 @@ class ReviewCard extends StatefulWidget {
   final String id;
   final Map<String, dynamic> data;
   final UserProfile? user;
+  final bool showRatingPill;
 
   const ReviewCard(
-      {super.key, required this.id, required this.data, required this.user});
+      {super.key,
+      required this.id,
+      required this.data,
+      required this.user,
+      this.showRatingPill = false});
 
   @override
   _ReviewCardState createState() => _ReviewCardState();
@@ -35,13 +41,15 @@ class _ReviewCardState extends State<ReviewCard>
 
   TextEditingController commentController = TextEditingController();
 
+  bool showRatingPill = false;
+
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-
+    showRatingPill = widget.showRatingPill;
     Review.fromJson(widget.id, widget.data).then((value) {
       if (mounted) {
         setState(() {
@@ -125,56 +133,86 @@ class _ReviewCardState extends State<ReviewCard>
             builder: (context, snapshot) {
               Movie? movie = snapshot.data;
               return snapshot.hasData && author != null
-                  ? Card(
-                      key: Key(review!.reviewID),
-                      elevation: 0.5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        side: BorderSide(
-                          color: Colors.grey.withOpacity(0.2),
-                          width: 1,
+                  ? AnimatedSize(
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeOut,
+                      child: Card(
+                        key: Key(review!.reviewID),
+                        elevation: 0.5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          side: BorderSide(
+                            color: Colors.grey.withOpacity(0.2),
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 15),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 15,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
 
-                            // header
-                            buildHeader(),
+                              // header
+                              buildHeader(),
 
-                            const SizedBox(height: 13),
+                              const SizedBox(height: 10),
 
-                            // movie card, on which you can click
-                            Card(
-                              elevation: 0.5,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                                side: BorderSide(
-                                  color: Colors.grey.withOpacity(0.2),
-                                  width: 0.8,
+                              Text(
+                                review!.comment,
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              const SizedBox(height: 10),
+
+                              // movie card, on which you can click
+                              Card(
+                                elevation: 0.5,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  side: BorderSide(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: buildMovieInfo(movie!),
                                 ),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: buildMovieInfo(movie!),
-                              ),
-                            ),
 
-                            const SizedBox(height: 10),
+                              if (showRatingPill) ...[
+                                const SizedBox(height: 10),
 
-                            // review content
-                            buildComment(),
+                                // ratings bar
+                                buildRatings(),
+                              ],
 
-                            const SizedBox(height: 5),
+                              if (!showRatingPill) ...[
+                                const SizedBox(height: 5),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      showRatingPill = true;
+                                    });
+                                  },
+                                  child: Text(
+                                    "Show more...",
+                                    style: TextStyle(
+                                      color: Theme.of(context).dividerColor,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ],
 
-                            buildLikesAndComments(),
-                          ],
+                              buildLikesAndComments(),
+                            ],
+                          ),
                         ),
                       ),
                     )
@@ -186,50 +224,68 @@ class _ReviewCardState extends State<ReviewCard>
   Widget buildHeader() {
     return Row(
       children: [
-        // avatar picture
-        ClipOval(
-          child: SizedBox(
-              width: 35,
-              height: 35,
-              // child: Image(
-              //   image: ResizeImage(
-              //     NetworkImage(
-              //       author?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
-              //     ),
-              //     width: 70,
-              //     height: 70,
-              //   ),
-              // ),
-              child: Image(
-                image: OptimizedCacheImageProvider(
-                  author?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfilePage(
+                  accessToFeed: true,
+                  uid: author!.uid ?? '',
                 ),
-              )),
-        ),
-        const SizedBox(width: 8),
-
-        // author name and time since
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // author name
-            Text(
-              author!.name,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-            ),
-            // time since
-            Text(
-              formatTime(review!.postedTime.millisecondsSinceEpoch),
-              style: TextStyle(
-                color: Theme.of(context).dividerColor,
-                fontSize: 14,
               ),
-            ),
-          ],
-        ),
+            );
+          },
+          child: Row(
+            children: [
+              // avatar picture
+              ClipOval(
+                child: SizedBox(
+                    width: 35,
+                    height: 35,
+                    // child: Image(
+                    //   image: ResizeImage(
+                    //     NetworkImage(
+                    //       author?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
+                    //     ),
+                    //     width: 70,
+                    //     height: 70,
+                    //   ),
+                    // ),
+                    child: Image(
+                      image: OptimizedCacheImageProvider(
+                        author?.photoURL ??
+                            'http://www.gravatar.com/avatar/?d=mp',
+                      ),
+                    )),
+              ),
+              const SizedBox(width: 8),
 
+              // author name and time since
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // author name
+                  Text(
+                    author!.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 18),
+                  ),
+                  // time since
+                  Text(
+                    formatTime(review!.postedTime.millisecondsSinceEpoch),
+                    style: TextStyle(
+                      color: Theme.of(context).dividerColor,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
         const Spacer(),
         Container(
           decoration: BoxDecoration(
@@ -281,23 +337,16 @@ class _ReviewCardState extends State<ReviewCard>
                   borderRadius: BorderRadius.circular(8),
                   clipBehavior: Clip.antiAlias,
                   child: SizedBox(
-                      width: 80,
-                      // child: Image(
-                      //   image: ResizeImage(
-                      //       NetworkImage(
-                      //           "https://image.tmdb.org/t/p/w500${movie.posterPath}"),
-                      //       width: 160,
-                      //       allowUpscaling: true),
-                      //   fit: BoxFit.contain,
-                      // ),
-                      child: OptimizedCacheImage(
-                        fit: BoxFit.contain,
-                        imageUrl:
-                            "https://image.tmdb.org/t/p/w500/${movie.posterPath}",
-                        width: 160,
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.error),
-                      )),
+                    width: 80,
+                    child: OptimizedCacheImage(
+                      fit: BoxFit.contain,
+                      imageUrl:
+                          "https://image.tmdb.org/t/p/w500/${movie.posterPath}",
+                      width: 160,
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    ),
+                  ),
                 )
               : const SizedBox(
                   width: 80,
@@ -359,14 +408,14 @@ class _ReviewCardState extends State<ReviewCard>
     );
   }
 
-  Widget buildComment() {
+  Widget buildRatings() {
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox.fromSize(
-          size: const Size.fromHeight(55),
+          size: const Size.fromHeight(50),
           child: ListView(
             physics: const BouncingScrollPhysics(
                 decelerationRate: ScrollDecelerationRate.fast),
@@ -387,11 +436,6 @@ class _ReviewCardState extends State<ReviewCard>
             ],
           ),
         ),
-        const SizedBox(height: 12),
-        Text(
-          review!.comment,
-          style: TextStyle(fontSize: 18, color: Theme.of(context).dividerColor),
-        ),
       ],
     );
   }
@@ -401,14 +445,14 @@ class _ReviewCardState extends State<ReviewCard>
       key: ValueKey(title),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             Icon(icon, color: Theme.of(context).dividerColor, size: 18),
             const SizedBox(width: 5),
@@ -419,7 +463,7 @@ class _ReviewCardState extends State<ReviewCard>
                   child: Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -427,9 +471,15 @@ class _ReviewCardState extends State<ReviewCard>
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 15),
+                    const Icon(Icons.star, color: Colors.amber, size: 13),
                     const SizedBox(width: 2),
-                    Text(rating),
+                    Text(
+                      rating,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -578,25 +628,25 @@ class _ReviewCardState extends State<ReviewCard>
             TextButton.icon(
               label: Text(review!.comments.length.toString(),
                   style: TextStyle(color: Theme.of(context).dividerColor)),
-              onPressed: () {},
-              icon: IconButton(
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: CommentPage(
-                                review: review!,
-                                setStateCallback: () => setState(() {}),
-                              ),
-                            ),
-                          );
-                        });
-                  },
-                  icon: Icon(Icons.mode_comment_outlined,
-                      color: Theme.of(context).dividerColor)),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return Dialog(
+                        insetPadding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 30),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: CommentPage(
+                            review: review!,
+                            setStateCallback: () => setState(() {}),
+                          ),
+                        ),
+                      );
+                    });
+              },
+              icon: Icon(Icons.mode_comment_outlined,
+                  color: Theme.of(context).dividerColor),
             ),
           ],
         ),
@@ -656,66 +706,77 @@ class _ReviewCardState extends State<ReviewCard>
               ],
             ),
 
-            const SizedBox(height: 13),
+            const SizedBox(height: 10),
 
-            // movie info
-            Row(
-              children: [
-                // movie poster
-                SkeletonAvatar(
-                  style: SkeletonAvatarStyle(
-                    width: 80,
-                    height: 120,
+            // review text
+            SkeletonParagraph(
+              style: SkeletonParagraphStyle(
+                  lines: 3,
+                  spacing: 6,
+                  lineStyle: SkeletonLineStyle(
+                    // randomLength: true,
+                    height: 13,
                     borderRadius: BorderRadius.circular(8),
-                    minHeight: MediaQuery.of(context).size.height / 8,
-                  ),
-                ),
-
-                const SizedBox(width: 15),
-
-                Expanded(
-                  child: Column(
-                    children: [
-                      // movie title
-                      SkeletonParagraph(
-                        style: SkeletonParagraphStyle(
-                            lines: 1,
-                            spacing: 6,
-                            lineStyle: SkeletonLineStyle(
-                              randomLength: true,
-                              height: 18,
-                              borderRadius: BorderRadius.circular(8),
-                              minLength: MediaQuery.of(context).size.width / 2,
-                            )),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      // movie description
-                      SkeletonParagraph(
-                        style: SkeletonParagraphStyle(
-                            lines: 4,
-                            spacing: 6,
-                            lineStyle: SkeletonLineStyle(
-                              randomLength: true,
-                              height: 10,
-                              borderRadius: BorderRadius.circular(8),
-                              minLength: MediaQuery.of(context).size.width / 2,
-                            )),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                    minLength: MediaQuery.of(context).size.width / 2,
+                  )),
             ),
 
             const SizedBox(height: 10),
 
-            Divider(
-              indent: 20,
-              endIndent: 20,
-              thickness: 0.8,
-              color: Theme.of(context).dividerColor.withOpacity(0.3),
+            // movie info
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  // movie poster
+                  SkeletonAvatar(
+                    style: SkeletonAvatarStyle(
+                      width: 80,
+                      height: 120,
+                      borderRadius: BorderRadius.circular(8),
+                      minHeight: MediaQuery.of(context).size.height / 8,
+                    ),
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  Expanded(
+                    child: Column(
+                      children: [
+                        // movie title
+                        SkeletonParagraph(
+                          style: SkeletonParagraphStyle(
+                              lines: 1,
+                              spacing: 6,
+                              lineStyle: SkeletonLineStyle(
+                                randomLength: true,
+                                height: 18,
+                                borderRadius: BorderRadius.circular(8),
+                                minLength:
+                                    MediaQuery.of(context).size.width / 2,
+                              )),
+                        ),
+
+                        const SizedBox(height: 5),
+
+                        // movie description
+                        SkeletonParagraph(
+                          style: SkeletonParagraphStyle(
+                              lines: 4,
+                              spacing: 6,
+                              lineStyle: SkeletonLineStyle(
+                                randomLength: true,
+                                height: 10,
+                                borderRadius: BorderRadius.circular(8),
+                                minLength:
+                                    MediaQuery.of(context).size.width / 2,
+                              )),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 10),
@@ -757,25 +818,12 @@ class _ReviewCardState extends State<ReviewCard>
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                // review text
-                SkeletonParagraph(
-                  style: SkeletonParagraphStyle(
-                      lines: 3,
-                      spacing: 6,
-                      lineStyle: SkeletonLineStyle(
-                        // randomLength: true,
-                        height: 13,
-                        borderRadius: BorderRadius.circular(8),
-                        minLength: MediaQuery.of(context).size.width / 2,
-                      )),
-                ),
               ],
             ),
 
             const SizedBox(height: 10),
             Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SkeletonAvatar(
@@ -801,24 +849,6 @@ class _ReviewCardState extends State<ReviewCard>
                     minLength: MediaQuery.of(context).size.width / 2,
                     // maxLength: MediaQuery.of(context).size.width / 3,
                   )),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SkeletonAvatar(
-                  style: SkeletonAvatarStyle(
-                    shape: BoxShape.circle,
-                    width: 35,
-                    height: 35,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        width: MediaQuery.of(context).size.width / 3,
-                        height: 30)),
-              ],
             ),
           ],
         )),

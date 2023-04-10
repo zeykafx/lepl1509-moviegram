@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/components/drawer/drawer.dart';
+import 'package:projet_lepl1509_groupe_17/pages/home/explore_feed.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/home_feed.dart';
 import 'package:projet_lepl1509_groupe_17/pages/search/search_page.dart';
 
@@ -12,11 +15,39 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  User? currentUser = FirebaseAuth.instance.currentUser;
+  FirebaseFirestore db = FirebaseFirestore.instance;
+  bool hasMoreThanOneFriend = false;
+
+  @override
+  void initState() {
+    getCurrentUserFriends().then((bool value) {
+      setState(() {
+        hasMoreThanOneFriend = value;
+      });
+    });
+    super.initState();
+  }
+
+  Future<bool> getCurrentUserFriends() async {
+    bool retBool = false;
+    var snapshot = await db
+        .collection('following')
+        .doc(currentUser?.uid)
+        .collection('userFollowing')
+        .get();
+    for (var _ in snapshot.docs) {
+      retBool = true;
+      return retBool;
+    }
+    return retBool;
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       initialIndex: 0,
-      length: 1, // TODO change back to 2
+      length: 2,
       child: Scaffold(
         drawer: const DrawerComponent(),
         appBar: AppBar(
@@ -29,16 +60,16 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.search),
             ),
           ],
-          // bottom: const TabBar(
-          //   tabs: [
-          //     Tab(
-          //       text: "Following",
-          //     ),
-          //     Tab(
-          //       text: "Explore",
-          //     ),
-          //   ],
-          // ),
+          bottom: const TabBar(
+            tabs: [
+              Tab(
+                text: "Following",
+              ),
+              Tab(
+                text: "Explore",
+              ),
+            ],
+          ),
         ),
         body: Center(
           child: Container(
@@ -46,7 +77,7 @@ class _HomePageState extends State<HomePage> {
             child: const TabBarView(
               children: [
                 HomeFeed(),
-                // ExploreFeed(),
+                ExploreFeed(),
               ],
             ),
           ),

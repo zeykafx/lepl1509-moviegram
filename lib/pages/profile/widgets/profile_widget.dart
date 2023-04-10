@@ -24,19 +24,20 @@ class ProfileWidget extends StatelessWidget {
     final color = Theme.of(context).colorScheme.primary;
     if (inDrawer) {
       return Center(
-        child: InkWell(onTap: onClicked, child: buildImage(70)),
+        child: InkWell(onTap: self ? onClicked : () {}, child: buildImage(70)),
       );
     } else {
       return Center(
           child: InkWell(
-        onTap: onClicked,
+        borderRadius: BorderRadius.circular(100),
+        onTap: self ? onClicked : () {},
         child: Stack(
           children: [
-            buildImage(110),
+            buildImage(90),
             Positioned(
               bottom: 0,
               right: 4,
-              child: buildEditIcon(color, context),
+              child: self ? buildEditIcon(color, context) : Container(),
             ),
           ],
         ),
@@ -46,52 +47,37 @@ class ProfileWidget extends StatelessWidget {
 
   Widget buildImage(double size) {
     return ClipOval(
-        child: Material(
-            color: Colors.transparent,
-            child: SizedBox(
-                width: size,
-                height: size,
-                // child: Image(
-                //   image: ResizeImage(
-                //     NetworkImage(
-                //       imagePath!,
-                //     ),
-                //     width: size.toInt()*2,
-                //     height: size.toInt()*2,
-                //   ),
-                //   fit: BoxFit.cover,
-                // ),
-                child: Image(
-                  image: OptimizedCacheImageProvider(imagePath!),
-                  width: size.toInt() * 2,
-                  height: size.toInt() * 2,
-                  fit: BoxFit.cover,
-                ))
-            // child: Ink.image(
-            //   image: image,
-            //   fit: BoxFit.cover,
-            //   width: size,
-            //   height: size,
-            //   child: InkWell(onTap: onClicked),
-            // ),
-            ));
-  }
-
-  Widget buildEditIcon(Color color, BuildContext context) => buildCircle(
-        color: Theme.of(context).colorScheme.surface,
-        all: 3,
-        child: buildCircle(
-          color: color,
-          all: 8,
-          child: Icon(
-            self
-                ? (isEdit ? Icons.add_a_photo : Icons.edit)
-                : (access ? Icons.person_remove : Icons.person_add),
-            color: Colors.white,
-            size: 15,
+      child: Material(
+        color: Colors.transparent,
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Image(
+            image: OptimizedCacheImageProvider(imagePath!),
+            width: size.toInt() * 2,
+            height: size.toInt() * 2,
+            fit: BoxFit.cover,
           ),
         ),
-      );
+      ),
+    );
+  }
+
+  Widget buildEditIcon(Color color, BuildContext context) {
+    return buildCircle(
+      color: Theme.of(context).colorScheme.surface,
+      all: 2,
+      child: buildCircle(
+        color: color,
+        all: 5,
+        child: Icon(
+          isEdit ? Icons.add_a_photo : Icons.edit,
+          color: Colors.white,
+          size: 15,
+        ),
+      ),
+    );
+  }
 
   Widget buildCircle({
     required Widget child,

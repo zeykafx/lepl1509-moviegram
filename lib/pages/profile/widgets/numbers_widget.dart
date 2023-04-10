@@ -3,8 +3,9 @@ import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 
 class NumbersWidget extends StatefulWidget {
   final UserProfile? userProfile;
+  final int numberPosts;
 
-  const NumbersWidget({super.key, this.userProfile});
+  const NumbersWidget({super.key, this.userProfile, this.numberPosts = 0});
 
   @override
   State<NumbersWidget> createState() => _NumbersWidgetState();
@@ -12,18 +13,21 @@ class NumbersWidget extends StatefulWidget {
 
 class _NumbersWidgetState extends State<NumbersWidget> {
   @override
-  Widget build(BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          buildText(context, widget.userProfile?.ranking.toString() ?? "0", 'Ranking'),
-          buildDivider(),
-          buildText(
-              context, widget.userProfile?.following.toString() ?? "0", 'Following'),
-          buildDivider(),
-          buildText(
-              context, widget.userProfile?.followers.toString() ?? "0", 'Followers'),
-        ],
-      );
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisSize: MainAxisSize.max,
+      children: <Widget>[
+        buildText(context, widget.numberPosts.toString(), 'N° Posts'),
+        buildDivider(),
+        buildText(context, widget.userProfile?.following.toString() ?? "0",
+            'Following'),
+        buildDivider(),
+        buildText(context, widget.userProfile?.followers.toString() ?? "0",
+            'Followers'),
+      ],
+    );
+  }
 
   Widget buildDivider() => const SizedBox(
         height: 24,
@@ -32,17 +36,16 @@ class _NumbersWidgetState extends State<NumbersWidget> {
 
   Widget buildText(BuildContext context, String value, String text) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+          style: const TextStyle(fontSize: 18),
         ),
-        const SizedBox(height: 2),
         Text(
           text,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          style: TextStyle(fontSize: 12, color: Theme.of(context).dividerColor),
         ),
       ],
     );

@@ -95,7 +95,10 @@ class _FriendsPageState extends State<FriendsPage> {
         .doc(from)
         .delete();
     setState(() {
-      db.collection('users').doc(from).update({"following": FieldValue.increment(-1), "followers": FieldValue.increment(-1)});
+      db.collection('users').doc(from).update({
+        "following": FieldValue.increment(-1),
+        "followers": FieldValue.increment(-1)
+      });
     });
   }
 
@@ -127,72 +130,73 @@ class _FriendsPageState extends State<FriendsPage> {
                         bool isFriend = currentUserFriends
                             .where((element) => element.uid == user.uid)
                             .isNotEmpty;
-                        print("name: ${user.name} isFriend: $isFriend");
+                        // print("name: ${user.name} isFriend: $isFriend");
                         return ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage:
-                                  OptimizedCacheImageProvider(user.photoURL),
-                            ),
-                            title: Text(user.name),
-                            subtitle: Text(user.bio ?? " "),
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ProfilePage(
-                                      accessToFeed: isFriend,
-                                      uid: user.uid ?? ''),
-                                ),
-                              );
-                            },
-                            trailing: IconButton(
-                              icon: isFriend
-                                  ? const Icon(Icons.person_remove)
-                                  : const Icon(Icons.person_add),
-                              onPressed: () {
-                                if (isFriend) {
-                                  print("remove friend");
-                                  // remove friend
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text("Remove friend"),
-                                      content: const Text(
-                                          "Are you sure you want to remove this friend?"),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context).pop(),
-                                            child: const Text("Cancel")),
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                              removeFriend(
-                                                  to: user.uid,
-                                                  from: FirebaseAuth.instance
-                                                      .currentUser?.uid);
-                                              removeFriend(
-                                                  to: FirebaseAuth.instance
-                                                      .currentUser?.uid,
-                                                  from: user.uid);
-                                              // show a snackbar
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                  content:
-                                                      Text('Friend removed!'),
-                                                ),
-                                              );
-                                            },
-                                            child: const Text("Remove")),
-                                      ],
-                                    ),
-                                  );
-                                } else {
-                                  sendRequest(
-                                      to: user.uid, from: currentUser?.uid);
-                                }
-                              },
-                            ));
+                          leading: CircleAvatar(
+                            backgroundImage:
+                                OptimizedCacheImageProvider(user.photoURL),
+                          ),
+                          title: Text(user.name),
+                          subtitle: Text(user.bio ?? " "),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ProfilePage(
+                                    accessToFeed: isFriend,
+                                    uid: user.uid ?? ''),
+                              ),
+                            );
+                          },
+                          // trailing: IconButton(
+                          //   icon: isFriend
+                          //       ? const Icon(Icons.person_remove)
+                          //       : const Icon(Icons.person_add),
+                          //   onPressed: () {
+                          //     if (isFriend) {
+                          //       print("remove friend");
+                          //       // remove friend
+                          //       showDialog(
+                          //         context: context,
+                          //         builder: (context) => AlertDialog(
+                          //           title: const Text("Remove friend"),
+                          //           content: const Text(
+                          //               "Are you sure you want to remove this friend?"),
+                          //           actions: [
+                          //             TextButton(
+                          //                 onPressed: () =>
+                          //                     Navigator.of(context).pop(),
+                          //                 child: const Text("Cancel")),
+                          //             TextButton(
+                          //                 onPressed: () {
+                          //                   Navigator.of(context).pop();
+                          //                   removeFriend(
+                          //                       to: user.uid,
+                          //                       from: FirebaseAuth.instance
+                          //                           .currentUser?.uid);
+                          //                   removeFriend(
+                          //                       to: FirebaseAuth.instance
+                          //                           .currentUser?.uid,
+                          //                       from: user.uid);
+                          //                   // show a snackbar
+                          //                   ScaffoldMessenger.of(context)
+                          //                       .showSnackBar(
+                          //                     const SnackBar(
+                          //                       content:
+                          //                           Text('Friend removed!'),
+                          //                     ),
+                          //                   );
+                          //                 },
+                          //                 child: const Text("Remove")),
+                          //           ],
+                          //         ),
+                          //       );
+                          //     } else {
+                          //       sendRequest(
+                          //           to: user.uid, from: currentUser?.uid);
+                          //     }
+                          //   },
+                          // ),
+                        );
                       }
                     },
                   ));

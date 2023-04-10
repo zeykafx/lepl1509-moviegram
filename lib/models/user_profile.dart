@@ -25,10 +25,11 @@ class UserProfile {
     UserProfile ret = UserProfile(
       uid: map['uid'],
       bio: map['bio'] ?? "No Bio",
-      watched: map['watched'] != null ? List<String>.from(map['watched']) : [''],
-      followers: map['followers'] ?? 0,
-      following: map['following'] ?? 0,
-      ranking: map['ranking'] ?? 0,
+      watched:
+          map['watched'] != null ? List<String>.from(map['watched']) : [''],
+      followers: map['followers'].round() ?? 0,
+      following: map['following'].round() ?? 0,
+      ranking: map['ranking'].round() ?? 0,
       photoURL: map['photoURL'] != ""
           ? map['photoURL'] ?? 'http://www.gravatar.com/avatar/?d=mp'
           : 'http://www.gravatar.com/avatar/?d=mp',
