@@ -28,23 +28,22 @@ class ProfileFeed extends StatefulWidget {
 }
 
 class _ProfileFeedState extends State<ProfileFeed> {
-  //User? currentUser = FirebaseAuth.instance.currentUser;
+  User? currentUser = FirebaseAuth.instance.currentUser;
   FirebaseFirestore db = FirebaseFirestore.instance;
   Map<String, dynamic> followingUserMap = {"lastDoc": null};
   UserProfile? userProfile;
-
+  UserProfile? currentUserProfile;
   bool loading = false;
   ScrollController scrollController = ScrollController();
-
   List<Map<String, dynamic>> feedContent = [];
-
   Random random = Random();
-
   bool hasSentRequest = false;
+  bool hasAccessToFeed = false;
 
   @override
   void initState() {
     super.initState();
+    hasAccessToFeed = widget.accessToFeed;
     scrollController.addListener(() async {
       if (scrollController.position.pixels ==
           scrollController.position.maxScrollExtent) {
@@ -55,16 +54,27 @@ class _ProfileFeedState extends State<ProfileFeed> {
         });
       }
     });
+    readCurrentUserProfile();
     readUserData().then((_) {
       checkHasSentRequest().then((hasSent) {
         setState(() {
           hasSentRequest = hasSent;
         });
+        checkCurrUserAndProfileAreFriends();
       });
       getReviews().then((value) {
         setState(() {
           feedContent = value;
         });
+      });
+    });
+  }
+
+  Future<void> readCurrentUserProfile() async {
+    await db.collection('users').doc(currentUser?.uid).get().then((value) {
+      setState(() {
+        currentUserProfile =
+            UserProfile.fromMap(value.data() as Map<String, dynamic>);
       });
     });
   }
@@ -164,15 +174,45 @@ class _ProfileFeedState extends State<ProfileFeed> {
     return value;
   }
 
+  void checkCurrUserAndProfileAreFriends() {
+    db
+        .collection("following")
+        .doc(userProfile?.uid)
+        .collection("userFollowing")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      if (value.exists) {
+        setState(() {
+          hasAccessToFeed = true;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         RefreshIndicator(
             onRefresh: () async {
-              getReviews().then((value) {
-                setState(() {
-                  feedContent = value;
+              // getReviews().then((value) {
+              //   setState(() {
+              //     feedContent = value;
+              //   });
+              // });
+              readCurrentUserProfile();
+              readUserData().then((_) {
+                checkHasSentRequest().then((hasSent) {
+                  setState(() {
+                    hasSentRequest = hasSent;
+                  });
+                  checkCurrUserAndProfileAreFriends();
+                });
+                getReviews().then((value) {
+                  setState(() {
+                    feedContent = value;
+                  });
                 });
               });
             },
@@ -189,7 +229,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
                             'http://www.gravatar.com/avatar/?d=mp',
                         inDrawer: false,
                         self: widget.isCurrentUser,
-                        access: widget.accessToFeed,
+                        access: hasAccessToFeed,
                         onClicked: () {
                           // widget.isCurrentUser
                           Navigator.of(context)
@@ -236,7 +276,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
                             FilledButton(
                               style: ButtonStyle(
                                 backgroundColor: MaterialStateProperty.all(
-                                    widget.accessToFeed
+                                    hasAccessToFeed
                                         ? Theme.of(context)
                                             .colorScheme
                                             .primary
@@ -255,14 +295,14 @@ class _ProfileFeedState extends State<ProfileFeed> {
                                 ),
                                 visualDensity: VisualDensity.compact,
                               ),
-                              child: Text(widget.accessToFeed
+                              child: Text(hasAccessToFeed
                                   ? 'Unfollow'
                                   : hasSentRequest
                                       ? 'Cancel request'
                                       : 'Follow'),
                               onPressed: () {
-                                widget.accessToFeed
-                                    ? DoubleRemoveFriend(
+                                hasAccessToFeed
+                                    ? doubleRemoveFriend(
                                         to: widget.uid,
                                         from: FirebaseAuth
                                             .instance.currentUser!.uid)
@@ -281,14 +321,13 @@ class _ProfileFeedState extends State<ProfileFeed> {
                   ),
                 ),
                 const SizedBox(height: 10),
+
                 // followers, ranking, ...
                 NumbersWidget(
                   userProfile: userProfile,
                   numberPosts: feedContent.length,
                 ),
                 const SizedBox(height: 15),
-
-                // const SizedBox(height: 15),
 
                 // watched section
                 const Padding(
@@ -299,11 +338,11 @@ class _ProfileFeedState extends State<ProfileFeed> {
                   ),
                 ),
 
-                widget.accessToFeed
+                hasAccessToFeed
                     ? ListView.builder(
                         key: const Key('profileFeedList'),
                         shrinkWrap: true,
-                        physics: ScrollPhysics(),
+                        physics: const ScrollPhysics(),
                         addRepaintBoundaries: true,
                         controller: scrollController,
                         itemCount: feedContent.length,
@@ -314,14 +353,14 @@ class _ProfileFeedState extends State<ProfileFeed> {
                               key: Key(feedContent[index]["id"]),
                               id: feedContent[index]["id"],
                               data: feedContent[index]["data"],
-                              user: userProfile,
+                              user: currentUserProfile,
                               showRatingPill: true,
                             ),
                           );
                         })
                     : const Center(
                         child: Text(
-                          'This user is private',
+                          "This user's feed is private",
                           style: TextStyle(fontSize: 20),
                         ),
                       )
@@ -367,7 +406,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
     setState(() {});
   }
 
-  void DoubleRemoveFriend({String? to, String? from}) {
+  void doubleRemoveFriend({String? to, String? from}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -388,7 +427,9 @@ class _ProfileFeedState extends State<ProfileFeed> {
                     content: Text('Friend removed!'),
                   ),
                 );
-                setState(() {});
+                setState(() {
+                  hasAccessToFeed = false;
+                });
               },
               child: const Text("Remove")),
         ],

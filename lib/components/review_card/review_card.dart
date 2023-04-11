@@ -243,20 +243,14 @@ class _ReviewCardState extends State<ReviewCard>
                 child: SizedBox(
                     width: 35,
                     height: 35,
-                    // child: Image(
-                    //   image: ResizeImage(
-                    //     NetworkImage(
-                    //       author?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
-                    //     ),
-                    //     width: 70,
-                    //     height: 70,
-                    //   ),
-                    // ),
                     child: Image(
                       image: OptimizedCacheImageProvider(
                         author?.photoURL ??
                             'http://www.gravatar.com/avatar/?d=mp',
                       ),
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.cover,
                     )),
               ),
               const SizedBox(width: 8),

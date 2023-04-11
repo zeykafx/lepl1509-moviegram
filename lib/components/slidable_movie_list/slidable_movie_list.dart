@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:optimized_cached_image/optimized_cached_image.dart';
+import 'package:projet_lepl1509_groupe_17/components/slidable_movie_list/show_more_page.dart';
 import 'package:projet_lepl1509_groupe_17/models/search_movie.dart';
 import 'package:projet_lepl1509_groupe_17/pages/movie/movie_page.dart';
 
@@ -39,11 +41,23 @@ class SlidableMovieList extends StatefulWidget {
 
 class _SlidableMovieListState extends State<SlidableMovieList> {
   List<SearchMovie> popularMovies = [];
+  late String category;
 
   @override
   initState() {
     super.initState();
     getPopularMovies();
+    category = widget.type == SlidableMovieListType.popular
+        ? "Popular now"
+        : widget.type == SlidableMovieListType.now_playing
+            ? "Now playing"
+            : widget.type == SlidableMovieListType.recommendations
+                ? "Recommended"
+                : widget.type == SlidableMovieListType.top_rated
+                    ? "Top Rated"
+                    : widget.type == SlidableMovieListType.upcoming
+                        ? "Upcoming/Recently released"
+                        : "Movies you might like";
   }
 
   Future<void> getPopularMovies() async {
@@ -85,24 +99,34 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
       children: [
         Padding(
           padding: widget.padding,
-          child: Text(
-            widget.type == SlidableMovieListType.popular
-                ? "Popular now"
-                : widget.type == SlidableMovieListType.now_playing
-                    ? "Now playing"
-                    : widget.type == SlidableMovieListType.recommendations
-                        ? "Recommended"
-                        : widget.type == SlidableMovieListType.top_rated
-                            ? "Top Rated"
-                            : widget.type == SlidableMovieListType.upcoming
-                                ? "Upcoming - Recently released"
-                                : "Movies you might like", // default
-            style: const TextStyle(fontSize: 20),
+          child: Row(
+            children: [
+              Text(
+                category,
+                style: const TextStyle(fontSize: 20),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: () {
+                  Get.to(() {
+                    return ShowMorePage(
+                      category: category,
+                      movies: popularMovies,
+                      type: widget.type,
+                    );
+                  });
+                },
+                child: Text(
+                  "Show more",
+                  style: TextStyle(color: Theme.of(context).dividerColor),
+                ),
+              )
+            ],
           ),
         ),
-        const SizedBox(
-          height: 10.0,
-        ),
+        // const SizedBox(
+        //   height: 10.0,
+        // ),
         Expanded(
           child: ListView(
             scrollDirection: Axis.horizontal,

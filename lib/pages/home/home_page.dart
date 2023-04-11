@@ -17,72 +17,69 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   User? currentUser = FirebaseAuth.instance.currentUser;
   FirebaseFirestore db = FirebaseFirestore.instance;
-  bool hasMoreThanOneFriend = false;
+  bool? hasAtLeastOneFriend;
 
   @override
   void initState() {
     getCurrentUserFriends().then((bool value) {
       setState(() {
-        hasMoreThanOneFriend = value;
+        hasAtLeastOneFriend = value;
       });
     });
     super.initState();
   }
 
   Future<bool> getCurrentUserFriends() async {
-    bool retBool = false;
     var snapshot = await db
         .collection('following')
         .doc(currentUser?.uid)
         .collection('userFollowing')
         .get();
-    for (var _ in snapshot.docs) {
-      retBool = true;
-      return retBool;
-    }
-    return retBool;
+    return snapshot.docs.isNotEmpty;
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      initialIndex: 0,
-      length: 2,
-      child: Scaffold(
-        drawer: const DrawerComponent(),
-        appBar: AppBar(
-          title: const Text('MovieGram'),
-          actions: [
-            IconButton(
-              onPressed: () {
-                Get.to(() => const SearchPage());
-              },
-              icon: const Icon(Icons.search),
-            ),
-          ],
-          bottom: const TabBar(
-            tabs: [
-              Tab(
-                text: "Following",
+    return hasAtLeastOneFriend == null
+        ? const Center(child: CircularProgressIndicator())
+        : DefaultTabController(
+            initialIndex: hasAtLeastOneFriend! ? 0 : 1,
+            length: 2,
+            child: Scaffold(
+              drawer: const DrawerComponent(),
+              appBar: AppBar(
+                title: const Text('MovieGram'),
+                actions: [
+                  IconButton(
+                    onPressed: () {
+                      Get.to(() => const SearchPage());
+                    },
+                    icon: const Icon(Icons.search),
+                  ),
+                ],
+                bottom: const TabBar(
+                  tabs: [
+                    Tab(
+                      text: "Following",
+                    ),
+                    Tab(
+                      text: "Explore",
+                    ),
+                  ],
+                ),
               ),
-              Tab(
-                text: "Explore",
+              body: Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: const TabBarView(
+                    children: [
+                      HomeFeed(),
+                      ExploreFeed(),
+                    ],
+                  ),
+                ),
               ),
-            ],
-          ),
-        ),
-        body: Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: const TabBarView(
-              children: [
-                HomeFeed(),
-                ExploreFeed(),
-              ],
             ),
-          ),
-        ),
-      ),
-    );
+          );
   }
 }
