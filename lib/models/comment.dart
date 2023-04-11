@@ -1,7 +1,7 @@
 import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 
 class Comment {
-  final String commId;
+  String commId;
   final String comment;
   final String uid;
   final int timestamp;

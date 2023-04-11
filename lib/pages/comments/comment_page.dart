@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +33,24 @@ class _CommentPageState extends State<CommentPage> {
   Comment? replyComment;
   FocusNode focusNode = FocusNode();
 
+  late Timer timer;
+
+  @override
+  initState() {
+    super.initState();
+    // TODO: fix this
+    // timer = Timer(const Duration(seconds: 5), () {
+    //   widget.setStateCallback();
+    //   setState(() {});
+    // });
+  }
+
+  @override
+  void dispose() {
+    // timer.cancel();
+    super.dispose();
+  }
+
   Future<void> addComment(String query) async {
     Comment newComment = Comment(
       commId: '',
@@ -44,46 +64,43 @@ class _CommentPageState extends State<CommentPage> {
           .data() as Map<String, dynamic>),
     );
 
-    try {
-      if (!isReplying) {
-        await db
-            .collection('comments')
-            .doc(widget.review.reviewID)
-            .collection('comments')
-            .add({
-          'comment': newComment.comment,
-          'uid': newComment.uid,
-          'timestamp': newComment.timestamp,
-        });
-      } else {
-        await db
-            .collection('comments')
-            .doc(widget.review.reviewID)
-            .collection('comments')
-            .doc(replyComment!.commId)
-            .collection("subcomments")
-            .add({
-          'comment': newComment.comment,
-          'uid': newComment.uid,
-          'timestamp': newComment.timestamp,
-        });
-      }
+    if (!isReplying) {
+      var ret = await db
+          .collection('comments')
+          .doc(widget.review.reviewID)
+          .collection('comments')
+          .add({
+        'comment': newComment.comment,
+        'uid': newComment.uid,
+        'timestamp': newComment.timestamp,
+      });
+
+      newComment.commId = ret.id;
 
       setState(() {
-        // widget.review.comments.add(newComment);
+        widget.review.comments.insert(0, newComment);
+      });
+    } else {
+      await db
+          .collection('comments')
+          .doc(widget.review.reviewID)
+          .collection('comments')
+          .doc(replyComment!.commId)
+          .collection("subcomments")
+          .add({
+        'comment': newComment.comment,
+        'uid': newComment.uid,
+        'timestamp': newComment.timestamp,
+      });
+      setState(() {
         widget.review.comments[widget.review.comments.indexOf(replyComment!)]
             .replies
             .add(newComment);
       });
-      widget.setStateCallback();
-
-      commentController.clear();
-    } catch (e) {
-      setState(() {
-        widget.review.comments.remove(newComment);
-      });
-      return;
     }
+
+    widget.setStateCallback();
+    commentController.clear();
   }
 
   void stopReply() {
@@ -102,21 +119,23 @@ class _CommentPageState extends State<CommentPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Expanded(
-            child: ListView(
+            child: ListView.builder(
+              itemCount: widget.review.comments.length,
               controller: scrollController,
-              children: widget.review.comments.map((Comment comment) {
+              itemBuilder: (context, index) {
                 return CommentWidget(
-                  comment: comment,
+                  comment: widget.review.comments[index],
                   callback: (Comment com) {
                     setState(() {
                       isReplying = true;
-                      replyComment = comment;
-                      commentController.text = '@${com.user.name} ';
+                      replyComment = widget.review.comments[index];
+                      commentController.text =
+                          '@${com.user.name.replaceAll(" ", "")} ';
                       FocusScope.of(context).requestFocus(focusNode);
                     });
                   },
                 );
-              }).toList(),
+              },
             ),
           ),
           if (isReplying) ...[
@@ -129,7 +148,7 @@ class _CommentPageState extends State<CommentPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(4.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: Text("Replying to ${replyComment?.user.name}"),
                   ),
                   const Spacer(),

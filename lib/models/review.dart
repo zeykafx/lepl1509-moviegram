@@ -55,6 +55,8 @@ class Review {
   static Future<Review> fromJson(String id, Map<String, dynamic> json) async {
     List<Comment> comments = [];
     List<UserProfile> likes = [];
+
+    // get the comments for this post
     var commentVal = await FirebaseFirestore.instance
         .collection('comments')
         .doc(id)
@@ -73,6 +75,29 @@ class Review {
             .data()!),
       );
       comments.add(comment);
+
+      // get replies for each comment
+      var replyVal = await FirebaseFirestore.instance
+          .collection('comments')
+          .doc(id)
+          .collection('comments')
+          .doc(element.id)
+          .collection('subcomments')
+          .get();
+      for (var reply in replyVal.docs) {
+        Comment replyComment = Comment(
+          commId: reply.id,
+          comment: reply.data()["comment"],
+          uid: reply.data()["uid"],
+          timestamp: reply.data()["timestamp"],
+          user: UserProfile.fromMap((await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(reply.data()["uid"])
+                  .get())
+              .data()!),
+        );
+        comment.replies.add(replyComment);
+      }
     }
     comments.sort((a, b) => b.date.compareTo(a.date));
 

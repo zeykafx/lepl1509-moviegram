@@ -15,13 +15,11 @@ class CommentWidget extends StatefulWidget {
 }
 
 class _CommentWidgetState extends State<CommentWidget> {
-  late Comment comment;
   bool seeReplies = false;
 
   @override
   void initState() {
     super.initState();
-    comment = widget.comment;
   }
 
   @override
@@ -36,7 +34,7 @@ class _CommentWidgetState extends State<CommentWidget> {
             padding: const EdgeInsets.only(top: 5.0),
             child: CircleAvatar(
               backgroundImage: OptimizedCacheImageProvider(
-                comment.user.photoURL,
+                widget.comment.user.photoURL,
               ),
               radius: 22,
             ),
@@ -53,45 +51,46 @@ class _CommentWidgetState extends State<CommentWidget> {
                   // crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      comment.user.name,
+                      widget.comment.user.name,
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     Text(
                       formatTime(
-                        DateTime.fromMillisecondsSinceEpoch(comment.timestamp)
+                        DateTime.fromMillisecondsSinceEpoch(
+                                widget.comment.timestamp)
                             .millisecondsSinceEpoch,
                       ),
                       style: const TextStyle(fontSize: 12),
                     ),
                   ],
                 ),
-                Text(comment.comment),
+                Text(widget.comment.comment),
                 GestureDetector(
                   child: Text("Reply",
                       style: TextStyle(
                           color: Theme.of(context).dividerColor, fontSize: 13)),
                   onTap: () {
-                    widget.callback(comment);
+                    widget.callback(widget.comment);
                   },
                 ),
-                if (comment.replies.isNotEmpty) ...[
+                if (widget.comment.replies.isNotEmpty) ...[
                   if (!seeReplies) ...[
                     ReplyComment(
-                      comment: comment.replies[0],
+                      comment: widget.comment.replies[0],
                       callback: widget.callback,
                     ).animate().fade(),
                   ],
 
                   // replies
-                  for (var reply in comment.replies)
+                  for (var reply in widget.comment.replies)
                     if (seeReplies) ...[
                       ReplyComment(comment: reply, callback: widget.callback)
                           .animate()
                           .fade(),
                     ],
 
-                  if (comment.replies.length > 1)
+                  if (widget.comment.replies.length > 1)
                     GestureDetector(
                       child: Text(
                         seeReplies ? "Hide replies" : "See replies",
