@@ -7,19 +7,14 @@ class Comment {
   final int timestamp;
   late DateTime date;
   final UserProfile user;
+  List<Comment> replies = [];
 
   Comment(
-      {required this.commId, required this.comment, required this.uid, required this.timestamp, required this.user}) {
+      {required this.commId,
+      required this.comment,
+      required this.uid,
+      required this.timestamp,
+      required this.user}) {
     date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  }
-
-  factory Comment.fromJson(Map<String, dynamic> json) {
-    return Comment(
-      commId: json['commId'],
-      comment: json['comment'],
-      uid: json['uid'],
-      timestamp: json['timestamp'],
-      user: UserProfile.fromMap(json['user']),
-    );
   }
 }

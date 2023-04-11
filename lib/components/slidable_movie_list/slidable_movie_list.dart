@@ -56,7 +56,7 @@ class _SlidableMovieListState extends State<SlidableMovieList> {
                 : widget.type == SlidableMovieListType.top_rated
                     ? "Top Rated"
                     : widget.type == SlidableMovieListType.upcoming
-                        ? "Upcoming/Recently released"
+                        ? "Upcoming/Recent"
                         : "Movies you might like";
   }
 

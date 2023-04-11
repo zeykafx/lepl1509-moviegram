@@ -95,84 +95,80 @@ class _ShowMorePageState extends State<ShowMorePage> {
               });
               await getMoreMovies();
             },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 700),
-                  child: GridView(
-                    // mainAxisSize: MainAxisSize.max,
-                    controller: scrollController,
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 200, childAspectRatio: 0.7),
-                    children: [
-                      ...widget.movies.map(
-                        (movie) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10.0),
-                          child: InkWell(
-                            onTap: () {
-                              Get.to(() => MoviePage(movie: movie));
-                            },
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: movie.posterPath != null
-                                        ? OptimizedCacheImage(
-                                            imageUrl:
-                                                "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-                                            fit: BoxFit.cover,
-                                            height: 350,
-                                          )
-                                        : const Center(
-                                            child: Text(
-                                              "No image available",
-                                            ),
+            child: Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: GridView(
+                  // mainAxisSize: MainAxisSize.max,
+                  controller: scrollController,
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 160, childAspectRatio: 0.7),
+                  children: [
+                    ...widget.movies.map(
+                      (movie) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: InkWell(
+                          onTap: () {
+                            Get.to(() => MoviePage(movie: movie));
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: movie.posterPath != null
+                                      ? OptimizedCacheImage(
+                                          imageUrl:
+                                              "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                          fit: BoxFit.cover,
+                                          height: 300,
+                                        )
+                                      : const Center(
+                                          child: Text(
+                                            "No image available",
                                           ),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 5.0,
+                              ),
+                              SizedBox(
+                                width: 100,
+                                child: Text(
+                                  movie.title,
+                                  maxLines: 1,
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: 5.0,
-                                ),
-                                SizedBox(
-                                  width: 100,
-                                  child: Text(
-                                    movie.title,
-                                    maxLines: 1,
-                                    textAlign: TextAlign.center,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                              ),
+                              const SizedBox(
+                                height: 5.0,
+                              ),
+                              if (movie.releaseDate != "")
+                                Text(
+                                  DateFormat('MMM. dd, yyyy').format(
+                                    DateTime.parse(movie.releaseDate),
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context).dividerColor,
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: 5.0,
-                                ),
-                                if (movie.releaseDate != "")
-                                  Text(
-                                    DateFormat('MMM. dd, yyyy').format(
-                                      DateTime.parse(movie.releaseDate),
-                                    ),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context).dividerColor,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ).animate().fadeIn(),
-                        ),
+                            ],
+                          ),
+                        ).animate().fadeIn(),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

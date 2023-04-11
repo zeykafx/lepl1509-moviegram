@@ -5,8 +5,7 @@ import 'package:optimized_cached_image/optimized_cached_image.dart';
 import 'package:projet_lepl1509_groupe_17/models/comment.dart';
 import 'package:projet_lepl1509_groupe_17/models/review.dart';
 import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
-import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart';
-import 'package:time_formatter/time_formatter.dart';
+import 'package:projet_lepl1509_groupe_17/pages/comments/comment_widget.dart';
 
 class CommentPage extends StatefulWidget {
   final Review review;
@@ -28,6 +27,10 @@ class _CommentPageState extends State<CommentPage> {
   User? currentUser = FirebaseAuth.instance.currentUser;
   ScrollController scrollController = ScrollController();
 
+  bool isReplying = false;
+  Comment? replyComment;
+  FocusNode focusNode = FocusNode();
+
   Future<void> addComment(String query) async {
     Comment newComment = Comment(
       commId: '',
@@ -40,31 +43,53 @@ class _CommentPageState extends State<CommentPage> {
               .get())
           .data() as Map<String, dynamic>),
     );
+
     try {
-      await db
-          .collection('comments')
-          .doc(widget.review.reviewID)
-          .collection('comments')
-          .add({
-        'comment': newComment.comment,
-        'uid': newComment.uid,
-        'timestamp': newComment.timestamp,
+      if (!isReplying) {
+        await db
+            .collection('comments')
+            .doc(widget.review.reviewID)
+            .collection('comments')
+            .add({
+          'comment': newComment.comment,
+          'uid': newComment.uid,
+          'timestamp': newComment.timestamp,
+        });
+      } else {
+        await db
+            .collection('comments')
+            .doc(widget.review.reviewID)
+            .collection('comments')
+            .doc(replyComment!.commId)
+            .collection("subcomments")
+            .add({
+          'comment': newComment.comment,
+          'uid': newComment.uid,
+          'timestamp': newComment.timestamp,
+        });
+      }
+
+      setState(() {
+        // widget.review.comments.add(newComment);
+        widget.review.comments[widget.review.comments.indexOf(replyComment!)]
+            .replies
+            .add(newComment);
       });
+      widget.setStateCallback();
+
+      commentController.clear();
     } catch (e) {
-      print(e);
+      setState(() {
+        widget.review.comments.remove(newComment);
+      });
       return;
     }
-    commentController.clear();
+  }
 
+  void stopReply() {
     setState(() {
-      widget.review.comments.add(newComment);
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      isReplying = false;
     });
-    widget.setStateCallback();
   }
 
   @override
@@ -73,108 +98,105 @@ class _CommentPageState extends State<CommentPage> {
       appBar: AppBar(
         title: const Text('Comments'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: ListView(
-                controller: scrollController,
-                children: widget.review.comments.map((Comment comment) {
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: OptimizedCacheImageProvider(
-                        comment.user.photoURL,
-                      ),
-                    ),
-                    title: Row(
-                      children: [
-                        Text(comment.user.name),
-                        const SizedBox(width: 5),
-                        Text(
-                          formatTime(DateTime.fromMillisecondsSinceEpoch(
-                                  comment.timestamp)
-                              .millisecondsSinceEpoch),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    subtitle: Text(comment.comment),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProfilePage(
-                            accessToFeed: true,
-                            uid: comment.user.uid ?? '',
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }).toList(),
-              ),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: ListView(
+              controller: scrollController,
+              children: widget.review.comments.map((Comment comment) {
+                return CommentWidget(
+                  comment: comment,
+                  callback: (Comment com) {
+                    setState(() {
+                      isReplying = true;
+                      replyComment = comment;
+                      commentController.text = '@${com.user.name} ';
+                      FocusScope.of(context).requestFocus(focusNode);
+                    });
+                  },
+                );
+              }).toList(),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+          ),
+          if (isReplying) ...[
+            Container(
+              height: 40,
+              width: double.infinity,
+              color: Theme.of(context).dividerColor.withOpacity(0.4),
               child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ClipOval(
-                    child: SizedBox(
-                      width: 35,
-                      height: 35,
-                      // child: Image(
-                      //   image: ResizeImage(
-                      //     NetworkImage(currentUser?.photoURL != null
-                      //         ? currentUser!.photoURL!
-                      //         : 'http://www.gravatar.com/avatar/?d=mp'),
-                      //     width: 70,
-                      //     height: 70,
-                      //   ),
-                      //   fit: BoxFit.cover,
-                      // ),
-                      child: OptimizedCacheImage(
-                        imageUrl: currentUser?.photoURL != null
-                            ? currentUser!.photoURL!
-                            : 'http://www.gravatar.com/avatar/?d=mp',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Text("Replying to ${replyComment?.user.name}"),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      controller: commentController,
-                      decoration: InputDecoration(
-                        hintText: "Add a comment...",
-                        hintStyle:
-                            TextStyle(color: Theme.of(context).dividerColor),
-                        border: InputBorder.none,
-                      ),
-                      onFieldSubmitted: (value) {
-                        if (value.isNotEmpty) {
-                          addComment(value);
-                          FocusScope.of(context).unfocus();
-                        }
-                      },
-                      autofocus: false,
-                      onTapOutside: (ev) => FocusScope.of(context).unfocus(),
-                    ),
-                  ),
+                  const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: () {
-                      addComment(commentController.text);
-                      commentController.clear();
-                    },
+                    icon: const Icon(Icons.close),
+                    onPressed: stopReply,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
           ],
-        ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              children: [
+                ClipOval(
+                  child: SizedBox(
+                    width: 35,
+                    height: 35,
+                    child: OptimizedCacheImage(
+                      imageUrl: currentUser?.photoURL != null
+                          ? currentUser!.photoURL!
+                          : 'http://www.gravatar.com/avatar/?d=mp',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                    focusNode: focusNode,
+                    controller: commentController,
+                    decoration: InputDecoration(
+                      hintText: "Add a comment...",
+                      hintStyle:
+                          TextStyle(color: Theme.of(context).dividerColor),
+                      border: InputBorder.none,
+                    ),
+                    onFieldSubmitted: (value) async {
+                      if (value.isNotEmpty) {
+                        await addComment(value);
+                        if (isReplying) {
+                          stopReply();
+                        }
+                        FocusScope.of(context).unfocus();
+                      }
+                    },
+                    autofocus: false,
+                    onTapOutside: (ev) => FocusScope.of(context).unfocus(),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: () async {
+                    if (commentController.text.isNotEmpty) {
+                      await addComment(commentController.text);
+                      if (isReplying) {
+                        stopReply();
+                      }
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
       ),
     );
   }

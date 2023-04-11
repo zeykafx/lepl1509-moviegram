@@ -20,11 +20,22 @@ class Review {
   final String username;
   final String userID;
   final DateTime postedTime;
-  final List<Comment> comments;
+  late final List<Comment> comments;
   final List<UserProfile> likes;
 
-  Review(this.comment, this.rating, this.actingRating, this.storyRating, this.lengthRating, this.movieID, this.username,
-      this.userID, this.postedTime, this.reviewID, this.comments, this.likes);
+  Review(
+      this.comment,
+      this.rating,
+      this.actingRating,
+      this.storyRating,
+      this.lengthRating,
+      this.movieID,
+      this.username,
+      this.userID,
+      this.postedTime,
+      this.reviewID,
+      this.comments,
+      this.likes);
 
   static Future<Movie?> getMovieDetails(int movieID) async {
     Movie? movie;
@@ -44,15 +55,22 @@ class Review {
   static Future<Review> fromJson(String id, Map<String, dynamic> json) async {
     List<Comment> comments = [];
     List<UserProfile> likes = [];
-    var commentVal = await FirebaseFirestore.instance.collection('comments').doc(id).collection('comments').get();
+    var commentVal = await FirebaseFirestore.instance
+        .collection('comments')
+        .doc(id)
+        .collection('comments')
+        .get();
     for (var element in commentVal.docs) {
       Comment comment = Comment(
         commId: element.id,
         comment: element.data()["comment"],
         uid: element.data()["uid"],
         timestamp: element.data()["timestamp"],
-        user: UserProfile.fromMap(
-            (await FirebaseFirestore.instance.collection('users').doc(element.data()["uid"]).get()).data()!),
+        user: UserProfile.fromMap((await FirebaseFirestore.instance
+                .collection('users')
+                .doc(element.data()["uid"])
+                .get())
+            .data()!),
       );
       comments.add(comment);
     }
@@ -60,8 +78,11 @@ class Review {
 
     if (json['likes'] != null) {
       for (var i = 0; i < json['likes'].length; i++) {
-        DocumentSnapshot<Map<String, dynamic>> value =
-            await FirebaseFirestore.instance.collection('users').doc(json["likes"][i]).get();
+        DocumentSnapshot<Map<String, dynamic>> value = await FirebaseFirestore
+            .instance
+            .collection('users')
+            .doc(json["likes"][i])
+            .get();
         likes.add(UserProfile.fromMap(value.data()!));
       }
     }
