@@ -8,13 +8,15 @@ class Comment {
   late DateTime date;
   final UserProfile user;
   List<Comment> replies = [];
+  List<UserProfile> likes = [];
 
   Comment(
       {required this.commId,
       required this.comment,
       required this.uid,
       required this.timestamp,
-      required this.user}) {
+      required this.user,
+      required this.likes}) {
     date = DateTime.fromMillisecondsSinceEpoch(timestamp);
   }
 }

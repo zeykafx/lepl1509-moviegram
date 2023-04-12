@@ -22,6 +22,7 @@ class _BsbFormState extends State<BsbForm> {
 
   TextEditingController commentController = TextEditingController();
   bool _validate = false;
+  SwiperController swiperController = SwiperController();
 
   @override
   void dispose() {
@@ -55,17 +56,16 @@ class _BsbFormState extends State<BsbForm> {
                 itemCount: 4,
                 pagination: SwiperPagination(
                   builder: DotSwiperPaginationBuilder(
-                      space: 4,
-                      size: 5,
-                      activeSize: 6,
-                      activeColor: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.5),
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceVariant
-                          .withOpacity(0.5)),
+                    space: 4,
+                    size: 5,
+                    activeSize: 6,
+                    activeColor:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceVariant
+                        .withOpacity(0.5),
+                  ),
                 ),
                 control: SwiperControl(
                     size: 15,
@@ -81,6 +81,7 @@ class _BsbFormState extends State<BsbForm> {
                         .onSurface
                         .withOpacity(0.8)),
                 loop: false,
+                controller: swiperController,
                 itemBuilder: (BuildContext context, int index) {
                   switch (index) {
                     case 0:
@@ -95,14 +96,16 @@ class _BsbFormState extends State<BsbForm> {
                           : _validate = false;
                       if (comment == "") {
                         // show error snackbar after 100 milliseconds
-                        Future.delayed(const Duration(milliseconds: 100), () {
+                        Future.delayed(const Duration(milliseconds: 300), () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Please enter a comment"),
                             ),
                           );
+                          swiperController.move(2, animation: true);
                         });
                       }
+
                       return buildSubmitPage();
                     default:
                       return buildOverallRating();

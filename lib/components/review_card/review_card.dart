@@ -164,7 +164,7 @@ class _ReviewCardState extends State<ReviewCard>
 
                               Text(
                                 review!.comment,
-                                style: TextStyle(fontSize: 18),
+                                style: const TextStyle(fontSize: 18),
                               ),
                               const SizedBox(height: 10),
 

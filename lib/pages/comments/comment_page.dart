@@ -27,6 +27,7 @@ class _CommentPageState extends State<CommentPage> {
   final TextEditingController commentController = TextEditingController();
   FirebaseFirestore db = FirebaseFirestore.instance;
   User? currentUser = FirebaseAuth.instance.currentUser;
+  UserProfile? currentUserProfile;
   ScrollController scrollController = ScrollController();
 
   bool isReplying = false;
@@ -38,11 +39,25 @@ class _CommentPageState extends State<CommentPage> {
   @override
   initState() {
     super.initState();
+    getCurrentUser();
     // TODO: fix this
     // timer = Timer(const Duration(seconds: 5), () {
     //   widget.setStateCallback();
     //   setState(() {});
     // });
+  }
+
+  void getCurrentUser() {
+    db
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      setState(() {
+        currentUserProfile =
+            UserProfile.fromMap(value.data() as Map<String, dynamic>);
+      });
+    });
   }
 
   @override
@@ -62,6 +77,7 @@ class _CommentPageState extends State<CommentPage> {
               .doc(FirebaseAuth.instance.currentUser!.uid)
               .get())
           .data() as Map<String, dynamic>),
+      likes: [],
     );
 
     if (!isReplying) {
@@ -73,6 +89,7 @@ class _CommentPageState extends State<CommentPage> {
         'comment': newComment.comment,
         'uid': newComment.uid,
         'timestamp': newComment.timestamp,
+        'likes': [],
       });
 
       newComment.commId = ret.id;
@@ -81,7 +98,7 @@ class _CommentPageState extends State<CommentPage> {
         widget.review.comments.insert(0, newComment);
       });
     } else {
-      await db
+      var ret = await db
           .collection('comments')
           .doc(widget.review.reviewID)
           .collection('comments')
@@ -91,7 +108,11 @@ class _CommentPageState extends State<CommentPage> {
         'comment': newComment.comment,
         'uid': newComment.uid,
         'timestamp': newComment.timestamp,
+        'likes': [],
       });
+
+      newComment.commId = ret.id;
+
       setState(() {
         widget.review.comments[widget.review.comments.indexOf(replyComment!)]
             .replies
@@ -123,14 +144,28 @@ class _CommentPageState extends State<CommentPage> {
               itemCount: widget.review.comments.length,
               controller: scrollController,
               itemBuilder: (context, index) {
+                // GlobalKey key = GlobalKey();
                 return CommentWidget(
+                  // key: key,
                   comment: widget.review.comments[index],
+                  review: widget.review,
+                  currentUser: currentUserProfile,
                   callback: (Comment com) {
                     setState(() {
                       isReplying = true;
                       replyComment = widget.review.comments[index];
                       commentController.text =
                           '@${com.user.name.replaceAll(" ", "")} ';
+                      // final RenderBox box =
+                      //     key.currentContext?.findRenderObject() as RenderBox;
+                      // final height = box.size.height;
+                      // print(height);
+                      // scrollController.animateTo(
+                      //   (height * index),
+                      //   duration: const Duration(milliseconds: 300),
+                      //   curve: Curves.easeOut,
+                      // );
+
                       FocusScope.of(context).requestFocus(focusNode);
                     });
                   },

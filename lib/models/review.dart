@@ -63,6 +63,18 @@ class Review {
         .collection('comments')
         .get();
     for (var element in commentVal.docs) {
+      // get all likes for this comment
+      List<UserProfile> commentLikes = [];
+      if (element.data()["likes"] != null) {
+        for (var likeUID in element.data()["likes"]) {
+          var userData = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(likeUID)
+              .get();
+          commentLikes.add(UserProfile.fromMap(userData.data()!));
+        }
+      }
+
       Comment comment = Comment(
         commId: element.id,
         comment: element.data()["comment"],
@@ -73,6 +85,7 @@ class Review {
                 .doc(element.data()["uid"])
                 .get())
             .data()!),
+        likes: commentLikes,
       );
       comments.add(comment);
 
@@ -85,6 +98,18 @@ class Review {
           .collection('subcomments')
           .get();
       for (var reply in replyVal.docs) {
+        // get all likes for this reply
+        List<UserProfile> replyLikes = [];
+        if (reply.data()["likes"] != null) {
+          for (var likeUID in reply.data()["likes"]) {
+            var userData = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(likeUID)
+                .get();
+            replyLikes.add(UserProfile.fromMap(userData.data()!));
+          }
+        }
+
         Comment replyComment = Comment(
           commId: reply.id,
           comment: reply.data()["comment"],
@@ -95,6 +120,7 @@ class Review {
                   .doc(reply.data()["uid"])
                   .get())
               .data()!),
+          likes: replyLikes,
         );
         comment.replies.add(replyComment);
       }
