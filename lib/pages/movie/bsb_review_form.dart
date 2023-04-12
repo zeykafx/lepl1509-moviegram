@@ -309,7 +309,9 @@ class _BsbFormState extends State<BsbForm> {
                         ? _validate = true
                         : _validate = false;
                   });
-                  if (comment != "") {
+                  if (comment != "" &&
+                      comment != " " &&
+                      comment.removeAllWhitespace != "") {
                     // first create the document in firestore/posts/uid/
                     await FirebaseFirestore.instance
                         .collection("posts")

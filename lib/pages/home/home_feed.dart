@@ -44,6 +44,7 @@ class _HomeFeedState extends State<HomeFeed> {
     readUserData().then((_) {
       getReviews().then((value) {
         setState(() {
+          feedContent.clear();
           feedContent = value;
         });
       });
@@ -161,18 +162,28 @@ class _HomeFeedState extends State<HomeFeed> {
     return followingReviews;
   }
 
+  Future<void> refreshReview() async {
+    getReviews().then((value) {
+      setState(() {
+        loading = true;
+        feedContent.clear();
+      });
+      // FIX: huge hack to make sure the list is rebuilt, i hate this but it works...
+      Future.delayed(const Duration(milliseconds: 1), () {
+        setState(() {
+          feedContent = value;
+          loading = false;
+        });
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         RefreshIndicator(
-          onRefresh: () async {
-            getReviews().then((value) {
-              setState(() {
-                feedContent = value;
-              });
-            });
-          },
+          onRefresh: refreshReview,
           child: feedContent.isNotEmpty
               ? ListView.builder(
                   key: const Key('homeFeedList'),

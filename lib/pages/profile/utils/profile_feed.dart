@@ -64,6 +64,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
       });
       getReviews().then((value) {
         setState(() {
+          feedContent.clear();
           feedContent = value;
         });
       });
@@ -211,7 +212,15 @@ class _ProfileFeedState extends State<ProfileFeed> {
                 });
                 getReviews().then((value) {
                   setState(() {
-                    feedContent = value;
+                    loading = true;
+                    feedContent.clear();
+                  });
+                  // FIX: huge hack to make sure the list is rebuilt, i hate this but it works...
+                  Future.delayed(const Duration(milliseconds: 1), () {
+                    setState(() {
+                      feedContent = value;
+                      loading = false;
+                    });
                   });
                 });
               });
@@ -339,25 +348,45 @@ class _ProfileFeedState extends State<ProfileFeed> {
                 ),
 
                 hasAccessToFeed
-                    ? ListView.builder(
-                        key: const Key('profileFeedList'),
-                        shrinkWrap: true,
-                        physics: const ScrollPhysics(),
-                        addRepaintBoundaries: true,
-                        controller: scrollController,
-                        itemCount: feedContent.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Padding(
-                            padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
-                            child: ReviewCard(
-                              key: Key(feedContent[index]["id"]),
-                              id: feedContent[index]["id"],
-                              data: feedContent[index]["data"],
-                              user: currentUserProfile,
-                              showRatingPill: true,
-                            ),
-                          );
-                        })
+                    // ? ListView.builder(
+                    //     // key: const Key('profileFeedList'),
+                    //     shrinkWrap: true,
+                    //     physics: const ScrollPhysics(),
+                    //     // addRepaintBoundaries: true,
+                    //     controller: scrollController,
+                    //     itemCount: feedContent.length,
+                    //     itemBuilder: (BuildContext context, int index) {
+                    //       return Padding(
+                    //         padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
+                    //         child: ReviewCard(
+                    //           // key: Key(feedContent[index]["id"]),
+                    //           id: feedContent[index]["id"],
+                    //           data: feedContent[index]["data"],
+                    //           user: currentUserProfile,
+                    //           showRatingPill: true,
+                    //         ),
+                    //       );
+                    //     })
+                    ? feedContent.isNotEmpty
+                        ? Column(
+                            children: [
+                              for (var i = 0; i < feedContent.length; i++)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(18, 10, 18, 0),
+                                  child: ReviewCard(
+                                    // key: Key(feedContent[index]["id"]),
+                                    id: feedContent[i]["id"],
+                                    data: feedContent[i]["data"],
+                                    user: currentUserProfile,
+                                    showRatingPill: true,
+                                  ),
+                                ),
+                            ],
+                          )
+                        : !loading
+                            ? const Center(child: Text("No reviews yet"))
+                            : const SizedBox()
                     : const Center(
                         child: Text(
                           "This user's feed is private",

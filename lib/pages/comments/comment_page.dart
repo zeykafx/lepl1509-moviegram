@@ -12,11 +12,13 @@ import 'package:projet_lepl1509_groupe_17/pages/comments/comment_widget.dart';
 class CommentPage extends StatefulWidget {
   final Review review;
   final Function setStateCallback;
+  final Function refreshData;
 
   CommentPage({
     Key? key,
     required this.review,
     required this.setStateCallback,
+    required this.refreshData,
   }) : super(key: key);
 
   @override
@@ -40,11 +42,15 @@ class _CommentPageState extends State<CommentPage> {
   initState() {
     super.initState();
     getCurrentUser();
-    // TODO: fix this
-    // timer = Timer(const Duration(seconds: 5), () {
-    //   widget.setStateCallback();
-    //   setState(() {});
-    // });
+    timer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
+      widget.refreshData();
+    });
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
   }
 
   void getCurrentUser() {
@@ -58,12 +64,6 @@ class _CommentPageState extends State<CommentPage> {
             UserProfile.fromMap(value.data() as Map<String, dynamic>);
       });
     });
-  }
-
-  @override
-  void dispose() {
-    // timer.cancel();
-    super.dispose();
   }
 
   Future<void> addComment(String query) async {
@@ -127,130 +127,145 @@ class _CommentPageState extends State<CommentPage> {
   void stopReply() {
     setState(() {
       isReplying = false;
+      commentController.text = '';
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Comments'),
-      ),
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: widget.review.comments.length,
-              controller: scrollController,
-              itemBuilder: (context, index) {
-                // GlobalKey key = GlobalKey();
-                return CommentWidget(
-                  // key: key,
-                  comment: widget.review.comments[index],
-                  review: widget.review,
-                  currentUser: currentUserProfile,
-                  callback: (Comment com) {
-                    setState(() {
-                      isReplying = true;
-                      replyComment = widget.review.comments[index];
-                      commentController.text =
-                          '@${com.user.name.replaceAll(" ", "")} ';
-                      // final RenderBox box =
-                      //     key.currentContext?.findRenderObject() as RenderBox;
-                      // final height = box.size.height;
-                      // print(height);
-                      // scrollController.animateTo(
-                      //   (height * index),
-                      //   duration: const Duration(milliseconds: 300),
-                      //   curve: Curves.easeOut,
-                      // );
+    return WillPopScope(
+      onWillPop: () async {
+        if (isReplying) {
+          stopReply();
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Comments'),
+        ),
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  widget.refreshData();
+                },
+                child: ListView.builder(
+                  itemCount: widget.review.comments.length,
+                  controller: scrollController,
+                  itemBuilder: (context, index) {
+                    // GlobalKey key = GlobalKey();
+                    return CommentWidget(
+                      // key: key,
+                      comment: widget.review.comments[index],
+                      review: widget.review,
+                      currentUser: currentUserProfile,
+                      callback: (Comment com) {
+                        setState(() {
+                          isReplying = true;
+                          replyComment = widget.review.comments[index];
+                          commentController.text =
+                              '@${com.user.name.replaceAll(" ", "")} ';
+                          // final RenderBox box =
+                          //     key.currentContext?.findRenderObject() as RenderBox;
+                          // final height = box.size.height;
+                          // print(height);
+                          // scrollController.animateTo(
+                          //   (height * index),
+                          //   duration: const Duration(milliseconds: 300),
+                          //   curve: Curves.easeOut,
+                          // );
 
-                      FocusScope.of(context).requestFocus(focusNode);
-                    });
+                          FocusScope.of(context).requestFocus(focusNode);
+                        });
+                      },
+                    );
                   },
-                );
-              },
+                ),
+              ),
             ),
-          ),
-          if (isReplying) ...[
-            Container(
-              height: 40,
-              width: double.infinity,
-              color: Theme.of(context).dividerColor.withOpacity(0.4),
+            if (isReplying) ...[
+              Container(
+                height: 40,
+                width: double.infinity,
+                color: Theme.of(context).dividerColor.withOpacity(0.4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Text("Replying to ${replyComment?.user.name}"),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: stopReply,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text("Replying to ${replyComment?.user.name}"),
+                  ClipOval(
+                    child: SizedBox(
+                      width: 35,
+                      height: 35,
+                      child: OptimizedCacheImage(
+                        imageUrl: currentUser?.photoURL != null
+                            ? currentUser!.photoURL!
+                            : 'http://www.gravatar.com/avatar/?d=mp',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      focusNode: focusNode,
+                      controller: commentController,
+                      decoration: InputDecoration(
+                        hintText: "Add a comment...",
+                        hintStyle:
+                            TextStyle(color: Theme.of(context).dividerColor),
+                        border: InputBorder.none,
+                      ),
+                      onFieldSubmitted: (value) async {
+                        if (value.isNotEmpty) {
+                          await addComment(value);
+                          if (isReplying) {
+                            stopReply();
+                          }
+                          FocusScope.of(context).unfocus();
+                        }
+                      },
+                      autofocus: false,
+                      onTapOutside: (ev) => FocusScope.of(context).unfocus(),
+                    ),
+                  ),
                   IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: stopReply,
+                    icon: const Icon(Icons.send),
+                    onPressed: () async {
+                      if (commentController.text.isNotEmpty) {
+                        await addComment(commentController.text);
+                        if (isReplying) {
+                          stopReply();
+                        }
+                      }
+                    },
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 10),
           ],
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              children: [
-                ClipOval(
-                  child: SizedBox(
-                    width: 35,
-                    height: 35,
-                    child: OptimizedCacheImage(
-                      imageUrl: currentUser?.photoURL != null
-                          ? currentUser!.photoURL!
-                          : 'http://www.gravatar.com/avatar/?d=mp',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    focusNode: focusNode,
-                    controller: commentController,
-                    decoration: InputDecoration(
-                      hintText: "Add a comment...",
-                      hintStyle:
-                          TextStyle(color: Theme.of(context).dividerColor),
-                      border: InputBorder.none,
-                    ),
-                    onFieldSubmitted: (value) async {
-                      if (value.isNotEmpty) {
-                        await addComment(value);
-                        if (isReplying) {
-                          stopReply();
-                        }
-                        FocusScope.of(context).unfocus();
-                      }
-                    },
-                    autofocus: false,
-                    onTapOutside: (ev) => FocusScope.of(context).unfocus(),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: () async {
-                    if (commentController.text.isNotEmpty) {
-                      await addComment(commentController.text);
-                      if (isReplying) {
-                        stopReply();
-                      }
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-        ],
+        ),
       ),
     );
   }

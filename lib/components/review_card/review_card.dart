@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
@@ -20,7 +21,7 @@ class ReviewCard extends StatefulWidget {
   final UserProfile? user;
   final bool showRatingPill;
 
-  const ReviewCard(
+  ReviewCard(
       {super.key,
       required this.id,
       required this.data,
@@ -42,6 +43,7 @@ class _ReviewCardState extends State<ReviewCard>
   TextEditingController commentController = TextEditingController();
 
   bool showRatingPill = false;
+  Function(void Function())? setStateDialogCallback;
 
   @override
   bool get wantKeepAlive => true;
@@ -57,6 +59,31 @@ class _ReviewCardState extends State<ReviewCard>
         });
         getAuthor();
       }
+    });
+  }
+
+  Future<void> refreshData() async {
+    if (kDebugMode) {
+      print("refreshing review card");
+    }
+    await db
+        .collection("posts")
+        .doc(review!.userID)
+        .collection("userPosts")
+        .doc(review!.reviewID)
+        .get()
+        .then((value) {
+      Review.fromJson(review!.reviewID, value.data()!).then((value) {
+        if (mounted) {
+          setState(() {
+            review = value;
+          });
+          if (setStateDialogCallback != null) {
+            setStateDialogCallback!(() {});
+          }
+          getAuthor();
+        }
+      });
     });
   }
 
@@ -620,23 +647,37 @@ class _ReviewCardState extends State<ReviewCard>
             ),
             const Spacer(),
             TextButton.icon(
-              label: Text(review!.comments.length.toString(),
+              label: Text(
+                  (review!.comments.length +
+                          review!.comments.fold(
+                              0,
+                              (previousValue, element) =>
+                                  previousValue + element.replies.length))
+                      .toString(),
                   style: TextStyle(color: Theme.of(context).dividerColor)),
               onPressed: () {
                 showDialog(
                     context: context,
                     builder: (context) {
-                      return Dialog(
-                        insetPadding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 30),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(15),
-                          child: CommentPage(
-                            review: review!,
-                            setStateCallback: () => setState(() {}),
+                      return StatefulBuilder(
+                          builder: (context, setStateDialog) {
+                        setStateDialogCallback = setStateDialog;
+                        return Dialog(
+                          insetPadding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 30),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: CommentPage(
+                              review: review!,
+                              setStateCallback: () {
+                                setState(() {});
+                                setStateDialog(() {});
+                              },
+                              refreshData: refreshData,
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      });
                     });
               },
               icon: Icon(Icons.mode_comment_outlined,
