@@ -89,32 +89,44 @@ class _HomeFeedState extends State<HomeFeed> {
           .limit(10)
           .get();
 
-      // add random recommendations
-      List<bool> randomList =
-          List.generate(value.docs.length, (_) => random.nextBool());
-
       // add reviews
       for (int i = 0; i < value.docs.length; i++) {
         QueryDocumentSnapshot<Map<String, dynamic>> element = value.docs[i];
         followingReviews.add({"id": element.id, "data": element.data()});
-
-        if (randomList[i] && random.nextBool()) {
-          var values = SlidableMovieListType.values;
-          int randomIndex = random.nextInt(values.length);
-          SlidableMovieListType randomType = values[randomIndex];
-          if (randomType == SlidableMovieListType.recommendations) {
-            randomType = SlidableMovieListType.top_rated;
-          }
-          followingReviews.add({
-            "isRecommendation": true,
-            "type": randomType,
-          });
-        }
       }
+
       if (value.docs.isNotEmpty) {
         followingUserMap["lastDoc"] = value.docs.last;
       }
     }
+    // sort the list by timestamp
+    followingReviews.sort((a, b) {
+      return (DateTime.fromMillisecondsSinceEpoch(b["data"]["timestamp"]))
+          .compareTo(
+              DateTime.fromMillisecondsSinceEpoch(a["data"]["timestamp"]));
+    });
+
+    // generate a list of booleans that are true every 3rd element, this is used to add recommendations
+    List<bool> randomList = List.generate(
+        followingReviews.length, (int idx) => (idx % 3 == 0) && (idx != 0));
+
+    for (int i = 0; i < randomList.length; i++) {
+      if (randomList[i]) {
+        // add a random recommendation
+        var values = SlidableMovieListType.values;
+        int randomIndex = random.nextInt(values.length);
+        SlidableMovieListType randomType = values[randomIndex];
+        if (randomType == SlidableMovieListType.recommendations) {
+          randomType = SlidableMovieListType.top_rated;
+        }
+        // insert the recommendation in the list
+        followingReviews.insert(i, {
+          "isRecommendation": true,
+          "type": randomType,
+        });
+      }
+    }
+
     setState(() {
       loading = false;
     });
@@ -188,6 +200,7 @@ class _HomeFeedState extends State<HomeFeed> {
               ? ListView.builder(
                   key: const Key('homeFeedList'),
                   addRepaintBoundaries: true,
+                  cacheExtent: 100,
                   controller: scrollController,
                   itemCount: feedContent.length,
                   itemBuilder: (BuildContext context, int index) {

@@ -5,7 +5,6 @@ import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 
 import '../utils/profile_feed.dart';
 
-
 class ProfilePage extends StatefulWidget {
   final bool accessToFeed;
   final String uid;
@@ -41,20 +40,19 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
       ),
       body: Center(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 700),
-              child: ProfileFeed(
-                  uid : widget.uid,
-                  accessToFeed : widget.accessToFeed,
-                  isCurrentUser: widget.uid == FirebaseAuth.instance.currentUser?.uid,
-              ),
-            ),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 700),
+          child: ProfileFeed(
+            uid: widget.uid,
+            accessToFeed: widget.accessToFeed,
+            isCurrentUser: widget.uid == FirebaseAuth.instance.currentUser?.uid,
+          ),
+        ),
       ),
     );
   }

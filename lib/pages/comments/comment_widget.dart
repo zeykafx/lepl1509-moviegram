@@ -28,10 +28,14 @@ class CommentWidget extends StatefulWidget {
 
 class _CommentWidgetState extends State<CommentWidget> {
   bool seeReplies = false;
+  bool isReviewAuthor = false;
 
   @override
   void initState() {
     super.initState();
+    if (widget.review.userID == widget.comment.user.uid) {
+      isReviewAuthor = true;
+    }
   }
 
   Future<void> likeComment() async {
@@ -80,7 +84,7 @@ class _CommentWidgetState extends State<CommentWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 5.0),
+                  padding: const EdgeInsets.only(top: 7.0),
                   child: CircleAvatar(
                     backgroundImage: OptimizedCacheImageProvider(
                       widget.comment.user.photoURL,
@@ -109,8 +113,7 @@ class _CommentWidgetState extends State<CommentWidget> {
                               ),
                               const SizedBox(width: 5),
                               // author badge
-                              if (widget.comment.user.name ==
-                                  widget.review.username)
+                              if (isReviewAuthor)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 5, vertical: 2),
@@ -147,59 +150,68 @@ class _CommentWidgetState extends State<CommentWidget> {
                       Row(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Flexible(
-                            child: EasyRichText(
-                              widget.comment.comment,
-                              patternList: [
-                                EasyRichTextPattern(
-                                  targetString: '@[a-zA-Z0-9]*',
-                                  style:
-                                      const TextStyle(color: Colors.blueAccent),
-                                ),
-                              ],
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 3),
+                              child: EasyRichText(
+                                widget.comment.comment,
+                                patternList: [
+                                  EasyRichTextPattern(
+                                    targetString: '@[a-zA-Z0-9]*',
+                                    style: const TextStyle(
+                                        color: Colors.blueAccent),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                          Tooltip(
+                            message: widget.comment.likes
+                                .map((e) => e.name)
+                                .join(", "),
+                            waitDuration: const Duration(milliseconds: 10),
 
-                          // like button
-                          Column(
-                            children: [
-                              TextButton.icon(
-                                onPressed: likeComment,
-                                style: const ButtonStyle(
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                                label: Text(
-                                  widget.comment.likes.length.toString(),
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: widget.comment.likes
-                                              .where((element) =>
-                                                  element.uid ==
-                                                  widget.currentUser!.uid)
-                                              .isNotEmpty
-                                          ? Colors.red
-                                          : Theme.of(context).dividerColor),
-                                ),
-                                icon: Icon(
-                                  widget.comment.likes
-                                          .where((element) =>
-                                              element.uid ==
-                                              widget.currentUser!.uid)
-                                          .isNotEmpty
-                                      ? CupertinoIcons.heart_fill
-                                      : CupertinoIcons.heart,
-                                  color: widget.comment.likes
-                                          .where((element) =>
-                                              element.uid ==
-                                              widget.currentUser!.uid)
-                                          .isNotEmpty
-                                      ? Colors.red
-                                      : Theme.of(context).dividerColor,
-                                  size: 20,
+                            // like button
+                            child: TextButton.icon(
+                              onPressed: likeComment,
+                              style: ButtonStyle(
+                                visualDensity: VisualDensity.compact,
+                                padding: MaterialStateProperty.all(
+                                  EdgeInsets.zero,
                                 ),
                               ),
-                            ],
+                              label: Text(
+                                widget.comment.likes.length.toString(),
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: widget.comment.likes
+                                            .where((element) =>
+                                                element.uid ==
+                                                widget.currentUser!.uid)
+                                            .isNotEmpty
+                                        ? Colors.red
+                                        : Theme.of(context).dividerColor),
+                              ),
+                              icon: Icon(
+                                widget.comment.likes
+                                        .where((element) =>
+                                            element.uid ==
+                                            widget.currentUser!.uid)
+                                        .isNotEmpty
+                                    ? CupertinoIcons.heart_fill
+                                    : CupertinoIcons.heart,
+                                color: widget.comment.likes
+                                        .where((element) =>
+                                            element.uid ==
+                                            widget.currentUser!.uid)
+                                        .isNotEmpty
+                                    ? Colors.red
+                                    : Theme.of(context).dividerColor,
+                                size: 20,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -285,6 +297,14 @@ class ReplyComment extends StatefulWidget {
 }
 
 class _ReplyCommentState extends State<ReplyComment> {
+  bool isReviewAuthor = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isReviewAuthor = widget.review.userID == widget.comment.user.uid;
+  }
+
   Future<void> likeReply() async {
     if (widget.currentUser == null) {
       return;
@@ -362,11 +382,10 @@ class _ReplyCommentState extends State<ReplyComment> {
                               ),
                               const SizedBox(width: 5),
                               // author badge
-                              if (widget.comment.user.name ==
-                                  widget.review.username)
+                              if (isReviewAuthor)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 5, vertical: 2),
+                                      horizontal: 3, vertical: 2),
                                   decoration: BoxDecoration(
                                     color:
                                         Theme.of(context).colorScheme.primary,
@@ -378,7 +397,7 @@ class _ReplyCommentState extends State<ReplyComment> {
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onPrimary,
-                                      fontSize: 10,
+                                      fontSize: 9,
                                     ),
                                   ),
                                 ),
@@ -399,59 +418,64 @@ class _ReplyCommentState extends State<ReplyComment> {
                       Row(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Flexible(
-                            child: EasyRichText(
-                              widget.comment.comment,
-                              patternList: [
-                                EasyRichTextPattern(
-                                  targetString: '@[a-zA-Z0-9]*',
-                                  style:
-                                      const TextStyle(color: Colors.blueAccent),
-                                ),
-                              ],
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 3),
+                              child: EasyRichText(
+                                widget.comment.comment,
+                                patternList: [
+                                  EasyRichTextPattern(
+                                    targetString: '@[a-zA-Z0-9]*',
+                                    style: const TextStyle(
+                                        color: Colors.blueAccent),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-
-                          // like button
-                          Column(
-                            children: [
-                              TextButton.icon(
-                                onPressed: likeReply,
-                                style: const ButtonStyle(
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                                label: Text(
-                                  widget.comment.likes.length.toString(),
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: widget.comment.likes
-                                              .where((element) =>
-                                                  element.uid ==
-                                                  widget.currentUser!.uid)
-                                              .isNotEmpty
-                                          ? Colors.red
-                                          : Theme.of(context).dividerColor),
-                                ),
-                                icon: Icon(
-                                  widget.comment.likes
-                                          .where((element) =>
-                                              element.uid ==
-                                              widget.currentUser!.uid)
-                                          .isNotEmpty
-                                      ? CupertinoIcons.heart_fill
-                                      : CupertinoIcons.heart,
-                                  color: widget.comment.likes
-                                          .where((element) =>
-                                              element.uid ==
-                                              widget.currentUser!.uid)
-                                          .isNotEmpty
-                                      ? Colors.red
-                                      : Theme.of(context).dividerColor,
-                                  size: 20,
-                                ),
+                          Tooltip(
+                            message: widget.comment.likes
+                                .map((e) => e.name)
+                                .join(", "),
+                            waitDuration: const Duration(milliseconds: 10),
+                            // like button
+                            child: TextButton.icon(
+                              onPressed: likeReply,
+                              style: const ButtonStyle(
+                                visualDensity: VisualDensity.compact,
                               ),
-                            ],
+                              label: Text(
+                                widget.comment.likes.length.toString(),
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: widget.comment.likes
+                                            .where((element) =>
+                                                element.uid ==
+                                                widget.currentUser!.uid)
+                                            .isNotEmpty
+                                        ? Colors.red
+                                        : Theme.of(context).dividerColor),
+                              ),
+                              icon: Icon(
+                                widget.comment.likes
+                                        .where((element) =>
+                                            element.uid ==
+                                            widget.currentUser!.uid)
+                                        .isNotEmpty
+                                    ? CupertinoIcons.heart_fill
+                                    : CupertinoIcons.heart,
+                                color: widget.comment.likes
+                                        .where((element) =>
+                                            element.uid ==
+                                            widget.currentUser!.uid)
+                                        .isNotEmpty
+                                    ? Colors.red
+                                    : Theme.of(context).dividerColor,
+                                size: 20,
+                              ),
+                            ),
                           ),
                         ],
                       ),

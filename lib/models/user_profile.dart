@@ -1,18 +1,17 @@
 class UserProfile {
   final String? uid;
   String? bio;
-  List<String> watched;
   int followers;
   int following;
   int ranking;
   String photoURL;
   String name;
   String email;
+  List<int> watchlist = [];
 
   UserProfile({
     this.uid,
     this.bio,
-    required this.watched,
     required this.followers,
     required this.following,
     required this.ranking,
@@ -25,8 +24,6 @@ class UserProfile {
     UserProfile ret = UserProfile(
       uid: map['uid'],
       bio: map['bio'] ?? "No Bio",
-      watched:
-          map['watched'] != null ? List<String>.from(map['watched']) : [''],
       followers: map['followers'].round() ?? 0,
       following: map['following'].round() ?? 0,
       ranking: map['ranking'].round() ?? 0,
@@ -36,6 +33,9 @@ class UserProfile {
       name: map['name'] ?? 'No Name',
       email: map['email'] ?? 'No Email',
     );
+    if (map["watchlist"] != null) {
+      ret.watchlist = List<int>.from(map["watchlist"]);
+    }
     return ret;
   }
 
@@ -45,20 +45,6 @@ class UserProfile {
 
   @override
   String toString() {
-    return 'UserProfile{uid: $uid, bio: $bio, followers: $followers, following: $following, ranking: $ranking, photoURL: $photoURL, name: $name, email: $email, watched: $watched}';
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'uid': uid,
-      'bio': bio,
-      'watched': watched,
-      'followers': followers,
-      'following': following,
-      'ranking': ranking,
-      'photoURL': photoURL,
-      'name': name,
-      'email': email,
-    };
+    return 'UserProfile{uid: $uid, bio: $bio, followers: $followers, following: $following, ranking: $ranking, photoURL: $photoURL, name: $name, email: $email}';
   }
 }

@@ -45,8 +45,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
     super.initState();
     hasAccessToFeed = widget.accessToFeed;
     scrollController.addListener(() async {
-      if (scrollController.position.pixels ==
-          scrollController.position.maxScrollExtent) {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
         getMoreReviews().then((value) {
           setState(() {
             feedContent.addAll(value);
@@ -74,8 +73,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
   Future<void> readCurrentUserProfile() async {
     await db.collection('users').doc(currentUser?.uid).get().then((value) {
       setState(() {
-        currentUserProfile =
-            UserProfile.fromMap(value.data() as Map<String, dynamic>);
+        currentUserProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
       });
     });
   }
@@ -197,11 +195,6 @@ class _ProfileFeedState extends State<ProfileFeed> {
       children: [
         RefreshIndicator(
             onRefresh: () async {
-              // getReviews().then((value) {
-              //   setState(() {
-              //     feedContent = value;
-              //   });
-              // });
               readCurrentUserProfile();
               readUserData().then((_) {
                 checkHasSentRequest().then((hasSent) {
@@ -234,8 +227,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       ProfileWidget(
-                        imagePath: userProfile?.photoURL ??
-                            'http://www.gravatar.com/avatar/?d=mp',
+                        imagePath: userProfile?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
                         inDrawer: false,
                         self: widget.isCurrentUser,
                         access: hasAccessToFeed,
@@ -252,13 +244,6 @@ class _ProfileFeedState extends State<ProfileFeed> {
                               readUserData();
                             });
                           });
-                          // : (widget.accessToFeed
-                          //     ? DoubleRemoveFriend(
-                          //         to: widget.uid,
-                          //         from: FirebaseAuth.instance.currentUser!.uid)
-                          //     : sendRequest(
-                          //         to: widget.uid,
-                          //         from: FirebaseAuth.instance.currentUser!.uid));
                         },
                       ),
 
@@ -271,32 +256,21 @@ class _ProfileFeedState extends State<ProfileFeed> {
                         children: [
                           Text(
                             userProfile?.name ?? "No name",
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
                           ),
                           Text(
                             userProfile?.bio ?? "No bio",
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context).dividerColor),
+                            style: TextStyle(fontSize: 16, color: Theme.of(context).dividerColor),
                           ),
                           if (!widget.isCurrentUser) ...[
                             const SizedBox(height: 2),
                             FilledButton(
                               style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all(
-                                    hasAccessToFeed
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .primary
-                                            .withOpacity(0.5)
-                                        : hasSentRequest
-                                            ? Theme.of(context)
-                                                .dividerColor
-                                                .withOpacity(0.8)
-                                            : Theme.of(context)
-                                                .colorScheme
-                                                .primary),
+                                backgroundColor: MaterialStateProperty.all(hasAccessToFeed
+                                    ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
+                                    : hasSentRequest
+                                        ? Theme.of(context).dividerColor.withOpacity(0.8)
+                                        : Theme.of(context).colorScheme.primary),
                                 shape: MaterialStateProperty.all(
                                   RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
@@ -311,16 +285,10 @@ class _ProfileFeedState extends State<ProfileFeed> {
                                       : 'Follow'),
                               onPressed: () {
                                 hasAccessToFeed
-                                    ? doubleRemoveFriend(
-                                        to: widget.uid,
-                                        from: FirebaseAuth
-                                            .instance.currentUser!.uid)
+                                    ? doubleRemoveFriend(to: widget.uid, from: FirebaseAuth.instance.currentUser!.uid)
                                     : hasSentRequest
                                         ? removeRequest()
-                                        : sendRequest(
-                                            to: widget.uid,
-                                            from: FirebaseAuth
-                                                .instance.currentUser!.uid);
+                                        : sendRequest(to: widget.uid, from: FirebaseAuth.instance.currentUser!.uid);
                               },
                             )
                           ],
@@ -348,32 +316,12 @@ class _ProfileFeedState extends State<ProfileFeed> {
                 ),
 
                 hasAccessToFeed
-                    // ? ListView.builder(
-                    //     // key: const Key('profileFeedList'),
-                    //     shrinkWrap: true,
-                    //     physics: const ScrollPhysics(),
-                    //     // addRepaintBoundaries: true,
-                    //     controller: scrollController,
-                    //     itemCount: feedContent.length,
-                    //     itemBuilder: (BuildContext context, int index) {
-                    //       return Padding(
-                    //         padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
-                    //         child: ReviewCard(
-                    //           // key: Key(feedContent[index]["id"]),
-                    //           id: feedContent[index]["id"],
-                    //           data: feedContent[index]["data"],
-                    //           user: currentUserProfile,
-                    //           showRatingPill: true,
-                    //         ),
-                    //       );
-                    //     })
                     ? feedContent.isNotEmpty
                         ? Column(
                             children: [
                               for (var i = 0; i < feedContent.length; i++)
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(18, 10, 18, 0),
+                                  padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
                                   child: ReviewCard(
                                     // key: Key(feedContent[index]["id"]),
                                     id: feedContent[i]["id"],
@@ -405,12 +353,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
   }
 
   void sendRequest({String? to, String? from}) {
-    FirebaseFirestore.instance
-        .collection('following')
-        .doc(to)
-        .collection('friendRequests')
-        .doc(from)
-        .set({});
+    FirebaseFirestore.instance.collection('following').doc(to).collection('friendRequests').doc(from).set({});
     setState(() {
       hasSentRequest = true;
     });
@@ -422,16 +365,11 @@ class _ProfileFeedState extends State<ProfileFeed> {
   }
 
   void removeFriend({String? to, String? from}) {
-    FirebaseFirestore.instance
-        .collection('following')
-        .doc(to)
-        .collection('userFollowing')
+    FirebaseFirestore.instance.collection('following').doc(to).collection('userFollowing').doc(from).delete();
+    db
+        .collection('users')
         .doc(from)
-        .delete();
-    db.collection('users').doc(from).update({
-      "following": FieldValue.increment(-1),
-      "followers": FieldValue.increment(-1)
-    });
+        .update({"following": FieldValue.increment(-1), "followers": FieldValue.increment(-1)});
     setState(() {});
   }
 
@@ -442,9 +380,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
         title: const Text("Remove friend"),
         content: const Text("Are you sure you want to remove this friend?"),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Cancel")),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text("Cancel")),
           TextButton(
               onPressed: () {
                 Navigator.of(context).pop();

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -26,6 +27,8 @@ class _MoviePageState extends State<MoviePage> {
   List<ProviderCountry> providers = [];
   bool gotMovieDetails = false;
   User? currentUser = FirebaseAuth.instance.currentUser;
+  var db = FirebaseFirestore.instance;
+  bool isInWatchList = false;
 
   @override
   void initState() {
@@ -41,6 +44,18 @@ class _MoviePageState extends State<MoviePage> {
     setState(() {
       gotMovieDetails = true;
     });
+
+    if (currentUser != null) {
+      DocumentSnapshot userDoc = await db.collection('users').doc(currentUser!.uid).get();
+      if (userDoc.exists && userDoc['watchlist'] != null) {
+        List<dynamic> watchlist = userDoc['watchlist'];
+        if (watchlist.contains(movie!.id)) {
+          setState(() {
+            isInWatchList = true;
+          });
+        }
+      }
+    }
   }
 
   Future<void> getProvider() async {
@@ -54,24 +69,52 @@ class _MoviePageState extends State<MoviePage> {
     List<dynamic> providersBE;
     try {
       // hack: use orElse instead
-      providersCountry = allProviders.countryProviders.entries
-          .singleWhere((element) => element.key == 'BE')
-          .value;
+      providersCountry = allProviders.countryProviders.entries.singleWhere((element) => element.key == 'BE').value;
 
       if (providersCountry.isEmpty) {
         return;
       }
-      providersBE = providersCountry.entries
-          .singleWhere((element) => element.key == 'flatrate')
-          .value;
+      providersBE = providersCountry.entries.singleWhere((element) => element.key == 'flatrate').value;
       for (var result in providersBE) {
-        ProviderCountry providerCountry =
-            ProviderCountry.getProviderCountry(result);
+        ProviderCountry providerCountry = ProviderCountry.getProviderCountry(result);
         providers.add(providerCountry);
       }
     } catch (e) {
       return;
     }
+  }
+
+  Future<void> addToWatchList() async {
+    await db.collection('users').doc(currentUser!.uid).update({
+      'watchlist': FieldValue.arrayUnion([movie!.id])
+    });
+    setState(() {
+      isInWatchList = true;
+    });
+
+    // show a success snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Successfully added to watchlist"),
+      ),
+    );
+  }
+
+  Future<void> removeFromWatchList() async {
+    print("remove from watchlist");
+    await db.collection('users').doc(currentUser!.uid).update({
+      'watchlist': FieldValue.arrayRemove([movie!.id])
+    });
+    setState(() {
+      isInWatchList = false;
+    });
+
+    // show a success snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Successfully removed from watchlist"),
+      ),
+    );
   }
 
   @override
@@ -120,10 +163,8 @@ class _MoviePageState extends State<MoviePage> {
                             opacity: 0.5,
                             child: OptimizedCacheImage(
                               fit: BoxFit.cover,
-                              imageUrl:
-                                  "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error),
+                              imageUrl: "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+                              errorWidget: (context, url, error) => const Icon(Icons.error),
                             ),
                           )
                         : const Center(
@@ -186,8 +227,7 @@ class _MoviePageState extends State<MoviePage> {
                             child: ListView.builder(
                               itemCount: movie!.actors.length,
                               scrollDirection: Axis.horizontal,
-                              padding:
-                                  const EdgeInsets.only(top: 12.0, left: 12),
+                              padding: const EdgeInsets.only(top: 12.0, left: 12),
                               itemBuilder: _buildActor,
                             ),
                           ),
@@ -226,10 +266,8 @@ class _MoviePageState extends State<MoviePage> {
                   child: movie!.posterPath != null
                       ? OptimizedCacheImage(
                           fit: BoxFit.fitHeight,
-                          imageUrl:
-                              "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
+                          imageUrl: "https://image.tmdb.org/t/p/w500/${movie!.posterPath}",
+                          errorWidget: (context, url, error) => const Icon(Icons.error),
                         )
                       : const Center(
                           child: Text(
@@ -291,7 +329,7 @@ class _MoviePageState extends State<MoviePage> {
                   onTap: () async {
                     final url = Uri.parse(movie!.trailerURL!);
                     if (await canLaunchUrl(url)) {
-                      await launchUrl(url);
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
                     }
                   },
                   child: Container(
@@ -311,70 +349,69 @@ class _MoviePageState extends State<MoviePage> {
           ),
           const SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
             children: [
               // review button
-              FilledButton.tonal(
+              Expanded(
+                child: FilledButton.tonal(
+                    style: ButtonStyle(
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+                      child: Text("Add a review", style: TextStyle(fontSize: 15)),
+                    ),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        isDismissible: true,
+                        builder: (context) {
+                          return GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                              child: SizedBox(
+                                  width: size.width,
+                                  height: size.height < 800 ? size.height * 0.50 : size.height * 0.40,
+                                  child: BsbForm(
+                                    movie: movie!,
+                                  )),
+                            ),
+                          );
+                        },
+                      );
+                    }),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: FilledButton.tonalIcon(
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                    child: Text("Add a review", style: TextStyle(fontSize: 15)),
-                  ),
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      isDismissible: false,
-                      builder: (context) {
-                        return GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () =>
-                              FocusManager.instance.primaryFocus?.unfocus(),
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                                bottom:
-                                    MediaQuery.of(context).viewInsets.bottom),
-                            child: SizedBox(
-                                width: size.width,
-                                height: size.height < 800
-                                    ? size.height * 0.50
-                                    : size.height * 0.40,
-                                child: BsbForm(
-                                  movie: movie!,
-                                )),
-                          ),
-                        );
-                      },
-                    );
-                  }),
-              const SizedBox(width: 20),
-              FilledButton.tonal(
-                style: ButtonStyle(
-                  shape: MaterialStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                    backgroundColor: MaterialStateProperty.all(
+                      isInWatchList ? Theme.of(context).colorScheme.onPrimary : null,
                     ),
                   ),
+                  icon: Icon(isInWatchList ? Icons.bookmark_added_rounded : Icons.bookmark_add_rounded),
+                  label: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+                    child:
+                        Text(isInWatchList ? "In Watchlist" : "Add to watchlist", style: const TextStyle(fontSize: 15)),
+                  ),
+                  onPressed: () {
+                    isInWatchList ? removeFromWatchList() : addToWatchList();
+                  },
                 ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                  child:
-                      Text("Add to watchlist", style: TextStyle(fontSize: 15)),
-                ),
-                onPressed: () {
-                  // show success snackbar
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    margin: EdgeInsets.all(10),
-                    content: Text("Added to watch list successfully!"),
-                  ));
-                },
               ),
             ],
           ),
@@ -421,10 +458,7 @@ class _MoviePageState extends State<MoviePage> {
               child: Text(
                 movie!.actors[index].character,
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Theme.of(context).dividerColor),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).dividerColor),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

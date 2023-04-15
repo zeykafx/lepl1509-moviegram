@@ -19,6 +19,9 @@ class FriendsPage extends StatefulWidget {
 }
 
 class _FriendsPageState extends State<FriendsPage> {
+  final DrawerPageController drawerPageController =
+      Get.put(DrawerPageController());
+
   User? currentUser = FirebaseAuth.instance.currentUser;
   FirebaseFirestore db = FirebaseFirestore.instance;
 
@@ -220,8 +223,6 @@ class _FriendsPageState extends State<FriendsPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        final DrawerPageController drawerPageController =
-            Get.put(DrawerPageController());
         drawerPageController.changeCurrentPage(0);
         return true;
       },

@@ -17,7 +17,7 @@ class Movie {
   final int runtime;
   final double popularity;
   List<Actor> actors = [];
-  String? trailerURL = null;
+  String? trailerURL;
 
   Movie({
     required this.id,
@@ -92,12 +92,8 @@ class Movie {
     return Movie(
       id: json['id'],
       title: json['title'],
-      posterPath: json['poster_path'] != null
-          ? "https://image.tmdb.org/t/p/w500${json['poster_path']}"
-          : null,
-      backdropPath: json['backdrop_path'] != null
-          ? "https://image.tmdb.org/t/p/w500${json['backdrop_path']}"
-          : null,
+      posterPath: json['poster_path'] != null ? "https://image.tmdb.org/t/p/w500${json['poster_path']}" : null,
+      backdropPath: json['backdrop_path'] != null ? "https://image.tmdb.org/t/p/w500${json['backdrop_path']}" : null,
       overview: json['overview'],
       voteAverage: json['vote_average'].toDouble(),
       releaseDate: json['release_date'],
@@ -128,9 +124,7 @@ class Actor {
     return Actor(
       id: json['id'],
       name: json['name'],
-      profilePath: json['profile_path'] != null
-          ? "https://image.tmdb.org/t/p/w500${json['profile_path']}"
-          : null,
+      profilePath: json['profile_path'] != null ? "https://image.tmdb.org/t/p/w500${json['profile_path']}" : null,
       character: json['character'],
       knownForDepartment: json['known_for_department'],
     );

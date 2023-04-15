@@ -6,6 +6,7 @@ import 'package:projet_lepl1509_groupe_17/pages/auth/auth_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/home/home_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart';
 import 'package:projet_lepl1509_groupe_17/pages/profile/widgets/profile_widget.dart';
+import 'package:projet_lepl1509_groupe_17/pages/watchlist/watchlist_page.dart';
 
 import '../../models/user_profile.dart';
 import '../../pages/friends/friends_page.dart';
@@ -18,7 +19,8 @@ class DrawerComponent extends StatefulWidget {
 }
 
 class _DrawerState extends State<DrawerComponent> {
-  final DrawerPageController drawerPageController = Get.put(DrawerPageController());
+  final DrawerPageController drawerPageController =
+      Get.put(DrawerPageController());
 
   var db = FirebaseFirestore.instance;
 
@@ -49,11 +51,11 @@ class _DrawerState extends State<DrawerComponent> {
       Icon(Icons.people),
       FriendsPage(),
     ),
-    // const Destination(
-    //   "Settings",
-    //   Icon(Icons.settings),
-    //   SettingsPage(),
-    // ),
+    const Destination(
+      "Watchlist",
+      Icon(Icons.movie_filter_sharp),
+      WatchlistPage(),
+    ),
   ];
 
   User? currentUser = FirebaseAuth.instance.currentUser;
@@ -79,7 +81,10 @@ class _DrawerState extends State<DrawerComponent> {
           NavigationDrawer(
             selectedIndex: drawerPageController.currentPage.value,
             onDestinationSelected: (selectedIndex) {
-              Get.to(destinations[selectedIndex].page, transition: Transition.fadeIn);
+              Get.back();
+
+              Get.to(destinations[selectedIndex].page,
+                  transition: Transition.fadeIn);
               setState(() {
                 drawerPageController.changeCurrentPage(selectedIndex);
               });
@@ -88,14 +93,17 @@ class _DrawerState extends State<DrawerComponent> {
               // user header with profile picture
               DrawerHeader(
                 child: InkWell(
-                  onTap: () => Get.to(() => ProfilePage(accessToFeed: true, uid: currentUser?.uid ?? ''),
+                  onTap: () => Get.to(
+                      () => ProfilePage(
+                          accessToFeed: true, uid: currentUser?.uid ?? ''),
                       transition: Transition.fadeIn),
                   child: Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
                         child: ProfileWidget(
-                          imagePath: currentUser?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
+                          imagePath: currentUser?.photoURL ??
+                              'http://www.gravatar.com/avatar/?d=mp',
                           inDrawer: true,
                           access: true,
                           self: true,
@@ -103,7 +111,9 @@ class _DrawerState extends State<DrawerComponent> {
                             Navigator.of(context)
                                 .push(
                               MaterialPageRoute(
-                                builder: (context) => ProfilePage(accessToFeed: true, uid: currentUser?.uid ?? ''),
+                                builder: (context) => ProfilePage(
+                                    accessToFeed: true,
+                                    uid: currentUser?.uid ?? ''),
                               ),
                             )
                                 .then((_) {
@@ -158,7 +168,8 @@ class _DrawerState extends State<DrawerComponent> {
                   children: [
                     ListTile(
                       onTap: () {
-                        Get.changeThemeMode(Get.isDarkMode ? ThemeMode.light : ThemeMode.dark);
+                        Get.changeThemeMode(
+                            Get.isDarkMode ? ThemeMode.light : ThemeMode.dark);
                       },
                       leading: Get.isDarkMode
                           ? const Icon(
@@ -167,7 +178,9 @@ class _DrawerState extends State<DrawerComponent> {
                             )
                           : const Icon(Icons.dark_mode, size: 20),
                       dense: true,
-                      title: Get.isDarkMode ? const Text('Enable Light Mode') : const Text('Enable Dark Mode'),
+                      title: Get.isDarkMode
+                          ? const Text('Enable Light Mode')
+                          : const Text('Enable Dark Mode'),
                     ),
                     ListTile(
                       onTap: () {
@@ -176,7 +189,8 @@ class _DrawerState extends State<DrawerComponent> {
                             context: context,
                             builder: (context) => AlertDialog(
                                   title: const Text('Log out'),
-                                  content: const Text('Are you sure you want to log out?'),
+                                  content: const Text(
+                                      'Are you sure you want to log out?'),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Get.back(),
