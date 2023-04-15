@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:projet_lepl1509_groupe_17/models/movies.dart';
+import 'package:projet_lepl1509_groupe_17/pages/profile/pages/profile_page.dart';
 
 class BsbForm extends StatefulWidget {
   final Movie movie;
@@ -15,8 +16,7 @@ class BsbForm extends StatefulWidget {
 }
 
 class _BsbFormState extends State<BsbForm> {
-  final ReviewPagesController reviewPagesController =
-      Get.put(ReviewPagesController());
+  final ReviewPagesController reviewPagesController = Get.put(ReviewPagesController());
 
   String comment = "";
 
@@ -59,12 +59,8 @@ class _BsbFormState extends State<BsbForm> {
                     space: 4,
                     size: 5,
                     activeSize: 6,
-                    activeColor:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surfaceVariant
-                        .withOpacity(0.5),
+                    activeColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                   ),
                 ),
                 control: SwiperControl(
@@ -72,14 +68,8 @@ class _BsbFormState extends State<BsbForm> {
                     padding: const EdgeInsets.all(5),
                     iconNext: Icons.arrow_forward_ios,
                     iconPrevious: Icons.arrow_back_ios,
-                    disableColor: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.1),
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.8)),
+                    disableColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)),
                 loop: false,
                 controller: swiperController,
                 itemBuilder: (BuildContext context, int index) {
@@ -91,9 +81,7 @@ class _BsbFormState extends State<BsbForm> {
                     case 2:
                       return buildCommentRating();
                     case 3:
-                      commentController.text.isEmpty
-                          ? _validate = true
-                          : _validate = false;
+                      commentController.text.isEmpty ? _validate = true : _validate = false;
                       if (comment == "") {
                         // show error snackbar after 100 milliseconds
                         Future.delayed(const Duration(milliseconds: 300), () {
@@ -126,8 +114,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Rate this movie",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Rate this movie", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("How would you rate this movie?"),
             const SizedBox(height: 10),
             Obx(() => RatingBar(
@@ -187,8 +174,7 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Share your opinion",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("Share your opinion", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             const Text("Write a review for this movie"),
             const SizedBox(height: 15),
             TextField(
@@ -223,10 +209,8 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Share your feedback (optional)",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-            const Text(
-                "How satisfied were you with the film’s duration and cast?"),
+            const Text("Share your feedback (optional)", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("How satisfied were you with the film’s duration and cast?"),
             const SizedBox(height: 10),
             const Text("Cast and characters"),
             Obx(
@@ -286,10 +270,8 @@ class _BsbFormState extends State<BsbForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Ready to publish your review?",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-            const Text(
-                "You can edit or delete it later if you change your mind."),
+            const Text("Ready to publish your review?", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            const Text("You can edit or delete it later if you change your mind."),
             const SizedBox(height: 50),
             SizedBox(
               width: double.infinity,
@@ -305,20 +287,14 @@ class _BsbFormState extends State<BsbForm> {
               child: FilledButton.tonal(
                 onPressed: () async {
                   setState(() {
-                    commentController.text.isEmpty
-                        ? _validate = true
-                        : _validate = false;
+                    commentController.text.isEmpty ? _validate = true : _validate = false;
                   });
-                  if (comment != "" &&
-                      comment != " " &&
-                      comment.removeAllWhitespace != "") {
+                  if (comment != "" && comment != " " && comment.removeAllWhitespace != "") {
                     // first create the document in firestore/posts/uid/
                     await FirebaseFirestore.instance
                         .collection("posts")
                         .doc(FirebaseAuth.instance.currentUser?.uid)
-                        .set({
-                      '_': '_'
-                    }); // dummy value, will not be read or written to
+                        .set({'_': '_'}); // dummy value, will not be read or written to
 
                     // then add a subcollection at firestore/posts/uid/userPosts
                     var val = await FirebaseFirestore.instance
@@ -326,9 +302,7 @@ class _BsbFormState extends State<BsbForm> {
                         .doc(FirebaseAuth.instance.currentUser?.uid)
                         .collection("userPosts")
                         .add({
-                      'username':
-                          FirebaseAuth.instance.currentUser?.displayName ??
-                              "Anonymous",
+                      'username': FirebaseAuth.instance.currentUser?.displayName ?? "Anonymous",
                       'comment': comment,
                       'rating': reviewPagesController.rating.value,
                       'actingRating': reviewPagesController.actingRating.value,
@@ -345,17 +319,21 @@ class _BsbFormState extends State<BsbForm> {
                     await FirebaseFirestore.instance
                         .collection("comments")
                         .doc(val.id)
-                        .set({
-                      '_': '_'
-                    }); // dummy value, will not be read or written to
+                        .set({'_': '_'}); // dummy value, will not be read or written to
 
                     Get.back();
 
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      behavior: SnackBarBehavior.floating,
-                      margin: EdgeInsets.all(10),
-                      content: Text("Submitted successfully!"),
-                    ));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        behavior: SnackBarBehavior.floating,
+                        margin: const EdgeInsets.all(10),
+                        content: const Text("Submitted successfully!"),
+                        action: SnackBarAction(
+                          label: "View",
+                          onPressed: () {
+                            Get.to(() => ProfilePage(accessToFeed: true, uid: FirebaseAuth.instance.currentUser!.uid),
+                                transition: Transition.fadeIn);
+                          },
+                        )));
                   } else {
                     // show an error message
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

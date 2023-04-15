@@ -46,6 +46,12 @@ class _WatchlistPageState extends State<WatchlistPage> {
     });
 
     if (userProfile != null) {
+      setState(() {
+        watchlistMovies = [];
+        watchedMovies = [];
+        ratings = [];
+        reviewsText = [];
+      });
       for (var movieID in userProfile!.watchlist) {
         Movie? movie = await Movie.getMovieDetails(movieID);
         if (movie != null) {
@@ -136,11 +142,14 @@ class _WatchlistPageState extends State<WatchlistPage> {
             ? const Center(child: CircularProgressIndicator())
             : Container(
                 constraints: const BoxConstraints(maxWidth: 700),
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: RefreshIndicator(
                   onRefresh: () async {
                     setState(() {
                       watchlistMovies = [];
+                      watchedMovies = [];
+                      ratings = [];
+                      reviewsText = [];
                     });
                     await readUserData();
                   },

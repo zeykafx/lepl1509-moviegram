@@ -11,6 +11,7 @@ import 'package:projet_lepl1509_groupe_17/models/movies.dart';
 import 'package:projet_lepl1509_groupe_17/models/providers.dart';
 import 'package:projet_lepl1509_groupe_17/models/search_movie.dart';
 import 'package:projet_lepl1509_groupe_17/pages/movie/bsb_review_form.dart';
+import 'package:projet_lepl1509_groupe_17/pages/watchlist/watchlist_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MoviePage extends StatefulWidget {
@@ -94,14 +95,18 @@ class _MoviePageState extends State<MoviePage> {
 
     // show a success snackbar
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Successfully added to watchlist"),
-      ),
+      SnackBar(
+          content: const Text("Successfully added to watchlist"),
+          action: SnackBarAction(
+            label: "View",
+            onPressed: () {
+              Get.to(() => const WatchlistPage(), transition: Transition.fadeIn);
+            },
+          )),
     );
   }
 
   Future<void> removeFromWatchList() async {
-    print("remove from watchlist");
     await db.collection('users').doc(currentUser!.uid).update({
       'watchlist': FieldValue.arrayRemove([movie!.id])
     });
