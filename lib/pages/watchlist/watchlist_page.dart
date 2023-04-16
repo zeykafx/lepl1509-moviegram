@@ -140,293 +140,37 @@ class _WatchlistPageState extends State<WatchlistPage> {
         ),
         body: userProfile == null
             ? const Center(child: CircularProgressIndicator())
-            : Container(
-                constraints: const BoxConstraints(maxWidth: 700),
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    setState(() {
-                      watchlistMovies = [];
-                      watchedMovies = [];
-                      ratings = [];
-                      reviewsText = [];
-                    });
-                    await readUserData();
-                  },
-                  child: ListView(
-                    children: [
-                      // title
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Watchlist',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Save movies to watch later',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context).dividerColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      if (watchlistMovies.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                          child: Center(
-                            child: Text(
-                              "Add movies to your watchlist to see them here",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
-                      for (var movie in watchlistMovies) ...[
-                        Card(
-                          elevation: 0.5,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            side: BorderSide(
-                              color: Colors.grey.withOpacity(0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: Stack(
-                            children: [
-                              // blurred out movie poster
-                              if (movie.backdropPath != null)
-                                Positioned.fill(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(15),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: Opacity(
-                                      opacity: Get.isDarkMode ? 0.1 : 0.05,
-                                      child: ImageFiltered(
-                                        imageFilter: ImageFilter.blur(
-                                          sigmaX: 3,
-                                          sigmaY: 3,
-                                        ),
-                                        child: OptimizedCacheImage(
-                                          fit: BoxFit.cover,
-                                          imageUrl: "https://image.tmdb.org/t/p/w500/${movie.backdropPath}",
-                                          width: size.width,
-                                          errorWidget: (context, url, error) => const Icon(Icons.error),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                              InkWell(
-                                borderRadius: BorderRadius.circular(15),
-                                onTap: () {
-                                  Get.to(
-                                    () => MoviePage(
-                                      movie: SearchMovie(
-                                        id: movie.id,
-                                        title: movie.title,
-                                        posterPath: movie.posterPath,
-                                        releaseDate: movie.releaseDate,
-                                        voteAverage: movie.voteAverage,
-                                        overview: movie.overview,
-                                        backdropPath: movie.backdropPath,
-                                        popularity: movie.popularity,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 15,
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(height: 5),
-                                      Row(
-                                        children: [
-                                          movie.posterPath != null
-                                              ? ClipRRect(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  clipBehavior: Clip.antiAlias,
-                                                  child: SizedBox(
-                                                    width: 80,
-                                                    child: OptimizedCacheImage(
-                                                      fit: BoxFit.contain,
-                                                      imageUrl: "https://image.tmdb.org/t/p/w500/${movie.posterPath}",
-                                                      width: 160,
-                                                      errorWidget: (context, url, error) => const Icon(Icons.error),
-                                                    ),
-                                                  ),
-                                                )
-                                              : const SizedBox(
-                                                  width: 80,
-                                                  child: Icon(Icons.movie, size: 35),
-                                                ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                // movie title
-                                                Text(movie.title,
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w500,
-                                                      fontSize: 20,
-                                                    )),
-
-                                                const SizedBox(height: 3),
-                                                // movie rating
-                                                Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    const Icon(Icons.reviews, size: 15),
-                                                    const SizedBox(width: 5),
-                                                    Text(
-                                                      "${movie.voteAverage.toStringAsPrecision(2)}/10",
-                                                      style: const TextStyle(fontSize: 15),
-                                                    ),
-                                                  ],
-                                                ),
-
-                                                const SizedBox(height: 3),
-
-                                                // description
-                                                Text(
-                                                  movie.overview,
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: TextStyle(fontSize: 15, color: Theme.of(context).dividerColor),
-                                                ),
-
-                                                const SizedBox(height: 3),
-
-                                                // year, length
-                                                Text(
-                                                  "${DateTime.parse(movie.releaseDate).year} | ${movie.runtime} min",
-                                                  style: const TextStyle(fontSize: 15),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: FilledButton.tonal(
-                                              style: FilledButton.styleFrom(
-                                                visualDensity: VisualDensity.compact,
-                                              ),
-                                              onPressed: () {
-                                                showModalBottomSheet(
-                                                  context: context,
-                                                  isScrollControlled: true,
-                                                  isDismissible: true,
-                                                  builder: (context) {
-                                                    return GestureDetector(
-                                                      behavior: HitTestBehavior.opaque,
-                                                      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                                                      child: Padding(
-                                                        padding: EdgeInsets.only(
-                                                            bottom: MediaQuery.of(context).viewInsets.bottom),
-                                                        child: SizedBox(
-                                                            width: size.width,
-                                                            height: size.height < 800
-                                                                ? size.height * 0.50
-                                                                : size.height * 0.40,
-                                                            child: BsbForm(
-                                                              movie: movie,
-                                                            )),
-                                                      ),
-                                                    );
-                                                  },
-                                                );
-                                              },
-                                              child: const Text('Write a Review'),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: FilledButton.tonal(
-                                              style: FilledButton.styleFrom(
-                                                visualDensity: VisualDensity.compact,
-                                              ),
-                                              onPressed: () {
-                                                // show alert dialog asking to confirm
-                                                showDialog(
-                                                    context: context,
-                                                    builder: (context) {
-                                                      return AlertDialog(
-                                                        title: const Text('Mark as Watched'),
-                                                        content: const Text(
-                                                            'Are you sure you want to mark this movie as watched?'),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed: () => Get.back(),
-                                                            child: const Text('Cancel'),
-                                                          ),
-                                                          TextButton(
-                                                            onPressed: () {
-                                                              Get.back();
-                                                              // remove from watchlist
-                                                              removeFromWatchList(movie);
-                                                            },
-                                                            child: const Text('Mark as Watched'),
-                                                          ),
-                                                        ],
-                                                      );
-                                                    });
-                                              },
-                                              child: const Text('Marked as Watched'),
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ).animate().fade(),
-                        const SizedBox(height: 10),
-                      ],
-
-                      // Watched movies
-                      if (watchedMovies.isNotEmpty) ...[
-                        Divider(
-                          color: Colors.grey.withOpacity(0.1),
-                        ).animate().fade(),
-                        const SizedBox(height: 10),
+            : Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        watchlistMovies = [];
+                        watchedMovies = [];
+                        ratings = [];
+                        reviewsText = [];
+                      });
+                      await readUserData();
+                    },
+                    child: ListView(
+                      children: [
+                        // title
                         Padding(
                           padding: const EdgeInsets.only(left: 10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Reviewed Movies',
+                                'Watchlist',
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                'Movies you reviewed',
+                                'Save movies to watch later',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Theme.of(context).dividerColor,
@@ -435,10 +179,21 @@ class _WatchlistPageState extends State<WatchlistPage> {
                             ],
                           ),
                         ),
-
-                        // TODO: yeah there is a lot of duplicate code here, but I'm too lazy to fix it
                         const SizedBox(height: 10),
-                        for (Movie movie in watchedMovies) ...[
+                        if (watchlistMovies.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                            child: Center(
+                              child: Text(
+                                "Add movies to your watchlist to see them here",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        for (var movie in watchlistMovies) ...[
                           Card(
                             elevation: 0.5,
                             shape: RoundedRectangleBorder(
@@ -572,21 +327,78 @@ class _WatchlistPageState extends State<WatchlistPage> {
                                           ],
                                         ),
                                         const SizedBox(height: 10),
-
-                                        // review
-                                        Text(
-                                          '"${reviewsText[watchedMovies.indexOf(movie)]}"',
-                                          maxLines: 3,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              color: Theme.of(context).dividerColor,
-                                              fontStyle: FontStyle.italic),
-                                        ),
-                                        const SizedBox(height: 10),
-
-                                        // ratings given in review
-                                        Center(child: buildRatings(watchedMovies.indexOf(movie))),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: FilledButton.tonal(
+                                                style: FilledButton.styleFrom(
+                                                  visualDensity: VisualDensity.compact,
+                                                ),
+                                                onPressed: () {
+                                                  showModalBottomSheet(
+                                                    context: context,
+                                                    isScrollControlled: true,
+                                                    isDismissible: true,
+                                                    builder: (context) {
+                                                      return GestureDetector(
+                                                        behavior: HitTestBehavior.opaque,
+                                                        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                                                        child: Padding(
+                                                          padding: EdgeInsets.only(
+                                                              bottom: MediaQuery.of(context).viewInsets.bottom),
+                                                          child: SizedBox(
+                                                              width: size.width,
+                                                              height: size.height < 800
+                                                                  ? size.height * 0.50
+                                                                  : size.height * 0.40,
+                                                              child: BsbForm(
+                                                                movie: movie,
+                                                              )),
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                child: const Text('Write a Review'),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: FilledButton.tonal(
+                                                style: FilledButton.styleFrom(
+                                                  visualDensity: VisualDensity.compact,
+                                                ),
+                                                onPressed: () {
+                                                  // show alert dialog asking to confirm
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return AlertDialog(
+                                                          title: const Text('Mark as Watched'),
+                                                          content: const Text(
+                                                              'Are you sure you want to mark this movie as watched?'),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () => Get.back(),
+                                                              child: const Text('Cancel'),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                Get.back();
+                                                                // remove from watchlist
+                                                                removeFromWatchList(movie);
+                                                              },
+                                                              child: const Text('Mark as Watched'),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      });
+                                                },
+                                                child: const Text('Marked as Watched'),
+                                              ),
+                                            ),
+                                          ],
+                                        )
                                       ],
                                     ),
                                   ),
@@ -595,9 +407,201 @@ class _WatchlistPageState extends State<WatchlistPage> {
                             ),
                           ).animate().fade(),
                           const SizedBox(height: 10),
-                        ]
+                        ],
+
+                        // Watched movies
+                        if (watchedMovies.isNotEmpty) ...[
+                          Divider(
+                            color: Colors.grey.withOpacity(0.1),
+                          ).animate().fade(),
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Reviewed Movies',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  'Movies you reviewed',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context).dividerColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // TODO: yeah there is a lot of duplicate code here, but I'm too lazy to fix it
+                          const SizedBox(height: 10),
+                          for (Movie movie in watchedMovies) ...[
+                            Card(
+                              elevation: 0.5,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                side: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  // blurred out movie poster
+                                  if (movie.backdropPath != null)
+                                    Positioned.fill(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(15),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: Opacity(
+                                          opacity: Get.isDarkMode ? 0.1 : 0.05,
+                                          child: ImageFiltered(
+                                            imageFilter: ImageFilter.blur(
+                                              sigmaX: 3,
+                                              sigmaY: 3,
+                                            ),
+                                            child: OptimizedCacheImage(
+                                              fit: BoxFit.cover,
+                                              imageUrl: "https://image.tmdb.org/t/p/w500/${movie.backdropPath}",
+                                              width: size.width,
+                                              errorWidget: (context, url, error) => const Icon(Icons.error),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                  InkWell(
+                                    borderRadius: BorderRadius.circular(15),
+                                    onTap: () {
+                                      Get.to(
+                                        () => MoviePage(
+                                          movie: SearchMovie(
+                                            id: movie.id,
+                                            title: movie.title,
+                                            posterPath: movie.posterPath,
+                                            releaseDate: movie.releaseDate,
+                                            voteAverage: movie.voteAverage,
+                                            overview: movie.overview,
+                                            backdropPath: movie.backdropPath,
+                                            popularity: movie.popularity,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                        horizontal: 15,
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          const SizedBox(height: 5),
+                                          Row(
+                                            children: [
+                                              movie.posterPath != null
+                                                  ? ClipRRect(
+                                                      borderRadius: BorderRadius.circular(8),
+                                                      clipBehavior: Clip.antiAlias,
+                                                      child: SizedBox(
+                                                        width: 80,
+                                                        child: OptimizedCacheImage(
+                                                          fit: BoxFit.contain,
+                                                          imageUrl:
+                                                              "https://image.tmdb.org/t/p/w500/${movie.posterPath}",
+                                                          width: 160,
+                                                          errorWidget: (context, url, error) => const Icon(Icons.error),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : const SizedBox(
+                                                      width: 80,
+                                                      child: Icon(Icons.movie, size: 35),
+                                                    ),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    // movie title
+                                                    Text(movie.title,
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w500,
+                                                          fontSize: 20,
+                                                        )),
+
+                                                    const SizedBox(height: 3),
+                                                    // movie rating
+                                                    Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        const Icon(Icons.reviews, size: 15),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          "${movie.voteAverage.toStringAsPrecision(2)}/10",
+                                                          style: const TextStyle(fontSize: 15),
+                                                        ),
+                                                      ],
+                                                    ),
+
+                                                    const SizedBox(height: 3),
+
+                                                    // description
+                                                    Text(
+                                                      movie.overview,
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                          fontSize: 15, color: Theme.of(context).dividerColor),
+                                                    ),
+
+                                                    const SizedBox(height: 3),
+
+                                                    // year, length
+                                                    Text(
+                                                      "${DateTime.parse(movie.releaseDate).year} | ${movie.runtime} min",
+                                                      style: const TextStyle(fontSize: 15),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+
+                                          // review
+                                          Text(
+                                            '"${reviewsText[watchedMovies.indexOf(movie)]}"',
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                color: Theme.of(context).dividerColor,
+                                                fontStyle: FontStyle.italic),
+                                          ),
+                                          const SizedBox(height: 10),
+
+                                          // ratings given in review
+                                          Center(child: buildRatings(watchedMovies.indexOf(movie))),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ).animate().fade(),
+                            const SizedBox(height: 10),
+                          ]
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),

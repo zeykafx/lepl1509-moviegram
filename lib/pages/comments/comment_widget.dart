@@ -9,6 +9,7 @@ import 'package:projet_lepl1509_groupe_17/models/user_profile.dart';
 import 'package:time_formatter/time_formatter.dart';
 
 import '../../models/review.dart';
+import '../profile/pages/profile_page.dart';
 
 class CommentWidget extends StatefulWidget {
   final Comment comment;
@@ -16,11 +17,7 @@ class CommentWidget extends StatefulWidget {
   final UserProfile? currentUser;
   final Function callback;
   const CommentWidget(
-      {super.key,
-      required this.comment,
-      required this.review,
-      required this.currentUser,
-      required this.callback});
+      {super.key, required this.comment, required this.review, required this.currentUser, required this.callback});
 
   @override
   _CommentWidgetState createState() => _CommentWidgetState();
@@ -42,11 +39,8 @@ class _CommentWidgetState extends State<CommentWidget> {
     if (widget.currentUser == null) {
       return;
     }
-    if (widget.comment.likes
-        .where((element) => element.uid == widget.currentUser!.uid)
-        .isNotEmpty) {
-      widget.comment.likes
-          .removeWhere((element) => element.uid == widget.currentUser!.uid);
+    if (widget.comment.likes.where((element) => element.uid == widget.currentUser!.uid).isNotEmpty) {
+      widget.comment.likes.removeWhere((element) => element.uid == widget.currentUser!.uid);
 
       // remove the like in firebase
       await FirebaseFirestore.instance
@@ -83,13 +77,26 @@ class _CommentWidgetState extends State<CommentWidget> {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 7.0),
-                  child: CircleAvatar(
-                    backgroundImage: OptimizedCacheImageProvider(
-                      widget.comment.user.photoURL,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfilePage(
+                          accessToFeed: widget.comment.user.uid == widget.currentUser!.uid,
+                          uid: widget.comment.user.uid ?? "",
+                        ),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 7.0),
+                    child: CircleAvatar(
+                      backgroundImage: OptimizedCacheImageProvider(
+                        widget.comment.user.photoURL,
+                      ),
+                      radius: 20,
                     ),
-                    radius: 20,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -106,40 +113,50 @@ class _CommentWidgetState extends State<CommentWidget> {
                           // author name and badge
                           Row(
                             children: [
-                              Text(
-                                widget.comment.user.name,
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w600),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProfilePage(
+                                        accessToFeed: widget.comment.user.uid == widget.currentUser!.uid,
+                                        uid: widget.comment.user.uid ?? "",
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  widget.comment.user.name,
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                ),
                               ),
                               const SizedBox(width: 5),
                               // author badge
-                              if (isReviewAuthor)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 5, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    'Author',
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                ),
+                              // if (isReviewAuthor)
+                              //   Container(
+                              //     padding: const EdgeInsets.symmetric(
+                              //         horizontal: 5, vertical: 2),
+                              //     decoration: BoxDecoration(
+                              //       color:
+                              //           Theme.of(context).colorScheme.primary,
+                              //       borderRadius: BorderRadius.circular(10),
+                              //     ),
+                              //     child: Text(
+                              //       'Author',
+                              //       style: TextStyle(
+                              //         color: Theme.of(context)
+                              //             .colorScheme
+                              //             .onPrimary,
+                              //         fontSize: 10,
+                              //       ),
+                              //     ),
+                              //   ),
                             ],
                           ),
                           // time posted
                           Text(
                             formatTime(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                      widget.comment.timestamp)
-                                  .millisecondsSinceEpoch,
+                              DateTime.fromMillisecondsSinceEpoch(widget.comment.timestamp).millisecondsSinceEpoch,
                             ),
                             style: const TextStyle(fontSize: 12),
                           ),
@@ -160,17 +177,14 @@ class _CommentWidgetState extends State<CommentWidget> {
                                 patternList: [
                                   EasyRichTextPattern(
                                     targetString: '@[a-zA-Z0-9]*',
-                                    style: const TextStyle(
-                                        color: Colors.blueAccent),
+                                    style: const TextStyle(color: Colors.blueAccent),
                                   ),
                                 ],
                               ),
                             ),
                           ),
                           Tooltip(
-                            message: widget.comment.likes
-                                .map((e) => e.name)
-                                .join(", "),
+                            message: widget.comment.likes.map((e) => e.name).join(", "),
                             waitDuration: const Duration(milliseconds: 10),
 
                             // like button
@@ -187,25 +201,19 @@ class _CommentWidgetState extends State<CommentWidget> {
                                 style: TextStyle(
                                     fontSize: 13,
                                     color: widget.comment.likes
-                                            .where((element) =>
-                                                element.uid ==
-                                                widget.currentUser!.uid)
+                                            .where((element) => element.uid == widget.currentUser!.uid)
                                             .isNotEmpty
                                         ? Colors.red
                                         : Theme.of(context).dividerColor),
                               ),
                               icon: Icon(
                                 widget.comment.likes
-                                        .where((element) =>
-                                            element.uid ==
-                                            widget.currentUser!.uid)
+                                        .where((element) => element.uid == widget.currentUser!.uid)
                                         .isNotEmpty
                                     ? CupertinoIcons.heart_fill
                                     : CupertinoIcons.heart,
                                 color: widget.comment.likes
-                                        .where((element) =>
-                                            element.uid ==
-                                            widget.currentUser!.uid)
+                                        .where((element) => element.uid == widget.currentUser!.uid)
                                         .isNotEmpty
                                     ? Colors.red
                                     : Theme.of(context).dividerColor,
@@ -218,10 +226,7 @@ class _CommentWidgetState extends State<CommentWidget> {
 
                       // reply button
                       GestureDetector(
-                        child: Text("Reply",
-                            style: TextStyle(
-                                color: Theme.of(context).dividerColor,
-                                fontSize: 13)),
+                        child: Text("Reply", style: TextStyle(color: Theme.of(context).dividerColor, fontSize: 13)),
                         onTap: () {
                           widget.callback(widget.comment);
                         },
@@ -253,9 +258,7 @@ class _CommentWidgetState extends State<CommentWidget> {
                         if (widget.comment.replies.length > 1)
                           GestureDetector(
                             child: Text(
-                              seeReplies
-                                  ? "Hide replies"
-                                  : "See replies (${widget.comment.replies.length - 1})",
+                              seeReplies ? "Hide replies" : "See replies (${widget.comment.replies.length - 1})",
                               style: TextStyle(
                                 color: Theme.of(context).dividerColor,
                                 fontSize: 13,
@@ -309,11 +312,8 @@ class _ReplyCommentState extends State<ReplyComment> {
     if (widget.currentUser == null) {
       return;
     }
-    if (widget.comment.likes
-        .where((element) => element.uid == widget.currentUser!.uid)
-        .isNotEmpty) {
-      widget.comment.likes
-          .removeWhere((element) => element.uid == widget.currentUser!.uid);
+    if (widget.comment.likes.where((element) => element.uid == widget.currentUser!.uid).isNotEmpty) {
+      widget.comment.likes.removeWhere((element) => element.uid == widget.currentUser!.uid);
 
       // remove the like in firebase
       await FirebaseFirestore.instance
@@ -354,13 +354,26 @@ class _ReplyCommentState extends State<ReplyComment> {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 5.0),
-                  child: CircleAvatar(
-                    backgroundImage: OptimizedCacheImageProvider(
-                      widget.comment.user.photoURL,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfilePage(
+                          accessToFeed: widget.comment.user.uid == widget.currentUser!.uid,
+                          uid: widget.comment.user.uid ?? "",
+                        ),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    child: CircleAvatar(
+                      backgroundImage: OptimizedCacheImageProvider(
+                        widget.comment.user.photoURL,
+                      ),
+                      radius: 15,
                     ),
-                    radius: 15,
                   ),
                 ),
                 const SizedBox(width: 5),
@@ -375,39 +388,49 @@ class _ReplyCommentState extends State<ReplyComment> {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                widget.comment.user.name,
-                                style: const TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w500),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProfilePage(
+                                        accessToFeed: widget.comment.user.uid == widget.currentUser!.uid,
+                                        uid: widget.comment.user.uid ?? "",
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  widget.comment.user.name,
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                ),
                               ),
                               const SizedBox(width: 5),
                               // author badge
-                              if (isReviewAuthor)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 3, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    'Author',
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                      fontSize: 9,
-                                    ),
-                                  ),
-                                ),
+                              // if (isReviewAuthor)
+                              //   Container(
+                              //     padding: const EdgeInsets.symmetric(
+                              //         horizontal: 3, vertical: 2),
+                              //     decoration: BoxDecoration(
+                              //       color:
+                              //           Theme.of(context).colorScheme.primary,
+                              //       borderRadius: BorderRadius.circular(10),
+                              //     ),
+                              //     child: Text(
+                              //       'Author',
+                              //       style: TextStyle(
+                              //         color: Theme.of(context)
+                              //             .colorScheme
+                              //             .onPrimary,
+                              //         fontSize: 9,
+                              //       ),
+                              //     ),
+                              //   ),
                             ],
                           ),
                           Text(
                             formatTime(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                      widget.comment.timestamp)
-                                  .millisecondsSinceEpoch,
+                              DateTime.fromMillisecondsSinceEpoch(widget.comment.timestamp).millisecondsSinceEpoch,
                             ),
                             style: const TextStyle(fontSize: 11),
                           ),
@@ -428,17 +451,14 @@ class _ReplyCommentState extends State<ReplyComment> {
                                 patternList: [
                                   EasyRichTextPattern(
                                     targetString: '@[a-zA-Z0-9]*',
-                                    style: const TextStyle(
-                                        color: Colors.blueAccent),
+                                    style: const TextStyle(color: Colors.blueAccent),
                                   ),
                                 ],
                               ),
                             ),
                           ),
                           Tooltip(
-                            message: widget.comment.likes
-                                .map((e) => e.name)
-                                .join(", "),
+                            message: widget.comment.likes.map((e) => e.name).join(", "),
                             waitDuration: const Duration(milliseconds: 10),
                             // like button
                             child: TextButton.icon(
@@ -451,25 +471,19 @@ class _ReplyCommentState extends State<ReplyComment> {
                                 style: TextStyle(
                                     fontSize: 13,
                                     color: widget.comment.likes
-                                            .where((element) =>
-                                                element.uid ==
-                                                widget.currentUser!.uid)
+                                            .where((element) => element.uid == widget.currentUser!.uid)
                                             .isNotEmpty
                                         ? Colors.red
                                         : Theme.of(context).dividerColor),
                               ),
                               icon: Icon(
                                 widget.comment.likes
-                                        .where((element) =>
-                                            element.uid ==
-                                            widget.currentUser!.uid)
+                                        .where((element) => element.uid == widget.currentUser!.uid)
                                         .isNotEmpty
                                     ? CupertinoIcons.heart_fill
                                     : CupertinoIcons.heart,
                                 color: widget.comment.likes
-                                        .where((element) =>
-                                            element.uid ==
-                                            widget.currentUser!.uid)
+                                        .where((element) => element.uid == widget.currentUser!.uid)
                                         .isNotEmpty
                                     ? Colors.red
                                     : Theme.of(context).dividerColor,
@@ -482,9 +496,7 @@ class _ReplyCommentState extends State<ReplyComment> {
                       GestureDetector(
                         child: Text(
                           "Reply",
-                          style: TextStyle(
-                              color: Theme.of(context).dividerColor,
-                              fontSize: 13),
+                          style: TextStyle(color: Theme.of(context).dividerColor, fontSize: 13),
                         ),
                         onTap: () {
                           widget.callback(widget.comment);

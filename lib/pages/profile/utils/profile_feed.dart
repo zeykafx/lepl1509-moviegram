@@ -54,6 +54,7 @@ class _ProfileFeedState extends State<ProfileFeed> {
       }
     });
     readCurrentUserProfile();
+    checkCurrUserAndProfileAreFriends();
     readUserData().then((_) {
       checkHasSentRequest().then((hasSent) {
         setState(() {

@@ -41,11 +41,7 @@ class _RequestListState extends State<RequestList> {
       loading = true;
     });
 
-    var followingVal = await db
-        .collection('following')
-        .doc(currentUser?.uid)
-        .collection('friendRequests')
-        .get();
+    var followingVal = await db.collection('following').doc(currentUser?.uid).collection('friendRequests').get();
     for (var element in followingVal.docs) {
       requests.add({"uid": element.id});
     }
@@ -55,17 +51,13 @@ class _RequestListState extends State<RequestList> {
     return requests;
   }
 
-  Future<List<UserProfile>> getProfiles(
-      List<Map<String, dynamic>> requests) async {
+  Future<List<UserProfile>> getProfiles(List<Map<String, dynamic>> requests) async {
     setState(() {
       loading = true;
     });
     List<UserProfile> results = [];
 
-    var snapshot = await db
-        .collection('users')
-        .where('uid', whereIn: requests.map((e) => e["uid"]))
-        .get();
+    var snapshot = await db.collection('users').where('uid', whereIn: requests.map((e) => e["uid"])).get();
     snapshot.docs.forEach((doc) async {
       UserProfile user = UserProfile.fromMap(doc.data());
       results.add(user);
@@ -77,25 +69,18 @@ class _RequestListState extends State<RequestList> {
   }
 
   void follow({String? to, String? from}) {
-    FirebaseFirestore.instance
-        .collection('following')
-        .doc(to)
-        .collection('userFollowing')
-        .doc(from)
-        .set({});
+    FirebaseFirestore.instance.collection('following').doc(to).collection('userFollowing').doc(from).set({});
     setState(() {
-      db.collection('users').doc(from).update({"following": FieldValue.increment(1), "followers": FieldValue.increment(1)});
+      db
+          .collection('users')
+          .doc(from)
+          .update({"following": FieldValue.increment(1), "followers": FieldValue.increment(1)});
       requestsProfiles.removeWhere((element) => element.uid == from);
     });
   }
 
   void removeRequest({String? to, String? from}) {
-    FirebaseFirestore.instance
-        .collection('following')
-        .doc(to)
-        .collection('friendRequests')
-        .doc(from)
-        .delete();
+    FirebaseFirestore.instance.collection('following').doc(to).collection('friendRequests').doc(from).delete();
     setState(() {
       requestsProfiles.removeWhere((element) => element.uid == from);
     });
@@ -120,8 +105,7 @@ class _RequestListState extends State<RequestList> {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) =>
-                      ProfilePage(accessToFeed: false, uid: user.uid ?? ''),
+                  builder: (context) => ProfilePage(accessToFeed: false, uid: user.uid ?? ''),
                 ),
               );
             },

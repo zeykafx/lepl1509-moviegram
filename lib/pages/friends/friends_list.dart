@@ -40,32 +40,26 @@ class _FriendsListState extends State<FriendsList> {
     setState(() {
       loading = true;
     });
-    var followingVal = await db
-        .collection('following')
-        .doc(currentUser?.uid)
-        .collection('userFollowing')
-        .get();
+    var followingVal = await db.collection('following').doc(currentUser?.uid).collection('userFollowing').get();
     for (var element in followingVal.docs) {
       following.add({"uid": element.id});
     }
-    setState(() {
-      loading = false;
-    });
+    if (mounted) {
+      setState(() {
+        loading = false;
+      });
+    }
     return following;
   }
 
-  Future<List<UserProfile>> getFriends(
-      List<Map<String, dynamic>> following) async {
+  Future<List<UserProfile>> getFriends(List<Map<String, dynamic>> following) async {
     setState(() {
       loading = true;
     });
 
     List<UserProfile> results = [];
 
-    var snapshot = await db
-        .collection('users')
-        .where('uid', whereIn: following.map((e) => e["uid"]))
-        .get();
+    var snapshot = await db.collection('users').where('uid', whereIn: following.map((e) => e["uid"])).get();
     snapshot.docs.forEach((doc) async {
       UserProfile user = UserProfile.fromMap(doc.data());
       results.add(user);
@@ -78,15 +72,15 @@ class _FriendsListState extends State<FriendsList> {
   }
 
   void removeFriend({String? to, String? from}) {
-    FirebaseFirestore.instance
-        .collection('following')
-        .doc(to)
-        .collection('userFollowing')
-        .doc(from)
-        .delete();
+    FirebaseFirestore.instance.collection('following').doc(to).collection('userFollowing').doc(from).delete();
     setState(() {
-      db.collection('users').doc(from).update({"following": FieldValue.increment(-1), "followers": FieldValue.increment(-1)});
-      friends.removeWhere((element) => element.uid == to);
+      db
+          .collection('users')
+          .doc(from)
+          .update({"following": FieldValue.increment(-1), "followers": FieldValue.increment(-1)});
+      if (friends.isNotEmpty && currentUser?.uid == from) {
+        friends.removeWhere((element) => element.uid == to);
+      }
     });
   }
 
@@ -99,15 +93,13 @@ class _FriendsListState extends State<FriendsList> {
       return ListView(
         children: friends.map((UserProfile user) {
           return ListTile(
-            leading: CircleAvatar(
-                backgroundImage: OptimizedCacheImageProvider(user.photoURL)),
+            leading: CircleAvatar(backgroundImage: OptimizedCacheImageProvider(user.photoURL)),
             title: Text(user.name),
             subtitle: Text(user.bio ?? " "),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) =>
-                      ProfilePage(accessToFeed: true, uid: user.uid ?? ''),
+                  builder: (context) => ProfilePage(accessToFeed: true, uid: user.uid ?? ''),
                 ),
               );
             },
@@ -119,21 +111,14 @@ class _FriendsListState extends State<FriendsList> {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text("Remove friend"),
-                    content: const Text(
-                        "Are you sure you want to remove this friend?"),
+                    content: const Text("Are you sure you want to remove this friend?"),
                     actions: [
-                      TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text("Cancel")),
+                      TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text("Cancel")),
                       TextButton(
                           onPressed: () {
+                            removeFriend(to: user.uid, from: FirebaseAuth.instance.currentUser?.uid);
+                            removeFriend(to: FirebaseAuth.instance.currentUser?.uid, from: user.uid);
                             Navigator.of(context).pop();
-                            removeFriend(
-                                to: user.uid,
-                                from: FirebaseAuth.instance.currentUser?.uid);
-                            removeFriend(
-                                to: FirebaseAuth.instance.currentUser?.uid,
-                                from: user.uid);
                           },
                           child: const Text("Remove")),
                     ],

@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:projet_lepl1509_groupe_17/pages/auth/auth_page.dart';
 import 'package:splashscreen/splashscreen.dart';
 
@@ -40,6 +41,7 @@ ThemeData darkTheme(ColorScheme? darkColorScheme) {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await GetStorage.init();
 
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
@@ -54,13 +56,27 @@ Future<void> main() async {
   runApp(
     DevicePreview(
       enabled: false,
-      builder: (context) => const App(), // Wrap your app
+      builder: (context) => const App(),
     ),
   );
 }
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({super.key});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  bool? _isDark;
+  final box = GetStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _isDark = box.read('isDark');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +87,7 @@ class App extends StatelessWidget {
         title: 'MovieGram',
         theme: lightTheme(lightColorScheme),
         darkTheme: darkTheme(darkColorScheme),
-        themeMode: ThemeMode.system,
+        themeMode: _isDark != null ? (_isDark! ? ThemeMode.dark : ThemeMode.light) : ThemeMode.system,
         home: const IntroScreen(),
       );
     });

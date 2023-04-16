@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:label="projet_lepl1509_groupe_17"
+        android:label="MovieGram"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

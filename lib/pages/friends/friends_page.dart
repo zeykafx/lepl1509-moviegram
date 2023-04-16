@@ -12,15 +12,15 @@ import '../../models/user_profile.dart';
 import '../profile/pages/profile_page.dart';
 
 class FriendsPage extends StatefulWidget {
-  const FriendsPage({super.key});
+  final int initialTab;
+  const FriendsPage({super.key, this.initialTab = 0});
 
   @override
   _FriendsPageState createState() => _FriendsPageState();
 }
 
 class _FriendsPageState extends State<FriendsPage> {
-  final DrawerPageController drawerPageController =
-      Get.put(DrawerPageController());
+  final DrawerPageController drawerPageController = Get.put(DrawerPageController());
 
   User? currentUser = FirebaseAuth.instance.currentUser;
   FirebaseFirestore db = FirebaseFirestore.instance;
@@ -29,10 +29,13 @@ class _FriendsPageState extends State<FriendsPage> {
   List<UserProfile> users = [];
   List<UserProfile> currentUserFriends = [];
 
+  int initialTab = 0;
+
   @override
   initState() {
     super.initState();
     setState(() {
+      initialTab = widget.initialTab;
       loading = true;
     });
     getUsers().then((List<UserProfile> value) {
@@ -61,11 +64,7 @@ class _FriendsPageState extends State<FriendsPage> {
 
   Future<List<UserProfile>> getCurrentUserFriends() async {
     List<UserProfile> results = [];
-    var snapshot = await db
-        .collection('following')
-        .doc(currentUser?.uid)
-        .collection('userFollowing')
-        .get();
+    var snapshot = await db.collection('following').doc(currentUser?.uid).collection('userFollowing').get();
     for (var doc in snapshot.docs) {
       var userSnapshot = await db.collection('users').doc(doc.id).get();
       UserProfile user = UserProfile.fromMap(userSnapshot.data()!);
@@ -75,12 +74,7 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   void sendRequest({String? to, String? from}) {
-    FirebaseFirestore.instance
-        .collection('following')
-        .doc(to)
-        .collection('friendRequests')
-        .doc(from)
-        .set({});
+    FirebaseFirestore.instance.collection('following').doc(to).collection('friendRequests').doc(from).set({});
     setState(() {});
     // show a snackbar
     ScaffoldMessenger.of(context).showSnackBar(
@@ -91,17 +85,12 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   void removeFriend({String? to, String? from}) {
-    FirebaseFirestore.instance
-        .collection('following')
-        .doc(to)
-        .collection('userFollowing')
-        .doc(from)
-        .delete();
+    FirebaseFirestore.instance.collection('following').doc(to).collection('userFollowing').doc(from).delete();
     setState(() {
-      db.collection('users').doc(from).update({
-        "following": FieldValue.increment(-1),
-        "followers": FieldValue.increment(-1)
-      });
+      db
+          .collection('users')
+          .doc(from)
+          .update({"following": FieldValue.increment(-1), "followers": FieldValue.increment(-1)});
     });
   }
 
@@ -130,23 +119,18 @@ class _FriendsPageState extends State<FriendsPage> {
                       if (loading) {
                         return const Center(child: CircularProgressIndicator());
                       } else {
-                        bool isFriend = currentUserFriends
-                            .where((element) => element.uid == user.uid)
-                            .isNotEmpty;
+                        bool isFriend = currentUserFriends.where((element) => element.uid == user.uid).isNotEmpty;
                         // print("name: ${user.name} isFriend: $isFriend");
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundImage:
-                                OptimizedCacheImageProvider(user.photoURL),
+                            backgroundImage: OptimizedCacheImageProvider(user.photoURL),
                           ),
                           title: Text(user.name),
                           subtitle: Text(user.bio ?? " "),
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => ProfilePage(
-                                    accessToFeed: isFriend,
-                                    uid: user.uid ?? ''),
+                                builder: (context) => ProfilePage(accessToFeed: isFriend, uid: user.uid ?? ''),
                               ),
                             );
                           },
@@ -227,7 +211,7 @@ class _FriendsPageState extends State<FriendsPage> {
         return true;
       },
       child: DefaultTabController(
-        initialIndex: 0,
+        initialIndex: initialTab,
         length: 2,
         child: Scaffold(
           drawer: const DrawerComponent(),

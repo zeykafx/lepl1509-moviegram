@@ -32,8 +32,7 @@ class _HomeFeedState extends State<HomeFeed> {
   void initState() {
     super.initState();
     scrollController.addListener(() async {
-      if (scrollController.position.pixels ==
-          scrollController.position.maxScrollExtent) {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
         getMoreReviews().then((value) {
           setState(() {
             feedContent.addAll(value);
@@ -59,11 +58,7 @@ class _HomeFeedState extends State<HomeFeed> {
     setState(() {
       userProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
     });
-    var followingVal = await db
-        .collection('following')
-        .doc(currentUser?.uid)
-        .collection('userFollowing')
-        .get();
+    var followingVal = await db.collection('following').doc(currentUser?.uid).collection('userFollowing').get();
     for (var element in followingVal.docs) {
       following.add({"uid": element.id, "lastDoc": null});
     }
@@ -102,14 +97,16 @@ class _HomeFeedState extends State<HomeFeed> {
     // sort the list by timestamp
     followingReviews.sort((a, b) {
       return (DateTime.fromMillisecondsSinceEpoch(b["data"]["timestamp"]))
-          .compareTo(
-              DateTime.fromMillisecondsSinceEpoch(a["data"]["timestamp"]));
+          .compareTo(DateTime.fromMillisecondsSinceEpoch(a["data"]["timestamp"]));
     });
 
     // generate a list of booleans that are true every 3rd element, this is used to add recommendations
-    List<bool> randomList = List.generate(
-        followingReviews.length, (int idx) => (idx % 3 == 0) && (idx != 0));
-
+    List<bool> randomList;
+    if (followingReviews.length < 3) {
+      randomList = List.generate(followingReviews.length, (int idx) => (idx % 1 == 0));
+    } else {
+      randomList = List.generate(followingReviews.length, (int idx) => (idx % 3 == 0) && (idx != 0));
+    }
     for (int i = 0; i < randomList.length; i++) {
       if (randomList[i]) {
         // add a random recommendation
@@ -196,9 +193,9 @@ class _HomeFeedState extends State<HomeFeed> {
       children: [
         RefreshIndicator(
           onRefresh: refreshReview,
+          triggerMode: RefreshIndicatorTriggerMode.anywhere,
           child: feedContent.isNotEmpty
               ? ListView.builder(
-                  key: const Key('homeFeedList'),
                   addRepaintBoundaries: true,
                   cacheExtent: 100,
                   controller: scrollController,
@@ -215,14 +212,21 @@ class _HomeFeedState extends State<HomeFeed> {
                         ),
                       );
                     }
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                      child: ReviewCard(
-                        key: Key(feedContent[index]["id"]),
-                        id: feedContent[index]["id"],
-                        data: feedContent[index]["data"],
-                        user: userProfile,
-                      ),
+
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                          child: ReviewCard(
+                            key: Key(feedContent[index]["id"]),
+                            id: feedContent[index]["id"],
+                            data: feedContent[index]["data"],
+                            user: userProfile,
+                          ),
+                        ),
+                        if (feedContent.length < 3 && index == feedContent.indexOf(feedContent.last))
+                          const SizedBox(height: 300),
+                      ],
                     );
                   })
               : !loading // hacky way to only show the loading indicator on first load

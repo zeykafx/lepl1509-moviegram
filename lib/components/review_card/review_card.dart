@@ -754,6 +754,8 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
           ),
           const SizedBox(height: 5),
         ],
+
+        // comments details
         if (review!.comments.isNotEmpty)
           GestureDetector(
             onTap: () {
