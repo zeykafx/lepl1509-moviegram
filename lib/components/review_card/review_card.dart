@@ -233,23 +233,26 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
 
                               if (!showRatingPill) ...[
                                 const SizedBox(height: 5),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      showRatingPill = true;
-                                    });
-                                  },
-                                  child: Text(
-                                    "Show more...",
-                                    style: TextStyle(
-                                      color: Theme.of(context).dividerColor,
-                                      fontSize: 15,
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        showRatingPill = true;
+                                      });
+                                    },
+                                    child: Text(
+                                      "Show more...",
+                                      style: TextStyle(
+                                        color: Theme.of(context).dividerColor,
+                                        fontSize: 15,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ],
 
-                              buildLikesAndComments(),
+                              buildLikesAndComments(size),
                             ],
                           ),
                         ),
@@ -515,139 +518,146 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
     );
   }
 
-  Widget buildLikesAndComments() {
+  Widget buildLikesAndComments(Size size) {
     return Column(
+      mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             // likes
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () {
-                        if (review!.likes.any((element) => element.uid == widget.user!.uid)) {
-                          // optimistically remove the like from the ui
-                          setState(() {
-                            review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
-                          });
+            Tooltip(
+              message: review!.likes.map((e) => e.name).join(", "),
+              triggerMode: TooltipTriggerMode.tap,
+              showDuration: const Duration(seconds: 5),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      if (review!.likes.any((element) => element.uid == widget.user!.uid)) {
+                        // optimistically remove the like from the ui
+                        setState(() {
+                          review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
+                        });
 
-                          // remove the like in the DB, if there is any error, we want to update the ui to show that it didn't work
-                          removeLike().then((value) {
-                            if (!value) {
-                              setState(() {
-                                review!.likes.add(widget.user!);
-                              });
-                            }
-                          });
-                        } else {
-                          // add the like
-                          // optimistically add the like to the ui
-                          setState(() {
-                            review!.likes.add(widget.user!);
-                          });
+                        // remove the like in the DB, if there is any error, we want to update the ui to show that it didn't work
+                        removeLike().then((value) {
+                          if (!value) {
+                            setState(() {
+                              review!.likes.add(widget.user!);
+                            });
+                          }
+                        });
+                      } else {
+                        // add the like
+                        // optimistically add the like to the ui
+                        setState(() {
+                          review!.likes.add(widget.user!);
+                        });
 
-                          // add the like in the DB, if there is any error, we want to update the ui to show that it didn't work
-                          addLike().then((bool addedLike) {
-                            if (!addedLike) {
-                              setState(() {
-                                review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
-                              });
-                            }
-                          });
-                        }
-                      },
-                      icon: Icon(
-                        review!.likes.any((element) => element.uid == widget.user!.uid)
-                            ? Icons.favorite
-                            : Icons.favorite_border,
+                        // add the like in the DB, if there is any error, we want to update the ui to show that it didn't work
+                        addLike().then((bool addedLike) {
+                          if (!addedLike) {
+                            setState(() {
+                              review!.likes.removeWhere((element) => element.uid == widget.user!.uid);
+                            });
+                          }
+                        });
+                      }
+                    },
+                    style: IconButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.all(0),
+                    ),
+                    icon: Icon(
+                      review!.likes.any((element) => element.uid == widget.user!.uid)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: review!.likes.any((element) => element.uid == widget.user!.uid)
+                          ? Colors.red
+                          : Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  if (review!.likes.isEmpty)
+                    Text(
+                      "0",
+                      style: TextStyle(
+                        color: Theme.of(context).dividerColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  if (review!.likes.isNotEmpty && size.width > 360)
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Liked by ",
+                            style: TextStyle(
+                              color: Theme.of(context).dividerColor,
+                              fontSize: 12,
+                            ),
+                          ),
+                          TextSpan(
+                            text: review!.likes.first.name,
+                            style: TextStyle(
+                              color: Theme.of(context).dividerColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (review!.likes.length > 1) ...[
+                            TextSpan(
+                              text: " and ",
+                              style: TextStyle(
+                                color: Theme.of(context).dividerColor,
+                                fontSize: 12,
+                              ),
+                            ),
+                            TextSpan(
+                              text: "${review!.likes.length - 1}",
+                              style: TextStyle(
+                                color: Theme.of(context).dividerColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            TextSpan(
+                              text: review!.likes.length > 2 ? " others" : " other",
+                              style: TextStyle(
+                                color: Theme.of(context).dividerColor,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ]
+                        ],
+                      ),
+                    ),
+                  if (review!.likes.isNotEmpty && size.width <= 360)
+                    Text(
+                      "${review!.likes.length} likes",
+                      style: TextStyle(
                         color: review!.likes.any((element) => element.uid == widget.user!.uid)
                             ? Colors.red
                             : Theme.of(context).dividerColor,
-                      ),
-                      label: Text(
-                        review!.likes.length.toString(),
-                        style: TextStyle(
-                          color: review!.likes.any((element) => element.uid == widget.user!.uid)
-                              ? Colors.red
-                              : Theme.of(context).dividerColor,
-                          fontSize: 15,
-                        ),
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    if (review!.likes.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                        child: Tooltip(
-                          message: review!.likes.map((e) => e.name).join(", "),
-                          triggerMode: TooltipTriggerMode.tap,
-                          showDuration: const Duration(seconds: 5),
-                          child: RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "Liked by ",
-                                  style: TextStyle(
-                                    color: Theme.of(context).dividerColor,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: review!.likes.first.name,
-                                  style: TextStyle(
-                                    color: Theme.of(context).dividerColor,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                if (review!.likes.length > 1) ...[
-                                  TextSpan(
-                                    text: " and ",
-                                    style: TextStyle(
-                                      color: Theme.of(context).dividerColor,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: "${review!.likes.length - 1}",
-                                    style: TextStyle(
-                                      color: Theme.of(context).dividerColor,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: review!.likes.length > 2 ? " others" : " other",
-                                    style: TextStyle(
-                                      color: Theme.of(context).dividerColor,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ]
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
             const Spacer(),
             TextButton.icon(
               label: Text(
-                  (review!.comments.length +
-                          review!.comments.fold(0, (previousValue, element) => previousValue + element.replies.length))
-                      .toString(),
-                  style: TextStyle(color: Theme.of(context).dividerColor)),
+                (review!.comments.length +
+                        review!.comments.fold(0, (previousValue, element) => previousValue + element.replies.length))
+                    .toString(),
+                style: TextStyle(
+                  color: Theme.of(context).dividerColor,
+                  fontSize: 12,
+                ),
+              ),
               onPressed: () {
                 showDialog(
                     context: context,
@@ -671,11 +681,148 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
                       });
                     });
               },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 0),
+                visualDensity: VisualDensity.compact,
+              ),
               icon: Icon(Icons.mode_comment_outlined, color: Theme.of(context).dividerColor),
             ),
           ],
         ),
-        SizedBox(height: review!.likes.isNotEmpty ? 5 : 0),
+        if (review!.likes.isNotEmpty && size.width <= 360) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Row(
+              children: [
+                // circle avatar of the last user who liked the review
+                CircleAvatar(
+                  radius: 9.7,
+                  backgroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                  child: CircleAvatar(
+                    radius: 9,
+                    backgroundImage: OptimizedCacheImageProvider(review!.likes.last.photoURL),
+                  ),
+                ),
+                const SizedBox(width: 5),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Liked by ",
+                        style: TextStyle(
+                          color: Theme.of(context).dividerColor,
+                          fontSize: 12,
+                        ),
+                      ),
+                      TextSpan(
+                        text: review!.likes.first.name,
+                        style: TextStyle(
+                          color: Theme.of(context).dividerColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (review!.likes.length > 1) ...[
+                        TextSpan(
+                          text: " and ",
+                          style: TextStyle(
+                            color: Theme.of(context).dividerColor,
+                            fontSize: 12,
+                          ),
+                        ),
+                        TextSpan(
+                          text: "${review!.likes.length - 1}",
+                          style: TextStyle(
+                            color: Theme.of(context).dividerColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        TextSpan(
+                          text: review!.likes.length > 2 ? " others" : " other",
+                          style: TextStyle(
+                            color: Theme.of(context).dividerColor,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 5),
+        ],
+        if (review!.comments.isNotEmpty)
+          GestureDetector(
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return StatefulBuilder(builder: (context, setStateDialog) {
+                      setStateDialogCallback = setStateDialog;
+                      return Dialog(
+                        insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: CommentPage(
+                            review: review!,
+                            setStateCallback: () {
+                              setState(() {});
+                              setStateDialog(() {});
+                            },
+                            refreshData: refreshData,
+                          ),
+                        ),
+                      );
+                    });
+                  });
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // view all ... comments
+                  Text(
+                    "View all ${review!.comments.length + review!.comments.fold(0, (prev, next) => prev + next.replies.length)} comments",
+                    style: TextStyle(
+                      color: Theme.of(context).dividerColor,
+                      fontSize: 14,
+                    ),
+                  ),
+                  // show the last 2 comments
+                  ...review!.comments
+                      .take(2)
+                      .map((e) => Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  e.user.name,
+                                  style: TextStyle(
+                                    color: Theme.of(context).dividerColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  e.comment,
+                                  style: TextStyle(
+                                    color: Theme.of(context).dividerColor,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ))
+                      .toList(),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

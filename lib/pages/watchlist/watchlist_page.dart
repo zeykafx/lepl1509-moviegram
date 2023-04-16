@@ -179,6 +179,19 @@ class _WatchlistPageState extends State<WatchlistPage> {
                         ),
                       ),
                       const SizedBox(height: 10),
+                      if (watchlistMovies.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                          child: Center(
+                            child: Text(
+                              "Add movies to your watchlist to see them here",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ),
                       for (var movie in watchlistMovies) ...[
                         Card(
                           elevation: 0.5,
@@ -397,7 +410,7 @@ class _WatchlistPageState extends State<WatchlistPage> {
                       // Watched movies
                       if (watchedMovies.isNotEmpty) ...[
                         Divider(
-                          color: Colors.grey.withOpacity(0.2),
+                          color: Colors.grey.withOpacity(0.1),
                         ).animate().fade(),
                         const SizedBox(height: 10),
                         Padding(

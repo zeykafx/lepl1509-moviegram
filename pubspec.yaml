@@ -35,24 +35,23 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.5
-  dynamic_color: ^1.6.2
-  firebase_core: ^2.8.0
+  dynamic_color: ^1.6.3
+  firebase_core: ^2.9.0
   firebase_auth: ^4.3.0
-  firebase_database: ^10.0.16
+  firebase_database: ^10.1.0
   get: ^4.6.5
-  flutter_animate: ^4.1.0
+  flutter_animate: ^4.1.1+1
   get_storage: ^2.1.1
-  google_sign_in: ^6.0.2
   crypto: ^3.0.2
   splashscreen:
     git:
       url: https://github.com/DPLYR-dev/SplashScreenFlutterPackage.git
       ref: master
-  cloud_firestore: ^4.4.5
+  cloud_firestore: ^4.5.1
   flutter_rating_bar: ^4.0.1
-  firebase_storage: ^11.0.16
+  firebase_storage: ^11.1.0
   path: ^1.8.3
-  image_picker: ^0.8.7
+  image_picker: ^0.8.7+3
   card_swiper: ^2.0.4
   draggable_bottom_sheet: ^1.0.2
   interactive_bottom_sheet: ^0.1.2
@@ -61,13 +60,17 @@ dependencies:
     git:
       url: https://github.com/alex27riva/time_formatter.git
       ref: master
-  firebase_crashlytics: ^3.0.17
+  firebase_crashlytics: ^3.1.0
   url_launcher: ^6.1.10
   intl: ^0.17.0
   http: ^0.13.5
   search_page: ^2.3.0
   optimized_cached_image: ^3.0.1
   easy_rich_text: ^1.2.0
+  device_preview: ^1.1.0
+
+dependency_overrides:
+  intl: any
 
 dev_dependencies:
   flutter_test:
