@@ -30,6 +30,7 @@ class _MoviePageState extends State<MoviePage> {
   User? currentUser = FirebaseAuth.instance.currentUser;
   var db = FirebaseFirestore.instance;
   bool isInWatchList = false;
+  bool isWatched = false;
 
   @override
   void initState() {
@@ -122,6 +123,49 @@ class _MoviePageState extends State<MoviePage> {
     );
   }
 
+  // add to watched movies
+  Future<void> addToWatched(Movie movie) async {
+    await db.collection('users').doc(currentUser!.uid).update({
+      'watched': FieldValue.arrayUnion([movie.id])
+    });
+    setState(() {
+      isWatched = true;
+    });
+
+    // show a success snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text("Successfully added to watched"),
+        action: SnackBarAction(
+          label: "View",
+          onPressed: () {
+            Get.to(() => const WatchlistPage(), transition: Transition.fadeIn);
+          },
+        ),
+      ),
+    );
+  }
+
+  // remove from watched movies
+  Future<void> removeFromWatched(Movie movie) async {
+    await db.collection('users').doc(currentUser!.uid).update({
+      'watched': FieldValue.arrayRemove([movie.id])
+    });
+    setState(() {
+      isWatched = false;
+    });
+
+    // show a success snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: const Text("Successfully removed from watched"),
+          action: SnackBarAction(
+            label: "Undo",
+            onPressed: () => addToWatched(movie),
+          )),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -205,11 +249,11 @@ class _MoviePageState extends State<MoviePage> {
                 // MOVIE INFO
                 _buildMovieInformation(context, size),
 
-                if (providers.isNotEmpty) ...[
-                  // Watch now
-                  const SizedBox(height: 15),
-                  _buildProviders(),
-                ],
+                // if (providers.isNotEmpty) ...[
+                //   // Watch now
+                //   const SizedBox(height: 15),
+                //   _buildProviders(),
+                // ],
 
                 // ACTORS
                 const SizedBox(height: 15),
@@ -221,11 +265,13 @@ class _MoviePageState extends State<MoviePage> {
                             padding: EdgeInsets.symmetric(
                               horizontal: 12,
                             ),
-                            child: Text('Actors',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                )),
+                            child: Text(
+                              'Actors',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                           SizedBox.fromSize(
                             size: const Size.fromHeight(140),
@@ -245,7 +291,7 @@ class _MoviePageState extends State<MoviePage> {
                   id: movie!.id,
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
               ],
             ),
           );
@@ -282,7 +328,7 @@ class _MoviePageState extends State<MoviePage> {
                 ),
               ),
               const SizedBox(
-                width: 20,
+                width: 15,
               ),
               Expanded(
                 child: Column(
@@ -293,11 +339,11 @@ class _MoviePageState extends State<MoviePage> {
                     Text(
                       movie!.title,
                       style: const TextStyle(
-                        fontSize: 30,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     if (movie!.releaseDate != "")
                       Text(
                         "${DateTime.parse(movie!.releaseDate).day}/${DateTime.parse(movie!.releaseDate).month}/${DateTime.parse(movie!.releaseDate).year} - ${Duration(minutes: movie!.runtime).inHours}h ${Duration(minutes: movie!.runtime).inMinutes % 60}m",
@@ -305,7 +351,7 @@ class _MoviePageState extends State<MoviePage> {
                           fontSize: 18,
                         ),
                       ),
-                    const SizedBox(height: 10.0),
+                    const SizedBox(height: 5.0),
                     RatingBar.builder(
                       initialRating: movie!.voteAverage / 2,
                       minRating: 1,
@@ -352,10 +398,11 @@ class _MoviePageState extends State<MoviePage> {
               ],
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // review button
               Expanded(
@@ -369,7 +416,7 @@ class _MoviePageState extends State<MoviePage> {
                     ),
                     child: const Padding(
                       padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                      child: Text("Add a review", style: TextStyle(fontSize: 15)),
+                      child: Text("Add a review", style: TextStyle(fontSize: 13)),
                     ),
                     onPressed: () {
                       showModalBottomSheet(
@@ -394,7 +441,7 @@ class _MoviePageState extends State<MoviePage> {
                       );
                     }),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 10),
               Expanded(
                 child: FilledButton.tonalIcon(
                   style: ButtonStyle(
@@ -409,21 +456,77 @@ class _MoviePageState extends State<MoviePage> {
                   ),
                   icon: Icon(isInWatchList ? Icons.bookmark_added_rounded : Icons.bookmark_add_rounded),
                   label: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                    child:
-                        Text(isInWatchList ? "In Watchlist" : "Add to watchlist", style: const TextStyle(fontSize: 15)),
+                    padding: EdgeInsets.symmetric(vertical: isInWatchList ? 15 : 17, horizontal: 5),
+                    child: Text(isInWatchList ? "In Watchlist" : "Add to watchlist",
+                        style: TextStyle(fontSize: isInWatchList ? 13 : 10)),
                   ),
                   onPressed: () {
                     isInWatchList ? removeFromWatchList() : addToWatchList();
                   },
                 ),
               ),
+
+              // add to watched button in a 3 dots menu
+              const SizedBox(width: 2),
+              PopupMenuButton(
+                icon: const Icon(Icons.more_vert_rounded),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 1,
+                    child: Text(
+                      isWatched ? "Marked as Watched" : "Add to watched",
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  if (providers.isNotEmpty)
+                    PopupMenuItem(
+                      value: 2,
+                      child: Text(
+                        "Show Streaming Providers",
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                ],
+                onSelected: (value) {
+                  if (value == 1) {
+                    isWatched ? removeFromWatched(movie!) : addToWatched(movie!);
+                  } else if (value == 2) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      isDismissible: true,
+                      builder: (context) {
+                        return GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                          child: Padding(
+                            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                            child: SizedBox(
+                              width: size.width,
+                              height: size.height * 0.20,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    _buildProviders(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Text(
             movie!.overview,
-            maxLines: 8,
+            // maxLines: 8,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.5),
           ),
         ],
@@ -487,7 +590,7 @@ class _MoviePageState extends State<MoviePage> {
               fontSize: 20,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 0),
           SizedBox.fromSize(
             size: const Size.fromHeight(90),
             child: ListView(

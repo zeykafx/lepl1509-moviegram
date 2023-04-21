@@ -8,6 +8,7 @@ class UserProfile {
   String name;
   String email;
   List<int> watchlist = [];
+  List<int> watched = [];
 
   UserProfile({
     this.uid,
@@ -35,6 +36,10 @@ class UserProfile {
     );
     if (map["watchlist"] != null) {
       ret.watchlist = List<int>.from(map["watchlist"]);
+    }
+
+    if (map["watched"] != null) {
+      ret.watched = List<int>.from(map["watched"]);
     }
     return ret;
   }

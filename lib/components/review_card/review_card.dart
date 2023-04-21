@@ -200,7 +200,7 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
                                           borderRadius: BorderRadius.circular(15),
                                           clipBehavior: Clip.antiAlias,
                                           child: Opacity(
-                                            opacity: Get.isDarkMode ? 0.1 : 0.05,
+                                            opacity: Get.isDarkMode ? 0.1 : 0.1,
                                             child: ImageFiltered(
                                               imageFilter: ImageFilter.blur(
                                                 sigmaX: 3,
@@ -217,7 +217,7 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
                                         ),
                                       ),
                                     Padding(
-                                      padding: const EdgeInsets.all(8.0),
+                                      padding: const EdgeInsets.all(12.0),
                                       child: buildMovieInfo(movie!),
                                     ),
                                   ],
@@ -397,7 +397,7 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
                 Text(movie.title,
                     style: const TextStyle(
                       fontWeight: FontWeight.w500,
-                      fontSize: 20,
+                      fontSize: 18,
                     )),
 
                 const SizedBox(height: 3),
@@ -405,11 +405,11 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.reviews, size: 15),
+                    const Icon(Icons.reviews, size: 13),
                     const SizedBox(width: 5),
                     Text(
                       "${movie.voteAverage.toStringAsPrecision(2)}/10",
-                      style: const TextStyle(fontSize: 15),
+                      style: const TextStyle(fontSize: 13),
                     ),
                   ],
                 ),
@@ -421,7 +421,7 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
                   movie.overview,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 15, color: Theme.of(context).dividerColor),
+                  style: TextStyle(fontSize: 12, color: Theme.of(context).dividerColor),
                 ),
 
                 const SizedBox(height: 3),
@@ -429,7 +429,7 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
                 // year, length
                 Text(
                   "${DateTime.parse(movie.releaseDate).year} | ${movie.runtime} min",
-                  style: const TextStyle(fontSize: 15),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ],
             ),
