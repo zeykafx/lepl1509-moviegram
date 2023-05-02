@@ -54,14 +54,9 @@ class _CommentPageState extends State<CommentPage> {
   }
 
   void getCurrentUser() {
-    db
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get()
-        .then((value) {
+    db.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get().then((value) {
       setState(() {
-        currentUserProfile =
-            UserProfile.fromMap(value.data() as Map<String, dynamic>);
+        currentUserProfile = UserProfile.fromMap(value.data() as Map<String, dynamic>);
       });
     });
   }
@@ -72,20 +67,13 @@ class _CommentPageState extends State<CommentPage> {
       comment: query,
       uid: FirebaseAuth.instance.currentUser!.uid,
       timestamp: DateTime.now().millisecondsSinceEpoch,
-      user: UserProfile.fromMap((await db
-              .collection('users')
-              .doc(FirebaseAuth.instance.currentUser!.uid)
-              .get())
-          .data() as Map<String, dynamic>),
+      user: UserProfile.fromMap((await db.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get()).data()
+          as Map<String, dynamic>),
       likes: [],
     );
 
     if (!isReplying) {
-      var ret = await db
-          .collection('comments')
-          .doc(widget.review.reviewID)
-          .collection('comments')
-          .add({
+      var ret = await db.collection('comments').doc(widget.review.reviewID).collection('comments').add({
         'comment': newComment.comment,
         'uid': newComment.uid,
         'timestamp': newComment.timestamp,
@@ -114,9 +102,7 @@ class _CommentPageState extends State<CommentPage> {
       newComment.commId = ret.id;
 
       setState(() {
-        widget.review.comments[widget.review.comments.indexOf(replyComment!)]
-            .replies
-            .add(newComment);
+        widget.review.comments[widget.review.comments.indexOf(replyComment!)].replies.add(newComment);
       });
     }
 
@@ -163,12 +149,12 @@ class _CommentPageState extends State<CommentPage> {
                       comment: widget.review.comments[index],
                       review: widget.review,
                       currentUser: currentUserProfile,
+                      refreshData: widget.refreshData,
                       callback: (Comment com) {
                         setState(() {
                           isReplying = true;
                           replyComment = widget.review.comments[index];
-                          commentController.text =
-                              '@${com.user.name.replaceAll(" ", "")} ';
+                          commentController.text = '@${com.user.name.replaceAll(" ", "")} ';
                           // final RenderBox box =
                           //     key.currentContext?.findRenderObject() as RenderBox;
                           // final height = box.size.height;
@@ -232,8 +218,7 @@ class _CommentPageState extends State<CommentPage> {
                       controller: commentController,
                       decoration: InputDecoration(
                         hintText: "Add a comment...",
-                        hintStyle:
-                            TextStyle(color: Theme.of(context).dividerColor),
+                        hintStyle: TextStyle(color: Theme.of(context).dividerColor),
                         border: InputBorder.none,
                       ),
                       onFieldSubmitted: (value) async {

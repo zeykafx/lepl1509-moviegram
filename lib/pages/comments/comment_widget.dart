@@ -16,8 +16,14 @@ class CommentWidget extends StatefulWidget {
   final Review review;
   final UserProfile? currentUser;
   final Function callback;
+  final Function refreshData;
   const CommentWidget(
-      {super.key, required this.comment, required this.review, required this.currentUser, required this.callback});
+      {super.key,
+      required this.comment,
+      required this.review,
+      required this.currentUser,
+      required this.callback,
+      required this.refreshData});
 
   @override
   _CommentWidgetState createState() => _CommentWidgetState();
@@ -65,6 +71,17 @@ class _CommentWidgetState extends State<CommentWidget> {
       });
       setState(() {});
     }
+  }
+
+  void deleteComment() async {
+    await FirebaseFirestore.instance
+        .collection('comments')
+        .doc(widget.review.reviewID)
+        .collection('comments')
+        .doc(widget.comment.commId)
+        .delete();
+    widget.refreshData();
+    setState(() {});
   }
 
   @override
@@ -224,12 +241,49 @@ class _CommentWidgetState extends State<CommentWidget> {
                         ],
                       ),
 
-                      // reply button
-                      GestureDetector(
-                        child: Text("Reply", style: TextStyle(color: Theme.of(context).dividerColor, fontSize: 13)),
-                        onTap: () {
-                          widget.callback(widget.comment);
-                        },
+                      Row(
+                        children: [
+                          // reply button
+                          GestureDetector(
+                            child: Text("Reply", style: TextStyle(color: Theme.of(context).dividerColor, fontSize: 13)),
+                            onTap: () {
+                              widget.callback(widget.comment);
+                            },
+                          ),
+                          const SizedBox(width: 5),
+
+                          // show delete button for comment author
+                          if (widget.currentUser!.uid == widget.comment.uid)
+                            GestureDetector(
+                              child: const Text("Delete", style: TextStyle(color: Colors.red, fontSize: 13)),
+                              onTap: () {
+                                // show alert asking to confirm the deletion
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text("Delete comment"),
+                                    content: const Text("Are you sure you want to delete this comment?"),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text("Cancel"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          // delete comment
+                                          deleteComment();
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text("Ok"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
                       ),
                       if (widget.comment.replies.isNotEmpty) ...[
                         if (!seeReplies) ...[
@@ -239,6 +293,7 @@ class _CommentWidgetState extends State<CommentWidget> {
                             review: widget.review,
                             currentUser: widget.currentUser,
                             callback: widget.callback,
+                            refreshData: widget.refreshData,
                           ).animate().fade(),
                         ],
 
@@ -246,13 +301,13 @@ class _CommentWidgetState extends State<CommentWidget> {
                         for (var reply in widget.comment.replies)
                           if (seeReplies) ...[
                             ReplyComment(
-                                    mainComment: widget.comment,
-                                    comment: reply,
-                                    review: widget.review,
-                                    currentUser: widget.currentUser,
-                                    callback: widget.callback)
-                                .animate()
-                                .fade(),
+                              mainComment: widget.comment,
+                              comment: reply,
+                              review: widget.review,
+                              currentUser: widget.currentUser,
+                              callback: widget.callback,
+                              refreshData: widget.refreshData,
+                            ).animate().fade(),
                           ],
 
                         if (widget.comment.replies.length > 1)
@@ -286,6 +341,7 @@ class ReplyComment extends StatefulWidget {
   final Review review;
   final UserProfile? currentUser;
   final Function callback;
+  final Function refreshData;
   const ReplyComment({
     super.key,
     required this.comment,
@@ -293,6 +349,7 @@ class ReplyComment extends StatefulWidget {
     required this.currentUser,
     required this.callback,
     required this.mainComment,
+    required this.refreshData,
   });
 
   @override
@@ -342,6 +399,19 @@ class _ReplyCommentState extends State<ReplyComment> {
       });
       setState(() {});
     }
+  }
+
+  void deleteReply() async {
+    await FirebaseFirestore.instance
+        .collection('comments')
+        .doc(widget.review.reviewID)
+        .collection('comments')
+        .doc(widget.mainComment.commId)
+        .collection("subcomments")
+        .doc(widget.comment.commId)
+        .delete();
+    widget.refreshData();
+    setState(() {});
   }
 
   @override
@@ -493,14 +563,54 @@ class _ReplyCommentState extends State<ReplyComment> {
                           ),
                         ],
                       ),
-                      GestureDetector(
-                        child: Text(
-                          "Reply",
-                          style: TextStyle(color: Theme.of(context).dividerColor, fontSize: 13),
-                        ),
-                        onTap: () {
-                          widget.callback(widget.comment);
-                        },
+
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GestureDetector(
+                            child: Text(
+                              "Reply",
+                              style: TextStyle(color: Theme.of(context).dividerColor, fontSize: 13),
+                            ),
+                            onTap: () {
+                              widget.callback(widget.comment);
+                            },
+                          ),
+
+                          const SizedBox(width: 5),
+
+                          // show delete button for comment author
+                          if (widget.currentUser!.uid == widget.comment.uid)
+                            GestureDetector(
+                              child: const Text("Delete", style: TextStyle(color: Colors.red, fontSize: 13)),
+                              onTap: () {
+                                // show alert asking to confirm the deletion
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text("Delete reply"),
+                                    content: const Text("Are you sure you want to delete this reply?"),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text("Cancel"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          // delete reply
+                                          deleteReply();
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text("Ok"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
                       ),
                     ],
                   ),

@@ -249,12 +249,6 @@ class _MoviePageState extends State<MoviePage> {
                 // MOVIE INFO
                 _buildMovieInformation(context, size),
 
-                // if (providers.isNotEmpty) ...[
-                //   // Watch now
-                //   const SizedBox(height: 15),
-                //   _buildProviders(),
-                // ],
-
                 // ACTORS
                 const SizedBox(height: 15),
                 movie!.actors.isNotEmpty
@@ -285,6 +279,13 @@ class _MoviePageState extends State<MoviePage> {
                         ],
                       )
                     : Container(),
+
+                if (providers.isNotEmpty) ...[
+                  // Watch now
+                  const SizedBox(height: 15),
+                  _buildProviders(),
+                ],
+
                 SlidableMovieList(
                   size: 150,
                   type: SlidableMovieListType.recommendations,
@@ -478,47 +479,48 @@ class _MoviePageState extends State<MoviePage> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
-                  if (providers.isNotEmpty)
-                    PopupMenuItem(
-                      value: 2,
-                      child: Text(
-                        "Show Streaming Providers",
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
+                  // if (providers.isNotEmpty)
+                  //   PopupMenuItem(
+                  //     value: 2,
+                  //     child: Text(
+                  //       "Show Streaming Providers",
+                  //       style: Theme.of(context).textTheme.bodySmall,
+                  //     ),
+                  //   ),
                 ],
                 onSelected: (value) {
                   if (value == 1) {
                     isWatched ? removeFromWatched(movie!) : addToWatched(movie!);
-                  } else if (value == 2) {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      isDismissible: true,
-                      builder: (context) {
-                        return GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                          child: Padding(
-                            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-                            child: SizedBox(
-                              width: size.width,
-                              height: size.height * 0.20,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    _buildProviders(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
                   }
+                  // else if (value == 2) {
+                  //   showModalBottomSheet(
+                  //     context: context,
+                  //     isScrollControlled: true,
+                  //     isDismissible: true,
+                  //     builder: (context) {
+                  //       return GestureDetector(
+                  //         behavior: HitTestBehavior.opaque,
+                  //         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                  //         child: Padding(
+                  //           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                  //           child: SizedBox(
+                  //             width: size.width,
+                  //             height: size.height * 0.20,
+                  //             child: Center(
+                  //               child: Column(
+                  //                 mainAxisAlignment: MainAxisAlignment.center,
+                  //                 crossAxisAlignment: CrossAxisAlignment.center,
+                  //                 children: [
+                  //                   _buildProviders(),
+                  //                 ],
+                  //               ),
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       );
+                  //     },
+                  //   );
+                  // }
                 },
               ),
             ],

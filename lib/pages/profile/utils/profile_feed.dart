@@ -244,6 +244,19 @@ class _ProfileFeedState extends State<ProfileFeed> {
                             setState(() {
                               readUserData();
                             });
+                            getReviews().then((value) {
+                              setState(() {
+                                loading = true;
+                                feedContent.clear();
+                              });
+                              // FIX: huge hack to make sure the list is rebuilt, i hate this but it works...
+                              Future.delayed(const Duration(milliseconds: 1), () {
+                                setState(() {
+                                  feedContent = value;
+                                  loading = false;
+                                });
+                              });
+                            });
                           });
                         },
                       ),
@@ -251,49 +264,54 @@ class _ProfileFeedState extends State<ProfileFeed> {
                       const SizedBox(width: 20),
 
                       // name and email
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Text(
-                            userProfile?.name ?? "No name",
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-                          ),
-                          Text(
-                            userProfile?.bio ?? "No bio",
-                            style: TextStyle(fontSize: 16, color: Theme.of(context).dividerColor),
-                          ),
-                          if (!widget.isCurrentUser) ...[
-                            const SizedBox(height: 2),
-                            FilledButton(
-                              style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all(hasAccessToFeed
-                                    ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
-                                    : hasSentRequest
-                                        ? Theme.of(context).dividerColor.withOpacity(0.8)
-                                        : Theme.of(context).colorScheme.primary),
-                                shape: MaterialStateProperty.all(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Text(
+                              userProfile?.name ?? "No name",
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                            ),
+                            Text(
+                              userProfile?.bio ?? "No bio",
+                              style: TextStyle(fontSize: 16, color: Theme.of(context).dividerColor),
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 3,
+                            ),
+                            if (!widget.isCurrentUser) ...[
+                              const SizedBox(height: 2),
+                              FilledButton(
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(hasAccessToFeed
+                                      ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
+                                      : hasSentRequest
+                                          ? Theme.of(context).dividerColor.withOpacity(0.8)
+                                          : Theme.of(context).colorScheme.primary),
+                                  shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
+                                  visualDensity: VisualDensity.compact,
                                 ),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              child: Text(hasAccessToFeed
-                                  ? 'Unfollow'
-                                  : hasSentRequest
-                                      ? 'Cancel request'
-                                      : 'Follow'),
-                              onPressed: () {
-                                hasAccessToFeed
-                                    ? doubleRemoveFriend(to: widget.uid, from: FirebaseAuth.instance.currentUser!.uid)
+                                child: Text(hasAccessToFeed
+                                    ? 'Unfollow'
                                     : hasSentRequest
-                                        ? removeRequest()
-                                        : sendRequest(to: widget.uid, from: FirebaseAuth.instance.currentUser!.uid);
-                              },
-                            )
+                                        ? 'Cancel request'
+                                        : 'Follow'),
+                                onPressed: () {
+                                  hasAccessToFeed
+                                      ? doubleRemoveFriend(to: widget.uid, from: FirebaseAuth.instance.currentUser!.uid)
+                                      : hasSentRequest
+                                          ? removeRequest()
+                                          : sendRequest(to: widget.uid, from: FirebaseAuth.instance.currentUser!.uid);
+                                },
+                              )
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ],
                   ),

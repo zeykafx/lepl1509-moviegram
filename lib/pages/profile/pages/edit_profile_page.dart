@@ -242,6 +242,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       currentUser?.updateDisplayName(_name);
       currentUser?.updatePhotoURL(_photoURL);
       await db.collection('users').doc(currentUser?.uid).update({
+        'name': _name,
         'bio': _bio,
         'photoURL': _photoURL,
       });

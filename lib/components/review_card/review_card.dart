@@ -135,6 +135,13 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
     commentController.clear();
   }
 
+  Future<void> deleteReview(String reviewID) async {
+    await db.collection('posts').doc(review!.userID).collection('userPosts').doc(reviewID).delete();
+    setState(() {
+      review = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -283,17 +290,19 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
               // avatar picture
               ClipOval(
                 child: SizedBox(
-                    width: 35,
-                    height: 35,
-                    child: Image(
-                      image: OptimizedCacheImageProvider(
-                        author?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
-                      ),
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.cover,
-                    )),
+                  width: 35,
+                  height: 35,
+                  child: Image(
+                    image: OptimizedCacheImageProvider(
+                      author?.photoURL ?? 'http://www.gravatar.com/avatar/?d=mp',
+                    ),
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
+
               const SizedBox(width: 8),
 
               // author name and time since
@@ -321,22 +330,63 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
           ),
         ),
         const Spacer(),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.star, color: Colors.amber, size: 15),
-                const SizedBox(width: 5),
-                Text(review!.rating.toString()),
-              ],
+        Row(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star, color: Colors.amber, size: 15),
+                    const SizedBox(width: 5),
+                    Text(review!.rating.toString()),
+                  ],
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 5),
+            // show menu with delete and edit option if user is the author
+            if (currentUser?.uid == author?.uid)
+              PopupMenuButton(
+                icon: const Icon(Icons.more_vert),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: "delete",
+                    child: Text("Delete"),
+                  ),
+                ],
+                onSelected: (value) async {
+                  if (value == "delete") {
+                    await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Delete review"),
+                        content: const Text("Are you sure you want to delete this review?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              await deleteReview(review!.reviewID);
+
+                              Navigator.pop(context);
+                            },
+                            child: const Text("Delete"),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+          ],
         )
       ],
     );
@@ -394,11 +444,13 @@ class _ReviewCardState extends State<ReviewCard> with AutomaticKeepAliveClientMi
               mainAxisSize: MainAxisSize.min,
               children: [
                 // movie title
-                Text(movie.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 18,
-                    )),
+                Text(
+                  movie.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                  ),
+                ),
 
                 const SizedBox(height: 3),
                 // movie rating

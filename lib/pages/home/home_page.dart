@@ -55,8 +55,10 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                        'You have ${snapshot.docs.length} friend ${snapshot.docs.length > 1 ? 'requests' : 'request'}, would you like to view them?'),
+                    Flexible(
+                      child: Text(
+                          'You have ${snapshot.docs.length} friend ${snapshot.docs.length > 1 ? 'requests' : 'request'}, would you like to view them?'),
+                    ),
                     const SizedBox(height: 10),
                     // toggle to remember choice whether to show this alert on launch or not
                     Row(
@@ -72,7 +74,7 @@ class _HomePageState extends State<HomePage> {
                                 box.write('showAlert', value);
                               });
                             }),
-                        const Text('Keep showing this alert on launch'),
+                        Flexible(child: const Text('Keep showing this alert on launch')),
                       ],
                     ),
                   ],
@@ -83,7 +85,7 @@ class _HomePageState extends State<HomePage> {
                       Get.back();
                       Get.to(() => const FriendsPage(initialTab: 1), transition: Transition.fadeIn);
                     },
-                    child: const Text('Ok view them'),
+                    child: const Text('Ok view requests'),
                   ),
                   TextButton(
                     onPressed: () {
