@@ -16,7 +16,7 @@ import 'package:splashscreen/splashscreen.dart';
 
 import 'pages/home/home_page.dart';
 
-const String themoviedbApi = "***REMOVED***";
+const String themoviedbApi = "**REMOVED**";
 
 ColorScheme? lightColorScheme;
 ColorScheme? darkColorScheme;
